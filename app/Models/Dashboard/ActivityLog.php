@@ -1,10 +1,13 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Dashboard;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+use App\Models\Core\Organization;
+use App\Models\Dashboard\User;
 
 class ActivityLog extends Model
 {
@@ -120,7 +123,7 @@ class ActivityLog extends Model
     public function scopeByResource($query, string $resourceType, int $resourceId)
     {
         return $query->where('resource_type', $resourceType)
-                     ->where('resource_id', $resourceId);
+            ->where('resource_id', $resourceId);
     }
 
     /**

@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\DashboardPermission;
-use App\Models\DashboardRole;
+use App\Models\Dashboard\Permission;
+use App\Models\Dashboard\Role;
 use Illuminate\Database\Seeder;
 
 class PermissionSeeder extends Seeder
@@ -68,8 +68,8 @@ class PermissionSeeder extends Seeder
 
         // Create permissions
         foreach ($permissions as $permission) {
-            $permission['code'] = DashboardPermission::makeCode($permission['resource'], $permission['action']);
-            DashboardPermission::firstOrCreate(
+            $permission['code'] = Permission::makeCode($permission['resource'], $permission['action']);
+            Permission::firstOrCreate(
                 ['code' => $permission['code']],
                 $permission
             );
@@ -87,20 +87,63 @@ class PermissionSeeder extends Seeder
     private function assignPermissionsToRoles(): void
     {
         // Get roles
-        $superAdmin = DashboardRole::where('name', 'super_admin')->first();
-        $orgAdmin = DashboardRole::where('name', 'org_admin')->first();
-        $orgStaff = DashboardRole::where('name', 'org_staff')->first();
+        $superAdmin = Role::where('name', 'super_admin')->first();
+        $platformStaff = Role::where('name', 'platform_staff')->first();
+        $orgAdmin = Role::where('name', 'org_admin')->first();
+        $orgStaff = Role::where('name', 'org_staff')->first();
 
         // Super Admin: ALL permissions
         if ($superAdmin) {
-            $allPermissions = DashboardPermission::pluck('id')->toArray();
+            $allPermissions = Permission::pluck('id')->toArray();
             $superAdmin->syncPermissions($allPermissions);
             $this->command->info('Super Admin permissions assigned!');
         }
 
+        // Platform Staff: Read-mostly access to all organizations (operational support)
+        if ($platformStaff) {
+            $platformStaffPermissionCodes = [
+                // Events: read only
+                'events.read',
+
+                // Tickets: read only
+                'tickets.read',
+
+                // Orders: read and update (for support/refunds)
+                'orders.read',
+                'orders.update',
+                'orders.export',
+
+                // Organizations: read only
+                'organizations.read',
+
+                // Dashboard Users: read only
+                'dashboard_users.read',
+
+                // Roles: read only
+                'roles.read',
+
+                // Activity Logs: read and export (for audit support)
+                'activity_logs.read',
+                'activity_logs.export',
+
+                // Reports: read and export
+                'reports.read',
+                'reports.export',
+
+                // Settings: read only
+                'settings.read',
+            ];
+
+            $platformStaffPermissions = Permission::whereIn('code', $platformStaffPermissionCodes)
+                ->pluck('id')
+                ->toArray();
+            $platformStaff->syncPermissions($platformStaffPermissions);
+            $this->command->info('Platform Staff permissions assigned!');
+        }
+
         // Organization Admin: All permissions except organizations management
         if ($orgAdmin) {
-            $orgAdminPermissions = DashboardPermission::whereNotIn('resource', ['organizations'])
+            $orgAdminPermissions = Permission::whereNotIn('resource', ['organizations'])
                 ->pluck('id')
                 ->toArray();
             $orgAdmin->syncPermissions($orgAdminPermissions);
@@ -132,7 +175,7 @@ class PermissionSeeder extends Seeder
                 'settings.read',
             ];
 
-            $orgStaffPermissions = DashboardPermission::whereIn('code', $orgStaffPermissionCodes)
+            $orgStaffPermissions = Permission::whereIn('code', $orgStaffPermissionCodes)
                 ->pluck('id')
                 ->toArray();
             $orgStaff->syncPermissions($orgStaffPermissions);

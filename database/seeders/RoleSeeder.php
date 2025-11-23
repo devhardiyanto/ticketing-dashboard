@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\DashboardRole;
+use App\Models\Dashboard\Role;
 use Illuminate\Database\Seeder;
 
 class RoleSeeder extends Seeder
@@ -20,6 +20,12 @@ class RoleSeeder extends Seeder
                 'is_system_role' => true,
             ],
             [
+                'name' => 'platform_staff',
+                'display_name' => 'Platform Staff',
+                'description' => 'Internal platform staff for operational support. Can view and assist all organizations with limited operational access.',
+                'is_system_role' => true,
+            ],
+            [
                 'name' => 'org_admin',
                 'display_name' => 'Organization Admin',
                 'description' => 'Full access to their organization. Can manage users, events, tickets, and orders within their organization.',
@@ -34,7 +40,7 @@ class RoleSeeder extends Seeder
         ];
 
         foreach ($roles as $roleData) {
-            DashboardRole::firstOrCreate(
+            Role::firstOrCreate(
                 ['name' => $roleData['name']],
                 $roleData
             );

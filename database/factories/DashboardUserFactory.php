@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\DashboardOrganization;
+use App\Models\Core\Organization;
 use App\Models\DashboardRole;
 use App\Models\DashboardUser;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -64,17 +64,34 @@ class DashboardUserFactory extends Factory
     }
 
     /**
+     * Indicate that the user is platform staff (internal team).
+     */
+    public function platformStaff(): static
+    {
+        return $this->state(function (array $attributes) {
+            $role = DashboardRole::where('name', 'platform_staff')->first();
+            return [
+                'role_id' => $role?->id,
+                'organization_id' => null, // Platform staff doesn't belong to any org
+            ];
+        });
+    }
+
+    /**
      * Indicate that the user is an organization admin.
      */
-    public function orgAdmin(?DashboardOrganization $organization = null): static
+    public function orgAdmin(?Organization $organization = null): static
     {
         return $this->state(function (array $attributes) use ($organization) {
             $role = DashboardRole::where('name', 'org_admin')->first();
-            $org = $organization ?? DashboardOrganization::factory()->create();
+
+            if (!$organization) {
+                throw new \InvalidArgumentException('Organization is required for org_admin users');
+            }
 
             return [
                 'role_id' => $role?->id,
-                'organization_id' => $org->id,
+                'organization_id' => $organization->id,
             ];
         });
     }
@@ -82,15 +99,18 @@ class DashboardUserFactory extends Factory
     /**
      * Indicate that the user is organization staff.
      */
-    public function orgStaff(?DashboardOrganization $organization = null): static
+    public function orgStaff(?Organization $organization = null): static
     {
         return $this->state(function (array $attributes) use ($organization) {
             $role = DashboardRole::where('name', 'org_staff')->first();
-            $org = $organization ?? DashboardOrganization::factory()->create();
+
+            if (!$organization) {
+                throw new \InvalidArgumentException('Organization is required for org_staff users');
+            }
 
             return [
                 'role_id' => $role?->id,
-                'organization_id' => $org->id,
+                'organization_id' => $organization->id,
             ];
         });
     }
@@ -98,7 +118,7 @@ class DashboardUserFactory extends Factory
     /**
      * Indicate that the user belongs to a specific organization.
      */
-    public function forOrganization(DashboardOrganization $organization): static
+    public function forOrganization(Organization $organization): static
     {
         return $this->state(fn (array $attributes) => [
             'organization_id' => $organization->id,

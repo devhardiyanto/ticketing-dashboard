@@ -5,18 +5,17 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('dashboard.activity_logs', function (Blueprint $table) {
+        Schema::create('activity_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('dashboard.dashboard_users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
 
-            // UUID for cross-schema FK to core.organizations
+            // UUID for organization_id (No FK constraint across DBs)
             $table->uuid('organization_id')->nullable();
 
             $table->string('action', 100);
@@ -25,12 +24,14 @@ return new class extends Migration
             $table->text('description')->nullable();
 
             // PostgreSQL INET type for IP address
-            $table->addColumn('inet', 'ip_address')->nullable();
+            $table->string('ip_address', 45)->nullable();
 
             $table->text('user_agent')->nullable();
 
             // JSONB for better performance
-            DB::statement('ALTER TABLE dashboard.activity_logs ADD COLUMN metadata JSONB NULL');
+            // Use raw statement for JSONB if needed, or Schema builder if supported
+            // Laravel supports jsonb natively on Postgres
+            $table->jsonb('metadata')->nullable();
 
             $table->timestamp('created_at')->nullable();
 
@@ -42,15 +43,6 @@ return new class extends Migration
             $table->index('resource_type');
             $table->index(['resource_type', 'resource_id']);
         });
-
-        // Add cross-schema FK constraint to core.organizations
-        DB::statement('
-            ALTER TABLE dashboard.activity_logs
-            ADD CONSTRAINT fk_activity_logs_organization
-            FOREIGN KEY (organization_id)
-            REFERENCES core.organizations(id)
-            ON DELETE SET NULL
-        ');
     }
 
     /**
@@ -58,9 +50,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Drop cross-schema FK first
-        DB::statement('ALTER TABLE dashboard.activity_logs DROP CONSTRAINT IF EXISTS fk_activity_logs_organization');
-
-        Schema::dropIfExists('dashboard.activity_logs');
+        Schema::dropIfExists('activity_logs');
     }
 };
