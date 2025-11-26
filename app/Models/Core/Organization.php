@@ -5,14 +5,6 @@ namespace App\Models\Core;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * Organization Model (Core Schema)
- *
- * This model represents organizations from the core.organizations table.
- * It's shared between Core (Node.js) and Dashboard (Laravel) via cross-schema FK.
- *
- * Dashboard users reference this table via dashboard_users.organization_id (UUID).
- */
 class Organization extends Model
 {
     /**
@@ -20,14 +12,28 @@ class Organization extends Model
      *
      * @var string
      */
-    protected $connection = 'pgsql';
+    protected $connection = 'core_pgsql';
 
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'core.organizations';
+    protected $table = 'organizations';
+
+    /**
+     * The primary key for the model.
+     *
+     * @var string
+     */
+    protected $primaryKey = 'id';
+
+    /**
+     * The "type" of the primary key ID.
+     *
+     * @var string
+     */
+    protected $keyType = 'string';
 
     /**
      * Indicates if the IDs are auto-incrementing.
@@ -37,27 +43,9 @@ class Organization extends Model
     public $incrementing = false;
 
     /**
-     * The data type of the auto-incrementing ID.
-     *
-     * @var string
-     */
-    protected $keyType = 'string'; // UUID
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'id' => 'string',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
-
-    /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'name',
@@ -70,75 +58,10 @@ class Organization extends Model
     ];
 
     /**
-     * Get dashboard users for this organization (cross-schema relationship)
-     *
-     * @return HasMany
+     * Get the events for the organization.
      */
-    public function dashboardUsers(): HasMany
+    public function events(): HasMany
     {
-        return $this->hasMany(\App\Models\Dashboard\User::class, 'organization_id');
-    }
-
-    /**
-     * Get activity logs for this organization (cross-schema relationship)
-     *
-     * @return HasMany
-     */
-    public function activityLogs(): HasMany
-    {
-        return $this->hasMany(\App\Models\Dashboard\ActivityLog::class, 'organization_id');
-    }
-
-    /**
-     * Check if organization is active
-     *
-     * @return bool
-     */
-    public function isActive(): bool
-    {
-        return $this->status === 'active';
-    }
-
-    /**
-     * Check if organization is inactive
-     *
-     * @return bool
-     */
-    public function isInactive(): bool
-    {
-        return $this->status === 'inactive';
-    }
-
-    /**
-     * Check if organization is suspended
-     *
-     * @return bool
-     */
-    public function isSuspended(): bool
-    {
-        return $this->status === 'suspended';
-    }
-
-    /**
-     * Scope to get only active organizations
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function scopeActive($query)
-    {
-        return $query->where('status', 'active');
-    }
-
-    /**
-     * Scope to get organizations by business type
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $type
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function scopeByBusinessType($query, string $type)
-    {
-        return $query->where('business_type', $type);
+        return $this->hasMany(Event::class, 'organization_id');
     }
 }
