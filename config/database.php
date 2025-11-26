@@ -100,13 +100,13 @@ return [
 
         'core_pgsql' => [
             'driver' => 'pgsql',
-            'url' => env('DB_URL'),
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '5432'),
-            'database' => env('DB_DATABASE', 'event_ticketing'),
-            'username' => env('DB_USERNAME', 'postgres'),
-            'password' => env('DB_PASSWORD', ''),
-            'charset' => env('DB_CHARSET', 'utf8'),
+            'url' => env('DB_CORE_URL'),
+            'host' => env('DB_CORE_HOST', '127.0.0.1'),
+            'port' => env('DB_CORE_PORT', '5432'),
+            'database' => env('DB_CORE_DATABASE', 'event_ticketing'),
+            'username' => env('DB_CORE_USERNAME', 'postgres'),
+            'password' => env('DB_CORE_PASSWORD', ''),
+            'charset' => env('DB_CORE_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'core', // Explicitly set search_path to core
