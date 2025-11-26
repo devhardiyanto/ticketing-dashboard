@@ -28,7 +28,7 @@ class User extends Authenticatable
      *
      * @var string
      */
-    protected $table = 'dashboard.dashboard_users';
+    protected $table = 'dashboard.users';
 
     /**
      * The attributes that are mass assignable.
