@@ -109,7 +109,7 @@ return [
             'charset' => env('DB_CORE_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
-            'search_path' => 'core', // Explicitly set search_path to core
+            'search_path' => env('DB_CORE_SCHEMA', 'public'),
             'sslmode' => 'prefer',
         ],
 
