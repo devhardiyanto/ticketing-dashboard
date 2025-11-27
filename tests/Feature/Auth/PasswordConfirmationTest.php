@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Models\Dashboard\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('confirm password screen can be rendered', function () {
@@ -10,8 +10,9 @@ test('confirm password screen can be rendered', function () {
 
     $response->assertStatus(200);
 
-    $response->assertInertia(fn (Assert $page) => $page
-        ->component('auth/ConfirmPassword')
+    $response->assertInertia(
+        fn(Assert $page) => $page
+            ->component('auth/ConfirmPassword')
     );
 });
 
