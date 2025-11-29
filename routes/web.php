@@ -14,4 +14,7 @@ Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-require __DIR__.'/settings.php';
+Route::resource('events', \App\Http\Controllers\EventController::class)
+    ->middleware(['auth', 'verified']);
+
+require __DIR__ . '/settings.php';

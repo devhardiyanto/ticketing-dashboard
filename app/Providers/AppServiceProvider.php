@@ -11,7 +11,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            \App\Repositories\Contracts\EventRepositoryInterface::class,
+            \App\Repositories\Eloquent\EventRepository::class
+        );
     }
 
     /**
