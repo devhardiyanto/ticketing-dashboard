@@ -1,27 +1,14 @@
 import { ref } from 'vue';
+import timezonesData from '@/data/timezones.json';
 
-const timezones = ref<string[]>([]);
+const timezones = ref<string[]>(timezonesData);
 const loading = ref(false);
 const error = ref<string | null>(null);
 
 export function useTimezones() {
   const fetchTimezones = async () => {
-    if (timezones.value.length > 0) return; // Return cached if available
-
-    loading.value = true;
-    error.value = null;
-    try {
-      const response = await fetch('https://timeapi.io/api/TimeZone/AvailableTimeZones');
-      if (!response.ok) {
-        throw new Error('Failed to fetch timezones');
-      }
-      timezones.value = await response.json();
-    } catch (e: any) {
-      error.value = e.message;
-      console.error('Error fetching timezones:', e);
-    } finally {
-      loading.value = false;
-    }
+    // No-op, kept for compatibility or if we want to re-enable fetching later
+    // timezones are already loaded from JSON
   };
 
   return {

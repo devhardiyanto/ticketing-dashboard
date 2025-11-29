@@ -29,7 +29,7 @@ const format = "yyyy-MM-dd HH:mm";
 <template>
   <div class="grid gap-4 sm:grid-cols-2">
     <div class="space-y-2">
-      <Label>Start Date</Label>
+      <Label>Start Date <span class="text-red-500">*</span></Label>
       <VueDatePicker
         v-model="start"
         :timezone="timezone"
@@ -43,7 +43,7 @@ const format = "yyyy-MM-dd HH:mm";
       />
     </div>
     <div class="space-y-2">
-      <Label>End Date</Label>
+      <Label>End Date <span class="text-red-500">*</span></Label>
       <VueDatePicker
         v-model="end"
         :timezone="timezone"

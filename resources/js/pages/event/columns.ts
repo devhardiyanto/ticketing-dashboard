@@ -1,11 +1,15 @@
 import { Button } from '@/components/ui/button';
-import type { Event } from '@/types/event';
+import type { Event } from '@/types/dashboard/event';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ArrowUpDown } from 'lucide-vue-next';
+import { usePage } from '@inertiajs/vue3';
 import { h } from 'vue';
 import EventActions from './EventActions.vue';
 
-export const columns: ColumnDef<Event>[] = [
+const page = usePage();
+const user = page.props.auth.user;
+
+let base_columns: ColumnDef<Event>[] = [
   {
     accessorKey: 'name',
     header: ({ column }) => {
@@ -29,8 +33,16 @@ export const columns: ColumnDef<Event>[] = [
     },
   },
   {
+    accessorKey: 'organization.name',
+    header: 'Organization',
+  },
+  {
     accessorKey: 'location',
     header: 'Location',
+  },
+  {
+    accessorKey: 'timezone',
+    header: 'Timezone',
   },
   {
     id: 'actions',
@@ -45,4 +57,10 @@ export const columns: ColumnDef<Event>[] = [
       });
     },
   },
+]
+
+base_columns = !user.organization_id ? base_columns : base_columns.filter((column) => column.header !== 'Organization');
+console.log('base_columns', base_columns)
+export const columns: ColumnDef<Event>[] = [
+  ...base_columns
 ];

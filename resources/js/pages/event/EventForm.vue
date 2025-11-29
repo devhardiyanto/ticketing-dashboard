@@ -14,29 +14,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { Event } from '@/types/event';
-import { useForm } from '@inertiajs/vue3';
-import { route } from 'ziggy-js';
+import { useForm, usePage } from '@inertiajs/vue3';
+import { store, update } from "@/actions/App/Http/Controllers/EventController";
 import DateTimeRangePicker from '@/components/common/DateTimeRangePicker.vue';
 import { useTimezones } from '@/composables/useTimezones';
-import { onMounted } from 'vue';
+import type { Event, Organization } from '@/types/dashboard';
 
 const props = defineProps<{
   initialData?: Event | null;
+  organizations: Organization[];
 }>();
 
 const emit = defineEmits(['success']);
 
-const { timezones, fetchTimezones } = useTimezones();
-
-onMounted(() => {
-  fetchTimezones();
-});
+const { timezones } = useTimezones();
 
 const formatDate = (dateString: string) => {
   if (!dateString) return '';
   return new Date(dateString); // VueDatePicker works best with Date objects
 };
+
+const page = usePage();
+const user = page.props.auth.user;
 
 const form = useForm({
   name: props.initialData?.name || '',
@@ -44,40 +43,44 @@ const form = useForm({
   start_date: props.initialData?.start_date ? formatDate(props.initialData.start_date) : '',
   end_date: props.initialData?.end_date ? formatDate(props.initialData.end_date) : '',
   location: props.initialData?.location || '',
-  organization_id: props.initialData?.organization_id || '1',
+  organization_id: props.initialData?.organization_id || '',
   timezone: 'UTC', // Default to UTC or infer from browser
 });
 
 const submit = () => {
   if (props.initialData) {
-    form.put(route('events.update', props.initialData.id), {
+    form.submit(update(props.initialData.id), {
       onSuccess: () => emit('success'),
-    });
+    })
   } else {
-    form.post(route('events.store'), {
+    form.submit(store(), {
       onSuccess: () => emit('success'),
-    });
+    })
   }
 };
 </script>
 
 <template>
   <form @submit.prevent="submit" class="space-y-4">
-    <Field name="name" :invalid="!!form.errors.name">
-      <FieldLabel>Name</FieldLabel>
-      <FieldContent>
-          <Input v-model="form.name" />
-      </FieldContent>
-      <FieldError>{{ form.errors.name }}</FieldError>
-    </Field>
+    <div class="space-y-2">
+      <Field name="name" :invalid="!!form.errors.name">
+        <FieldLabel>Name <span class="text-red-500">*</span></FieldLabel>
+        <FieldContent>
+            <Input v-model="form.name" />
+        </FieldContent>
+        <FieldError>{{ form.errors.name }}</FieldError>
+      </Field>
+    </div>
 
-    <Field name="description" :invalid="!!form.errors.description">
-      <FieldLabel>Description</FieldLabel>
-      <FieldContent>
-        <Input v-model="form.description" />
-      </FieldContent>
-      <FieldError>{{ form.errors.description }}</FieldError>
-    </Field>
+    <div class="space-y-2">
+      <Field name="description" :invalid="!!form.errors.description">
+        <FieldLabel>Description</FieldLabel>
+        <FieldContent>
+          <Input v-model="form.description" />
+        </FieldContent>
+        <FieldError>{{ form.errors.description }}</FieldError>
+      </Field>
+    </div>
 
     <div class="space-y-2">
       <FieldLabel>Timezone</FieldLabel>
@@ -93,20 +96,38 @@ const submit = () => {
       </Select>
     </div>
 
-    <DateTimeRangePicker
+    <div class="space-y-2" v-if="!user?.organization_id && organizations?.length > 0">
+      <FieldLabel>Organization</FieldLabel>
+      <Select v-model="form.organization_id">
+        <SelectTrigger>
+          <SelectValue placeholder="Select Organization" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem v-for="org in organizations" :key="org.id" :value="org.id">
+            {{ org.name }}
+          </SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+
+    <div class="space-y-2">
+      <DateTimeRangePicker
         v-model:startDate="form.start_date"
         v-model:endDate="form.end_date"
         :timezone="form.timezone"
         :error="form.errors.start_date || form.errors.end_date"
-    />
+      />
+    </div>
 
-    <Field name="location" :invalid="!!form.errors.location">
-      <FieldLabel>Location</FieldLabel>
-      <FieldContent>
+    <div class="space-y-2">
+      <Field name="location" :invalid="!!form.errors.location">
+        <FieldLabel>Location <span class="text-red-500">*</span></FieldLabel>
+        <FieldContent>
           <Input v-model="form.location" />
-      </FieldContent>
-      <FieldError>{{ form.errors.location }}</FieldError>
-    </Field>
+        </FieldContent>
+        <FieldError>{{ form.errors.location }}</FieldError>
+      </Field>
+    </div>
 
     <div class="flex justify-end">
       <Button type="submit" :disabled="form.processing">

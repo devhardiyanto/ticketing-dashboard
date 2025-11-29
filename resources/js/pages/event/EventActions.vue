@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { MoreHorizontal, Pencil, Trash, Eye } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import type { Event } from '@/types/event';
+import type { Event } from '@/types/dashboard/event';
 import BaseDialog from '@/components/common/BaseDialog.vue';
 import {
   AlertDialog,
@@ -51,15 +51,15 @@ const handleDelete = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem @click="$emit('edit', event)">
+        <DropdownMenuItem class="hover:cursor-pointer" @click="$emit('edit', event)">
           <Pencil class="mr-2 h-4 w-4" />
           Edit
         </DropdownMenuItem>
-        <DropdownMenuItem @click="isViewOpen = true">
+        <DropdownMenuItem class="hover:cursor-pointer" @click="isViewOpen = true">
           <Eye class="mr-2 h-4 w-4" />
           View Details
         </DropdownMenuItem>
-        <DropdownMenuItem @click="isDeleteOpen = true" class="text-red-600 focus:text-red-600 focus:bg-red-50">
+        <DropdownMenuItem @click="isDeleteOpen = true" class="hover:cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50">
           <Trash class="mr-2 h-4 w-4" />
           Delete
         </DropdownMenuItem>
@@ -81,6 +81,10 @@ const handleDelete = () => {
       <div class="grid grid-cols-4 items-center gap-4">
         <span class="font-bold">Location:</span>
         <span class="col-span-3">{{ event.location }}</span>
+      </div>
+      <div class="grid grid-cols-4 items-center gap-4">
+        <span class="font-bold">Organization:</span>
+        <span class="col-span-3">{{ event.organization.name }}</span>
       </div>
       <div class="grid grid-cols-4 items-center gap-4">
         <span class="font-bold">Start Date:</span>

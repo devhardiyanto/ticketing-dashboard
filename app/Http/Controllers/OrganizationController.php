@@ -2,33 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Repositories\Contracts\EventRepositoryInterface;
 use App\Repositories\Contracts\OrganizationRepositoryInterface;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class EventController extends Controller
+class OrganizationController extends Controller
 {
   protected $event_repo;
-  protected $organization_repo;
 
-  public function __construct(
-    EventRepositoryInterface $event_repo,
-    OrganizationRepositoryInterface $organization_repo
-  ) {
+  public function __construct(OrganizationRepositoryInterface $event_repo)
+  {
     $this->event_repo = $event_repo;
-    $this->organization_repo = $organization_repo;
   }
 
   public function index(Request $request)
   {
     $params = $request->only(['search', 'limit', 'page']);
     $events = $this->event_repo->getAll($params);
-    $organizations = $this->organization_repo->all();
 
-    return Inertia::render('event/EventIndex', [
+    return Inertia::render('events/OrganizationIndex', [
       'events' => $events,
-      'organizations' => $organizations->select('id', 'name')->toArray(),
       'filters' => $request->only(['search', 'limit']),
     ]);
   }
@@ -50,7 +43,7 @@ class EventController extends Controller
 
     $this->event_repo->create($validated);
 
-    return redirect()->back()->with('success', 'Event created successfully.');
+    return redirect()->back()->with('success', 'Organization created successfully.');
   }
 
   public function update(Request $request, string $id)
@@ -66,12 +59,12 @@ class EventController extends Controller
 
     $this->event_repo->update($id, $validated);
 
-    return redirect()->back()->with('success', 'Event updated successfully.');
+    return redirect()->back()->with('success', 'Organization updated successfully.');
   }
 
   public function destroy(string $id)
   {
     $this->event_repo->delete($id);
-    return redirect()->back()->with('success', 'Event deleted successfully.');
+    return redirect()->back()->with('success', 'Organization deleted successfully.');
   }
 }

@@ -35,7 +35,7 @@ class Event extends Model
 
   public function organization(): BelongsTo
   {
-    return $this->belongsTo(Organization::class, 'organization_id');
+    return $this->belongsTo(Organization::class, 'organization_id')->select('id', 'name');
   }
 
   public function ticketTypes(): HasMany

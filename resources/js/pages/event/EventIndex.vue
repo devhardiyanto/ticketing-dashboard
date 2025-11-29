@@ -2,10 +2,11 @@
 import BaseDialog from '@/components/common/BaseDialog.vue';
 import DataTable from '@/components/common/DataTable.vue';
 import ContentLayout from '@/layouts/ContentLayout.vue';
-import type { Event } from '@/types/event';
 import { computed, ref } from 'vue';
 import { columns } from './columns';
 import EventForm from './EventForm.vue';
+
+import type { Event, Organization } from '@/types/dashboard';
 
 const props = defineProps<{
   events: {
@@ -17,11 +18,16 @@ const props = defineProps<{
     from: number;
     to: number;
   };
+  organizations: Organization[];
   filters?: {
     search?: string;
     limit?: number;
   };
 }>();
+
+// const getOrg = () => {
+
+// }
 
 const isDialogOpen = ref(false);
 const selectedItem = ref<Event | null>(null);
@@ -45,27 +51,28 @@ const tableData = computed(() =>
 </script>
 
 <template>
-    <ContentLayout title="Events">
-      <div class="mb-4 flex justify-between">
-        <h3 class="text-lg font-medium">Event List</h3>
-      </div>
+  <ContentLayout title="Events">
+    <div class="mb-4 flex justify-between">
+      <h3 class="text-lg font-medium">Event List</h3>
+    </div>
 
-      <DataTable
-        :columns="columns"
-        :data="tableData"
-        :filters="filters"
-        :pagination="events"
-        :on-create="openCreate"
+    <DataTable
+      :columns="columns"
+      :data="tableData"
+      :filters="filters"
+      :pagination="events"
+      :on-create="openCreate"
+    />
+
+    <BaseDialog
+      v-model:open="isDialogOpen"
+      :title="selectedItem ? 'Edit Event' : 'Create Event'"
+    >
+      <EventForm
+        :initial-data="selectedItem"
+        :organizations="organizations"
+        @success="isDialogOpen = false"
       />
-
-      <BaseDialog
-        v-model:open="isDialogOpen"
-        :title="selectedItem ? 'Edit Event' : 'Create Event'"
-      >
-        <EventForm
-          :initial-data="selectedItem"
-          @success="isDialogOpen = false"
-        />
-      </BaseDialog>
-    </ContentLayout>
+    </BaseDialog>
+  </ContentLayout>
 </template>

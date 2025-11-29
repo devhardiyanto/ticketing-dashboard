@@ -2,17 +2,17 @@
 
 namespace App\Repositories\Eloquent;
 
-use App\Models\Core\Event;
-use App\Repositories\Contracts\EventRepositoryInterface;
+use App\Models\Core\Organization;
+use App\Repositories\Contracts\OrganizationRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-class EventRepository implements EventRepositoryInterface
+class OrganizationRepository implements OrganizationRepositoryInterface
 {
   protected $model;
 
-  public function __construct(Event $model)
+  public function __construct(Organization $model)
   {
     $this->model = $model;
   }
@@ -24,7 +24,7 @@ class EventRepository implements EventRepositoryInterface
 
   public function getAll(array $params = []): LengthAwarePaginator
   {
-    $query = $this->model->with('organization')->newQuery();
+    $query = $this->model->newQuery();
 
     if (isset($params['search']) && $params['search']) {
       $search = $params['search'];
