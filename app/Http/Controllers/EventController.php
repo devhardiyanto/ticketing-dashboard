@@ -33,6 +33,7 @@ class EventController extends Controller
       'description' => 'nullable|string',
       'start_date' => 'required|date',
       'end_date' => 'required|date|after:start_date',
+      'timezone' => 'nullable|string|max:50',
       'location' => 'required|string',
       'organization_id' => 'required|exists:core_pgsql.organizations,id', // Assuming organization exists
     ]);
@@ -52,6 +53,7 @@ class EventController extends Controller
       'description' => 'nullable|string',
       'start_date' => 'required|date',
       'end_date' => 'required|date|after:start_date',
+      'timezone' => 'nullable|string|max:50',
       'location' => 'required|string',
     ]);
 

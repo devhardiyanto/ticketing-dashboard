@@ -34,7 +34,7 @@ export const columns: ColumnDef<Event>[] = [
   },
   {
     id: 'actions',
-    size: 50, // Make column slimmer
+    size: 10, // Make column slimmer
     enableSorting: false,
     enableHiding: false,
     cell: ({ row }) => {

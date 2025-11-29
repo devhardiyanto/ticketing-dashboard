@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash, Eye } from 'lucide-vue-next';
+import { MoreHorizontal, Pencil, Trash, Eye } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import type { Event } from '@/types/event';
 import BaseDialog from '@/components/common/BaseDialog.vue';
 import {
   AlertDialog,
-  AlertDialogTrigger,
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
@@ -16,6 +15,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const props = defineProps<{
   event: Event;
@@ -37,36 +42,29 @@ const handleDelete = () => {
 </script>
 
 <template>
-  <div class="flex items-center gap-2">
-    <Button variant="ghost" size="icon" @click="$emit('edit', event)">
-      <Pencil class="h-4 w-4" />
-    </Button>
-    <Button variant="ghost" size="icon" @click="isViewOpen = true">
-      <Eye class="h-4 w-4" />
-    </Button>
-
-    <AlertDialog @update:open="isDeleteOpen = $event">
-      <AlertDialogTrigger as-child>
-        <Button variant="ghost" size="icon" class="text-red-500 hover:text-red-600 hover:bg-red-50">
-          <Trash class="h-4 w-4" />
+  <div class="flex items-center justify-end">
+    <DropdownMenu>
+      <DropdownMenuTrigger as-child>
+        <Button variant="ghost" size="icon" class="h-8 w-8 p-0">
+          <span class="sr-only">Open menu</span>
+          <MoreHorizontal class="h-4 w-4" />
         </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the event
-            <strong>{{ event.name }}</strong> and remove it from our servers.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction class="bg-red-600 hover:bg-red-700 text-white" @click="handleDelete">
-            Delete
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem @click="$emit('edit', event)">
+          <Pencil class="mr-2 h-4 w-4" />
+          Edit
+        </DropdownMenuItem>
+        <DropdownMenuItem @click="isViewOpen = true">
+          <Eye class="mr-2 h-4 w-4" />
+          View Details
+        </DropdownMenuItem>
+        <DropdownMenuItem @click="isDeleteOpen = true" class="text-red-600 focus:text-red-600 focus:bg-red-50">
+          <Trash class="mr-2 h-4 w-4" />
+          Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   </div>
 
   <!-- View Dialog -->
@@ -94,4 +92,23 @@ const handleDelete = () => {
       </div>
     </div>
   </BaseDialog>
+
+  <!-- Delete Alert -->
+  <AlertDialog :open="isDeleteOpen" @update:open="isDeleteOpen = $event">
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+        <AlertDialogDescription>
+          This action cannot be undone. This will permanently delete the event
+          <strong>{{ event.name }}</strong> and remove it from our servers.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogAction class="bg-red-600 hover:bg-red-700 text-white" @click="handleDelete">
+          Delete
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
 </template>

@@ -21,12 +21,11 @@ import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
 import { debounce } from 'lodash'
 import { ref, watch, computed } from 'vue';
 import { route } from 'ziggy-js'
+import { ChevronRight, ChevronLeft } from 'lucide-vue-next';
 
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
@@ -163,6 +162,8 @@ watch(search, debounce(() => {
           v-model="search"
           class="h-8 w-[150px] lg:w-[250px]"
         />
+      </div>
+      <div class="flex items-center space-x-2">
         <Button v-if="onCreate" @click="onCreate" class="h-8">
             Add Event
         </Button>
@@ -180,7 +181,7 @@ watch(search, debounce(() => {
             <TableHead
               v-for="header in headerGroup.headers"
               :key="header.id"
-              :style="{ width: `${header.getSize()}px` }"
+
             >
               <FlexRender
                 :render="header.column.columnDef.header"
@@ -240,7 +241,7 @@ watch(search, debounce(() => {
     >
       <!-- ROWS PER PAGE (LEFT) -->
       <div class="flex items-center space-x-2">
-        <span class="text-sm text-muted-foreground">Rows per page</span>
+        <p class="text-sm inline-block text-muted-foreground">Rows per page</p>
         <Select v-model="limit">
           <SelectTrigger class="h-8 w-[70px]">
             <SelectValue :placeholder="limit" />
@@ -258,37 +259,30 @@ watch(search, debounce(() => {
       </div>
 
       <!-- PAGINATION (RIGHT) -->
-      <Pagination
-        :total="pagination.total"
-        :sibling-count="1"
-        show-edges
-        :default-page="pagination.current_page"
-        :items-per-page="pagination.per_page"
-      >
-        <PaginationContent v-slot="{ items }">
-          <PaginationPrevious @click="table.previousPage()" />
+      <div class="relative">
+        <Pagination
+          :total="pagination.total"
+          :sibling-count="1"
+          show-edges
+          :default-page="pagination.current_page"
+          :items-per-page="pagination.per_page"
+        >
+          <PaginationContent>
+            <div>
+              <p class="text-sm inline-block text-muted-foreground">Page {{ pagination.current_page }} of {{ pagination.last_page }}</p>
+            </div>
 
-          <template v-for="(item, index) in items">
-            <PaginationItem
-              v-if="item.type === 'page'"
-              :key="index"
-              :value="item.value"
-              as-child
-            >
-              <Button
-                class="w-9 h-9 p-0"
-                :variant="item.value === pagination.current_page ? 'default' : 'outline'"
-                @click="table.setPageIndex(item.value - 1)"
-              >
-                {{ item.value }}
-              </Button>
-            </PaginationItem>
-            <PaginationEllipsis v-else :key="item.type" :index="index" />
-          </template>
+            <PaginationPrevious @click="table.previousPage()">
+              <ChevronLeft />
+            </PaginationPrevious>
 
-          <PaginationNext @click="table.nextPage()" />
-        </PaginationContent>
-      </Pagination>
+            <PaginationNext @click="table.nextPage()">
+              <ChevronRight />
+            </PaginationNext>
+
+          </PaginationContent>
+        </Pagination>
+      </div>
     </div>
   </div>
 </template>

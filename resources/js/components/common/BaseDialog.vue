@@ -20,7 +20,7 @@ const emit = defineEmits(['update:open']);
 
 <template>
   <Dialog :open="open" @update:open="emit('update:open', $event)">
-    <DialogContent :class="maxWidth || 'sm:max-w-[425px]'">
+    <DialogContent :class="maxWidth || 'sm:max-w-2xl'">
       <DialogHeader>
         <DialogTitle>{{ title }}</DialogTitle>
         <DialogDescription>

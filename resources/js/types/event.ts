@@ -5,6 +5,7 @@ export interface Event {
   description?: string;
   start_date: string;
   end_date: string;
+  timezone?: string;
   location: string;
   status: string;
   is_parent: boolean;

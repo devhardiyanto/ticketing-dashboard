@@ -46,26 +46,26 @@ const tableData = computed(() =>
 
 <template>
     <ContentLayout title="Events">
-        <div class="mb-4 flex justify-between">
-            <h3 class="text-lg font-medium">Event List</h3>
-        </div>
+      <div class="mb-4 flex justify-between">
+        <h3 class="text-lg font-medium">Event List</h3>
+      </div>
 
-        <DataTable
-            :columns="columns"
-            :data="tableData"
-            :filters="filters"
-            :pagination="events"
-            :on-create="openCreate"
+      <DataTable
+        :columns="columns"
+        :data="tableData"
+        :filters="filters"
+        :pagination="events"
+        :on-create="openCreate"
+      />
+
+      <BaseDialog
+        v-model:open="isDialogOpen"
+        :title="selectedItem ? 'Edit Event' : 'Create Event'"
+      >
+        <EventForm
+          :initial-data="selectedItem"
+          @success="isDialogOpen = false"
         />
-
-        <BaseDialog
-            v-model:open="isDialogOpen"
-            :title="selectedItem ? 'Edit Event' : 'Create Event'"
-        >
-            <EventForm
-                :initial-data="selectedItem"
-                @success="isDialogOpen = false"
-            />
-        </BaseDialog>
+      </BaseDialog>
     </ContentLayout>
 </template>
