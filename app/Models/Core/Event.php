@@ -8,38 +8,47 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Event extends Model
 {
-  protected $connection = 'core_pgsql';
-  protected $table = 'events';
-  protected $primaryKey = 'id';
-  protected $keyType = 'string';
-  public $incrementing = false;
+	protected $connection = 'core_pgsql';
+	protected $table = 'events';
+	protected $primaryKey = 'id';
+	protected $keyType = 'string';
+	public $incrementing = false;
 
-  protected $fillable = [
-    'organization_id',
-    'name',
-    'description',
-    'start_date',
-    'end_date',
-    'timezone',
-    'location',
-    'status',
-    'is_parent',
-    'parent_event_id',
-  ];
+	protected $fillable = [
+		'organization_id',
+		'name',
+		'description',
+		'start_date',
+		'end_date',
+		'timezone',
+		'location',
+		'address',
+		'image_url',
+		'status',
+		'currency',
+		'is_parent',
+		'parent_event_id',
+	];
 
-  protected $casts = [
-    'start_date' => 'datetime',
-    'end_date' => 'datetime',
-    'is_parent' => 'boolean', // Note: Schema uses varchar 'true'/'false', might need accessor/mutator if not handled by DB driver
-  ];
+	protected $casts = [
+		'start_date' => 'datetime',
+		'end_date' => 'datetime',
+		'is_parent' => 'boolean', // Note: Schema uses varchar 'true'/'false', might need accessor/mutator if not handled by DB driver
+		'currency' => 'array',
+	];
 
-  public function organization(): BelongsTo
-  {
-    return $this->belongsTo(Organization::class, 'organization_id')->select('id', 'name');
-  }
+	public function childEvents(): HasMany
+	{
+		return $this->hasMany(Event::class, 'parent_event_id');
+	}
 
-  public function ticketTypes(): HasMany
-  {
-    return $this->hasMany(TicketType::class, 'event_id');
-  }
+	public function organization(): BelongsTo
+	{
+		return $this->belongsTo(Organization::class, 'organization_id')->select('id', 'name');
+	}
+
+	public function ticketTypes(): HasMany
+	{
+		return $this->hasMany(TicketType::class, 'event_id');
+	}
 }

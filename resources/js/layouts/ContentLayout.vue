@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 
 defineProps<{
-  title?: string;
+	title?: string;
+	breadcrumbs?: BreadcrumbItem[];
 }>();
 </script>
 
 <template>
   <Head :title="title" v-if="title" />
 
-  <AppLayout>
+  <AppLayout :breadcrumbs="breadcrumbs || []">
     <template #header v-if="$slots.header || title">
       <slot name="header">
         <h2 class="text-xl font-semibold leading-tight text-gray-800">
