@@ -55,6 +55,7 @@ export const useColumns = () => {
 				return h(EventActions, {
 					event,
 					onEdit: (e: Event) => (event as any).onEdit?.(e),
+					onSuccess: () => (event as any).onSuccess?.(),
 				});
 			},
 		},

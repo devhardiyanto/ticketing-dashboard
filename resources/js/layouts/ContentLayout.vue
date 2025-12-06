@@ -2,6 +2,8 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
+import { Toaster } from '@/components/ui/sonner'
+
 
 defineProps<{
 	title?: string;
@@ -30,5 +32,7 @@ defineProps<{
         </div>
       </div>
     </div>
+
+		<Toaster />
   </AppLayout>
 </template>

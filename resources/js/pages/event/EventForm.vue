@@ -22,6 +22,7 @@ import currencies from '@/data/currencies.json';
 import FileUploader from '@/components/common/FileUploader.vue';
 import { useTimezones } from '@/composables/useTimezones';
 import type { Event, Organization } from '@/types/dashboard';
+import { toast } from 'vue-sonner'
 
 const props = defineProps<{
 	initialData?: Event | null;
@@ -65,16 +66,25 @@ const submit = () => {
 				...data,
 				_method: 'PUT',
 			})).post(url, {
-				onSuccess: () => emit('success'),
+				onSuccess: () => {
+					emit('success');
+					toast.success('Event updated successfully');
+				},
 			});
 		} else {
 			form.submit(update(props.initialData.id), {
-				onSuccess: () => emit('success'),
+				onSuccess: () => {
+					emit('success');
+					toast.success('Event updated successfully');
+				},
 			})
 		}
 	} else {
 		form.submit(store(), {
-			onSuccess: () => emit('success'),
+			onSuccess: () => {
+				emit('success');
+				toast.success('Event created successfully');
+			},
 		})
 	}
 };

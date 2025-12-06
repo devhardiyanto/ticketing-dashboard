@@ -3,45 +3,53 @@ import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
+	Sidebar,
+	SidebarContent,
+	SidebarFooter,
+	SidebarHeader,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
-import event from '@/routes/event';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Tickets } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
+/* Routes */
+import { dashboard } from '@/routes';
+import event from '@/routes/event';
+import ticket_type from '@/routes/ticket_type';
+
 const mainNavItems: NavItem[] = [
-  {
-    title: 'Dashboard',
-    href: dashboard(),
-    icon: LayoutGrid,
-  },
-  {
-    title: 'Events',
-    href: event.index(),
-    icon: BookOpen,
-  },
+	{
+		title: 'Dashboard',
+		href: dashboard(),
+		icon: LayoutGrid,
+	},
+	{
+		title: 'Events',
+		href: event.index(),
+		icon: BookOpen,
+	},
+	{
+		title: 'Ticket Types',
+		href: ticket_type.index(),
+		icon: Tickets,
+	},
 ];
 
 const footerNavItems: NavItem[] = [
-  {
-    title: 'Github Repo',
-    href: 'https://github.com/laravel/vue-starter-kit',
-    icon: Folder,
-  },
-  {
-    title: 'Documentation',
-    href: 'https://laravel.com/docs/starter-kits#vue',
-    icon: BookOpen,
-  },
+	{
+		title: 'Github Repo',
+		href: 'https://github.com/laravel/vue-starter-kit',
+		icon: Folder,
+	},
+	{
+		title: 'Documentation',
+		href: 'https://laravel.com/docs/starter-kits#vue',
+		icon: BookOpen,
+	},
 ];
 </script>
 

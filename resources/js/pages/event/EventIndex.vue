@@ -29,10 +29,6 @@ const props = defineProps<{
 
 const columns = useColumns();
 
-// const getOrg = () => {
-
-// }
-
 const isDialogOpen = ref(false);
 const selectedItem = ref<Event | null>(null);
 

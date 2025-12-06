@@ -2,42 +2,50 @@
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, Pencil, Trash, Eye } from 'lucide-vue-next';
 import { ref } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 import type { Event } from '@/types/dashboard/event';
 import BaseDialog from '@/components/common/BaseDialog.vue';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { destroy } from '@/actions/App/Http/Controllers/EventController';
+import { toast } from 'vue-sonner'
 
 const props = defineProps<{
-  event: Event;
+	event: Event;
 }>();
 
-defineEmits(['edit']);
+const emit = defineEmits(['edit', 'success']);
 
 const isViewOpen = ref(false);
 const isDeleteOpen = ref(false);
 
+const form = useForm({
+	id: props.event.id || '',
+});
+
 const handleDelete = () => {
-  router.delete(route('events.destroy', props.event.id), {
-    preserveScroll: true,
-    onSuccess: () => {
-      isDeleteOpen.value = false;
-    },
-  });
+	form.submit(destroy(props.event.id), {
+		preserveScroll: true,
+		onSuccess: () => {
+			emit('success');
+			isDeleteOpen.value = false;
+			toast.success('Event deleted successfully');
+		},
+	})
 };
 </script>
 
@@ -59,7 +67,7 @@ const handleDelete = () => {
           <Eye class="mr-2 h-4 w-4" />
           View Details
         </DropdownMenuItem>
-        <DropdownMenuItem @click="isDeleteOpen = true" class="hover:cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50">
+        <DropdownMenuItem @click="isDeleteOpen = true" class="hover:cursor-pointer text-red-600 focus:text-red-600">
           <Trash class="mr-2 h-4 w-4" />
           Delete
         </DropdownMenuItem>
