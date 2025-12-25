@@ -2,7 +2,7 @@
 import BaseDialog from '@/components/common/BaseDialog.vue';
 import DataTable from '@/components/common/DataTable.vue';
 import ContentLayout from '@/layouts/ContentLayout.vue';
-import { computed, ref } from 'vue';
+import { computed, ref, h } from 'vue';
 import { useColumns } from './columns';
 import EventForm from './EventForm.vue';
 
@@ -11,6 +11,7 @@ import event from '@/routes/event';
 import { BreadcrumbItem } from '@/types';
 
 const props = defineProps<{
+	parent_event?: Event | null;
 	events: {
 		data: Event[];
 		current_page: number;
@@ -49,18 +50,39 @@ const tableData = computed(() =>
 	})),
 );
 
-const breadcrumbs: BreadcrumbItem[] = [
-	{
-		title: 'Events',
-		href: event.index().url,
-	},
-];
+const breadcrumbs = computed<BreadcrumbItem[]>(() => {
+	const items: BreadcrumbItem[] = [
+		{
+			title: 'Events',
+			href: event.index().url,
+		},
+	];
+
+	if (props.parent_event) {
+		items.push({
+			title: props.parent_event.name,
+			href: event.index(props.parent_event.id).url,
+		});
+	}
+
+	return items;
+});
+
+const titleEvent = () => {
+	return h(
+		'h3',
+		{ class: props.parent_event ? 'text-lg font-normal' : 'text-lg font-medium' },
+		props.parent_event
+			? ['Events for ', h('b', props.parent_event.name)]
+			: 'Event List',
+	);
+}
 </script>
 
 <template>
-  <ContentLayout title="Events" :breadcrumbs="breadcrumbs">
+  <ContentLayout title="" :breadcrumbs="breadcrumbs">
     <div class="mb-4 flex justify-between">
-      <h3 class="text-lg font-medium">Event List</h3>
+			<component :is="titleEvent" />
     </div>
 
     <DataTable
@@ -77,6 +99,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     >
       <EventForm
         :initial-data="selectedItem"
+				:parent-event="parent_event"
         :organizations="organizations"
         @success="isDialogOpen = false"
       />

@@ -18,15 +18,18 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { store, update } from "@/actions/App/Http/Controllers/EventController";
 import DateTimeRangePicker from '@/components/common/DateTimeRangePicker.vue';
-import currencies from '@/data/currencies.json';
+import currencyData from '@/data/currencies.json';
 import FileUploader from '@/components/common/FileUploader.vue';
 import { useTimezones } from '@/composables/useTimezones';
+
+const currencies = currencyData;
 import type { Event, Organization } from '@/types/dashboard';
 import { toast } from 'vue-sonner'
 
 const props = defineProps<{
 	initialData?: Event | null;
 	organizations: Organization[];
+	parentEvent?: Event | null;
 }>();
 
 const emit = defineEmits(['success']);
@@ -47,13 +50,14 @@ const form = useForm({
 	start_date: props.initialData?.start_date ? formatDate(props.initialData.start_date) : '',
 	end_date: props.initialData?.end_date ? formatDate(props.initialData.end_date) : '',
 	location: props.initialData?.location || '',
-	organization_id: props.initialData?.organization_id || '',
+	organization_id: props.initialData?.organization_id || props.parentEvent?.organization_id || '',
 	timezone: 'UTC', // Default to UTC or infer from browser
 	image_url: props.initialData?.image_url || (null as File | string | null),
 	address: props.initialData?.address || '',
 	status: props.initialData?.status || 'draft',
 	currency: props.initialData?.currency || 'IDR',
 	is_parent: props.initialData?.is_parent || false,
+	parent_event_id: props.initialData?.parent_event_id || props.parentEvent?.id || '',
 });
 
 const submit = () => {
@@ -138,7 +142,7 @@ const submit = () => {
         </Select>
       </div>
 
-      <div class="space-y-2" v-if="!user?.organization_id && organizations?.length > 0">
+      <div class="space-y-2" v-if="!user?.organization_id && !parentEvent && organizations?.length > 0">
         <FieldLabel>Organization</FieldLabel>
         <Select v-model="form.organization_id">
           <SelectTrigger>
@@ -211,8 +215,8 @@ const submit = () => {
         <FieldError>{{ form.errors.currency }}</FieldError>
       </div>
 
-      <div class="flex items-center space-x-2">
-        <Checkbox id="is_parent" :checked="form.is_parent" @update:checked="(val: boolean) => form.is_parent = val" />
+      <div class="flex items-center space-x-2" v-if="!parentEvent">
+        <Checkbox id="is_parent" v-model="form.is_parent" value="1" :checked="form.is_parent" @update:checked="(val: boolean) => form.is_parent = val" />
         <label
           for="is_parent"
           class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"

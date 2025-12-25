@@ -18,4 +18,5 @@ export interface Event {
   created_at: string;
   updated_at: string;
   organization: Organization;
+  child_events?: Event[];
 }

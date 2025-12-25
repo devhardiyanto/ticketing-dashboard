@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             PermissionSeeder::class,
+            OrganizationSeeder::class,
+            EventSeeder::class,
         ]);
 
         // Step 3: Seed dashboard users with 4 types
