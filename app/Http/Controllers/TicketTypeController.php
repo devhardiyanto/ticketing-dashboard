@@ -26,9 +26,24 @@ class TicketTypeController extends Controller
 	public function index(Request $request)
 	{
 		$events = $this->event_repo->all();
+		$params = $request->only(['event_id']);
 
+		$event = null;
+		if(isset($params['event_id']) && $params['event_id']) {
+			$event = $this->event_repo->find($params['event_id']);
+			if (!$event) {
+				abort(404, 'Event not found');
+			}
+		}
+
+		$ticket_types = [];
+		if($event) {
+			$ticket_types = $this->ticket_type_repo->getByEventId($event->id);
+		}
 		return Inertia::render('ticket_type/TicketTypeIndex', [
 			'events' => $events,
+			'event_model' => $event,
+			'ticket_types' => $ticket_types,
 		]);
 	}
 

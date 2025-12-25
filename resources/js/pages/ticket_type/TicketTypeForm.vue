@@ -2,10 +2,10 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  Field,
-  FieldContent,
-  FieldError,
-  FieldLabel,
+	Field,
+	FieldContent,
+	FieldError,
+	FieldLabel,
 } from '@/components/ui/field';
 import { useForm } from '@inertiajs/vue3';
 import { store, update } from "@/actions/App/Http/Controllers/TicketTypeController";
@@ -13,32 +13,32 @@ import DateTimeRangePicker from '@/components/common/DateTimeRangePicker.vue';
 import type { TicketType } from '@/types/dashboard';
 
 const props = defineProps<{
-  initialData?: TicketType | null;
-  eventId: string;
+	initialData?: TicketType | null;
+	eventId: string | undefined;
 }>();
 
 const emit = defineEmits(['success']);
 
 const form = useForm({
-  event_id: props.eventId,
-  name: props.initialData?.name || '',
-  description: props.initialData?.description || '',
-  price: props.initialData?.price || 0,
-  quantity: props.initialData?.quantity || 0,
-  sale_start_date: props.initialData?.sale_start_date || '',
-  sale_end_date: props.initialData?.sale_end_date || '',
+	event_id: props.eventId,
+	name: props.initialData?.name || '',
+	description: props.initialData?.description || '',
+	price: props.initialData?.price || 0,
+	quantity: props.initialData?.quantity || 0,
+	sale_start_date: props.initialData?.sale_start_date || '',
+	sale_end_date: props.initialData?.sale_end_date || '',
 });
 
 const submit = () => {
-  if (props.initialData) {
-    form.submit(update(props.initialData.id), {
-      onSuccess: () => emit('success'),
-    })
-  } else {
-    form.submit(store(), {
-      onSuccess: () => emit('success'),
-    })
-  }
+	if (props.initialData) {
+		form.submit(update(props.initialData.id), {
+			onSuccess: () => emit('success'),
+		})
+	} else {
+		form.submit(store(), {
+			onSuccess: () => emit('success'),
+		})
+	}
 };
 </script>
 
