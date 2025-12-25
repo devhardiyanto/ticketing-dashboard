@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Repositories\Contracts\EventRepositoryInterface;
 use App\Repositories\Contracts\TicketTypeRepositoryInterface;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -71,14 +72,23 @@ class TicketTypeController extends Controller
 	public function store(Request $request)
 	{
 		$data = $request->validate([
-			'event_id' => 'required|string|exists:events,id',
+			'event_id' => 'required|string|exists:core_pgsql.events,id',
 			'name' => 'required|string|max:255',
 			'description' => 'nullable|string',
 			'price' => 'required|numeric|min:0',
 			'quantity' => 'required|integer|min:0',
-			'sale_start_date' => 'nullable|date',
-			'sale_end_date' => 'nullable|date|after_or_equal:sale_start_date',
+			'start_sale_date' => 'nullable|date',
+			'end_sale_date' => 'nullable|date|after_or_equal:start_sale_date',
 		]);
+
+		if (!empty($data['start_sale_date'])) {
+			$data['start_sale_date'] = Carbon::parse($data['start_sale_date'])->format('Y-m-d H:i:s');
+		}
+		if (!empty($data['end_sale_date'])) {
+			$data['end_sale_date'] = Carbon::parse($data['end_sale_date'])->format('Y-m-d H:i:s');
+		}
+
+		$data['quantity_available'] = $data['quantity'];
 
 		$this->ticket_type_repo->create($data);
 
@@ -95,9 +105,16 @@ class TicketTypeController extends Controller
 			'description' => 'nullable|string',
 			'price' => 'required|numeric|min:0',
 			'quantity' => 'required|integer|min:0',
-			'sale_start_date' => 'nullable|date',
-			'sale_end_date' => 'nullable|date|after_or_equal:sale_start_date',
+			'start_sale_date' => 'nullable|date',
+			'end_sale_date' => 'nullable|date|after_or_equal:start_sale_date',
 		]);
+
+		if (!empty($data['start_sale_date'])) {
+			$data['start_sale_date'] = Carbon::parse($data['start_sale_date'])->format('Y-m-d H:i:s');
+		}
+		if (!empty($data['end_sale_date'])) {
+			$data['end_sale_date'] = Carbon::parse($data['end_sale_date'])->format('Y-m-d H:i:s');
+		}
 
 		$this->ticket_type_repo->update($id, $data);
 

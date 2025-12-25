@@ -96,6 +96,7 @@ const tableData = computed(() =>
       :filters="filters"
       :pagination="ticket_types"
       :on-create="openCreate"
+	  create-label="Add Ticket Type"
     />
 
     <BaseDialog

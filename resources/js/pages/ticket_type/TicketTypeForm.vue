@@ -25,8 +25,8 @@ const form = useForm({
 	description: props.initialData?.description || '',
 	price: props.initialData?.price || 0,
 	quantity: props.initialData?.quantity || 0,
-	sale_start_date: props.initialData?.sale_start_date || '',
-	sale_end_date: props.initialData?.sale_end_date || '',
+	start_sale_date: props.initialData?.start_sale_date || '',
+	end_sale_date: props.initialData?.end_sale_date || '',
 });
 
 const submit = () => {
@@ -87,9 +87,9 @@ const submit = () => {
 
       <div class="space-y-2">
         <DateTimeRangePicker
-          v-model:startDate="form.sale_start_date"
-          v-model:endDate="form.sale_end_date"
-          :error="form.errors.sale_start_date || form.errors.sale_end_date"
+          v-model:startDate="form.start_sale_date"
+          v-model:endDate="form.end_sale_date"
+          :error="form.errors.start_sale_date || form.errors.end_sale_date"
         />
       </div>
     </div>
