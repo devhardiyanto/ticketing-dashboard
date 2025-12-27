@@ -11,6 +11,7 @@ import { useForm } from '@inertiajs/vue3';
 import { store, update } from "@/actions/App/Http/Controllers/TicketTypeController";
 import DateTimeRangePicker from '@/components/common/DateTimeRangePicker.vue';
 import type { TicketType } from '@/types/dashboard';
+import { toast } from 'vue-sonner';
 
 const props = defineProps<{
 	initialData?: TicketType | null;
@@ -32,11 +33,17 @@ const form = useForm({
 const submit = () => {
 	if (props.initialData) {
 		form.submit(update(props.initialData.id), {
-			onSuccess: () => emit('success'),
+			onSuccess: () => {
+				emit('success');
+				toast.success('Ticket type updated successfully');
+			},
 		})
 	} else {
 		form.submit(store(), {
-			onSuccess: () => emit('success'),
+			onSuccess: () => {
+				emit('success');
+				toast.success('Ticket type created successfully');
+			},
 		})
 	}
 };

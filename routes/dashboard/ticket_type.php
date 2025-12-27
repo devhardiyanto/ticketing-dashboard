@@ -9,8 +9,7 @@ Route::controller(TicketType::class)
 	->prefix($name)
 	->group(function () use ($name) {
 		Route::get('/', 'index')->name("$name.index");
-		Route::get('{event_id?}', 'list')->name("$name.list");
-		Route::post('{event_id?}', 'store')->name("$name.store");
-		Route::put('{event_id?}/{id}', 'update')->name("$name.update");
-		Route::delete('{event_id?}/{id}', 'destroy')->name("$name.destroy");
+		Route::post('/', 'store')->name("$name.store");
+		Route::put('/{id}', 'update')->name("$name.update");
+		Route::delete('/{id}', 'destroy')->name("$name.destroy");
 	});

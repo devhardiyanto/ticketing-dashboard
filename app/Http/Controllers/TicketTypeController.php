@@ -49,24 +49,6 @@ class TicketTypeController extends Controller
 	}
 
 	/**
-	 * Display a listing of the resource.
-	 */
-	public function list(Request $request, string $event)
-	{
-		$event_model = $this->event_repo->find($event);
-		if (!$event_model) {
-			abort(404, 'Event not found');
-		}
-
-		return Inertia::render('ticket_type/TicketTypeList', [
-			'event' => $event_model,
-			'ticket_types' => $this->ticket_type_repo->getByEventId($event),
-		]);
-	}
-
-
-
-	/**
 	 * Store a newly created resource in storage.
 	 */
 	public function store(Request $request)
