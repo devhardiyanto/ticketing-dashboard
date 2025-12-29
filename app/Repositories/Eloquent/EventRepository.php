@@ -75,4 +75,15 @@ class EventRepository implements EventRepositoryInterface
 		}
 		return false;
 	}
+
+	public function findBySlug(string $slug, ?string $excludeId = null): ?Model
+	{
+		$query = $this->model->where('slug', $slug);
+
+		if ($excludeId) {
+			$query->where('id', '!=', $excludeId);
+		}
+
+		return $query->first();
+	}
 }
