@@ -20,6 +20,7 @@ class TicketType extends Model
     'price',
     'quantity',
     'quantity_available',
+    'max_per_order',
     'start_sale_date',
     'end_sale_date',
   ];
