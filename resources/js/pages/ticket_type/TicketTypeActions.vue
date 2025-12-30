@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, Pencil, Trash, Eye } from 'lucide-vue-next';
 import { ref } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 import type { TicketType } from '@/types/dashboard';
 import BaseDialog from '@/components/common/BaseDialog.vue';
 import {
@@ -21,23 +21,31 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { destroy } from '@/actions/App/Http/Controllers/TicketTypeController';
+import { toast } from 'vue-sonner';
 
 const props = defineProps<{
 	ticket_type: TicketType;
 }>();
 
-defineEmits(['edit']);
+const emit = defineEmits(['edit', 'success']);
 
 const isViewOpen = ref(false);
 const isDeleteOpen = ref(false);
 
+const form = useForm({
+	id: props.ticket_type.id,
+});
+
 const handleDelete = () => {
-	router.delete(route('ticket_types.destroy', props.ticket_type.id), {
+	form.submit(destroy(props.ticket_type.id), {
 		preserveScroll: true,
 		onSuccess: () => {
+			emit('success');
 			isDeleteOpen.value = false;
+			toast.success('Ticket type deleted successfully');
 		},
-	});
+	})
 };
 </script>
 

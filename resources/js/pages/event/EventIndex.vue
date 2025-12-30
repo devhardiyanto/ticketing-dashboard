@@ -91,6 +91,7 @@ const titleEvent = () => {
       :filters="filters"
       :pagination="events"
       :on-create="openCreate"
+      create-label="Add Event"
     />
 
     <BaseDialog

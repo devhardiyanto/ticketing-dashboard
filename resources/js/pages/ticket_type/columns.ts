@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import type { TicketType } from '@/types/dashboard';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ArrowUpDown } from 'lucide-vue-next';
-import { usePage } from '@inertiajs/vue3';
+ import { usePage } from '@inertiajs/vue3';
 import { h } from 'vue';
 import TicketTypeActions from './TicketTypeActions.vue';
 
@@ -26,24 +26,57 @@ export const useColumns = () => {
 			},
 		},
 		{
-			accessorKey: 'start_date',
-			header: 'Start Date',
+			accessorKey: 'start_sale_date',
+			header: 'Start Sale Date',
 			cell: ({ row }) => {
-				const date = new Date(row.getValue('start_date'));
-				return date.toLocaleDateString();
+				const value = row.getValue('start_sale_date') as string | null | undefined;
+				if (!value) return '-';
+				const date = new Date(value);
+				return isNaN(date.getTime()) ? String(value) : date.toLocaleString();
 			},
 		},
 		{
-			accessorKey: 'organization.name',
-			header: 'Organization',
+			accessorKey: 'end_sale_date',
+			header: 'End Sale Date',
+			cell: ({ row }) => {
+				const value = row.getValue('end_sale_date') as string | null | undefined;
+				if (!value) return '-';
+				const date = new Date(value);
+				return isNaN(date.getTime()) ? String(value) : date.toLocaleString();
+			},
 		},
 		{
-			accessorKey: 'location',
-			header: 'Location',
+			accessorKey: 'quantity_available',
+			header: 'Quantity Available',
+			cell: ({ row }) => {
+				const value = row.getValue('quantity_available') as number | null | undefined;
+				return value ?? '-';
+			},
 		},
 		{
-			accessorKey: 'timezone',
-			header: 'Timezone',
+			id: 'quantity_sold',
+			header: 'Quantity Sold',
+			cell: ({ row }) => {
+				const original = row.original;
+				const qty = typeof original.quantity === 'number' ? original.quantity : 0;
+				const available = typeof original.quantity_available === 'number' ? original.quantity_available : null;
+				if (available === null) return '-';
+				return Math.max(0, qty - available);
+			},
+		},
+		{
+			accessorKey: 'price',
+			header: 'Price',
+			cell: ({ row }) => {
+				const value = row.getValue('price') as number | string | null | undefined;
+				if (value === null || value === undefined || value === '') return '-';
+				const num = typeof value === 'number' ? value : Number(value);
+				return Number.isFinite(num) ? num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : String(value);
+			},
+		},
+		{
+			accessorKey: 'status',
+			header: 'Status',
 		},
 		{
 			id: 'actions',

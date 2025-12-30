@@ -19,14 +19,16 @@ class TicketType extends Model
     'description',
     'price',
     'quantity',
-    'sale_start_date',
-    'sale_end_date',
+    'quantity_available',
+    'max_per_order',
+    'start_sale_date',
+    'end_sale_date',
   ];
 
   protected $casts = [
     'price' => 'decimal:2',
-    'sale_start_date' => 'datetime',
-    'sale_end_date' => 'datetime',
+    'start_sale_date' => 'datetime',
+    'end_sale_date' => 'datetime',
   ];
 
   public function event(): BelongsTo

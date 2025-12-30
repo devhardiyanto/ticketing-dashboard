@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Repositories\Contracts\EventRepositoryInterface;
 use App\Repositories\Contracts\TicketTypeRepositoryInterface;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -48,37 +49,28 @@ class TicketTypeController extends Controller
 	}
 
 	/**
-	 * Display a listing of the resource.
-	 */
-	public function list(Request $request, string $event)
-	{
-		$event_model = $this->event_repo->find($event);
-		if (!$event_model) {
-			abort(404, 'Event not found');
-		}
-
-		return Inertia::render('ticket_type/TicketTypeList', [
-			'event' => $event_model,
-			'ticket_types' => $this->ticket_type_repo->getByEventId($event),
-		]);
-	}
-
-
-
-	/**
 	 * Store a newly created resource in storage.
 	 */
 	public function store(Request $request)
 	{
 		$data = $request->validate([
-			'event_id' => 'required|string|exists:events,id',
+			'event_id' => 'required|string|exists:core_pgsql.events,id',
 			'name' => 'required|string|max:255',
 			'description' => 'nullable|string',
 			'price' => 'required|numeric|min:0',
 			'quantity' => 'required|integer|min:0',
-			'sale_start_date' => 'nullable|date',
-			'sale_end_date' => 'nullable|date|after_or_equal:sale_start_date',
+			'start_sale_date' => 'nullable|date',
+			'end_sale_date' => 'nullable|date|after_or_equal:start_sale_date',
 		]);
+
+		if (!empty($data['start_sale_date'])) {
+			$data['start_sale_date'] = Carbon::parse($data['start_sale_date'])->format('Y-m-d H:i:s');
+		}
+		if (!empty($data['end_sale_date'])) {
+			$data['end_sale_date'] = Carbon::parse($data['end_sale_date'])->format('Y-m-d H:i:s');
+		}
+
+		$data['quantity_available'] = $data['quantity'];
 
 		$this->ticket_type_repo->create($data);
 
@@ -90,19 +82,34 @@ class TicketTypeController extends Controller
 	 */
 	public function update(Request $request, string $id)
 	{
-		$data = $request->validate([
-			'name' => 'required|string|max:255',
-			'description' => 'nullable|string',
-			'price' => 'required|numeric|min:0',
-			'quantity' => 'required|integer|min:0',
-			'sale_start_date' => 'nullable|date',
-			'sale_end_date' => 'nullable|date|after_or_equal:sale_start_date',
-		]);
+    $data = $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'price' => 'required|numeric|min:0',
+        'start_sale_date' => 'nullable|date',
+        'end_sale_date' => 'nullable|date|after_or_equal:start_sale_date',
+        'stock_adjustment' => 'nullable|integer|not_in:0', 
+    ]);
 
-		$this->ticket_type_repo->update($id, $data);
+    if (!empty($data['start_sale_date'])) {
+        $data['start_sale_date'] = Carbon::parse($data['start_sale_date'])->format('Y-m-d H:i:s');
+    }
+    if (!empty($data['end_sale_date'])) {
+        $data['end_sale_date'] = Carbon::parse($data['end_sale_date'])->format('Y-m-d H:i:s');
+    }
 
-		return redirect()->back();
-	}
+    $adjustment = $data['stock_adjustment'] ?? 0;
+    
+    unset($data['stock_adjustment']); 
+
+    $this->ticket_type_repo->update($id, $data);
+
+    if ($adjustment != 0) {
+        $this->ticket_type_repo->adjustStock($id, $adjustment);
+    }
+
+    return redirect()->back()->with('success', 'Ticket Type updated successfully.');
+}
 
 	/**
 	 * Remove the specified resource from storage.

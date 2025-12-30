@@ -40,6 +40,7 @@ const props = defineProps<{
   data: TData[] | null
   loading?: boolean
   onCreate?: () => void
+  createLabel?: string
   filters?: {
     search?: string
     limit?: number
@@ -165,7 +166,7 @@ watch(search, debounce(() => {
       </div>
       <div class="flex items-center space-x-2">
         <Button v-if="onCreate" @click="onCreate" class="h-8">
-            Add Event
+            {{ createLabel ?? 'Add' }}
         </Button>
       </div>
     </div>

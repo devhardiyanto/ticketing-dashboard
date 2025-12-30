@@ -11,6 +11,7 @@ import { useForm } from '@inertiajs/vue3';
 import { store, update } from "@/actions/App/Http/Controllers/TicketTypeController";
 import DateTimeRangePicker from '@/components/common/DateTimeRangePicker.vue';
 import type { TicketType } from '@/types/dashboard';
+import { toast } from 'vue-sonner';
 
 const props = defineProps<{
 	initialData?: TicketType | null;
@@ -25,18 +26,25 @@ const form = useForm({
 	description: props.initialData?.description || '',
 	price: props.initialData?.price || 0,
 	quantity: props.initialData?.quantity || 0,
-	sale_start_date: props.initialData?.sale_start_date || '',
-	sale_end_date: props.initialData?.sale_end_date || '',
+	stock_adjustment: '',
+	start_sale_date: props.initialData?.start_sale_date || '',
+	end_sale_date: props.initialData?.end_sale_date || '',
 });
 
 const submit = () => {
 	if (props.initialData) {
 		form.submit(update(props.initialData.id), {
-			onSuccess: () => emit('success'),
+			onSuccess: () => {
+				emit('success');
+				toast.success('Ticket type updated successfully');
+			},
 		})
 	} else {
 		form.submit(store(), {
-			onSuccess: () => emit('success'),
+			onSuccess: () => {
+				emit('success');
+				toast.success('Ticket type created successfully');
+			},
 		})
 	}
 };
@@ -75,21 +83,43 @@ const submit = () => {
             <FieldError>{{ form.errors.price }}</FieldError>
           </Field>
 
-          <Field name="quantity" :invalid="!!form.errors.quantity">
-            <FieldLabel>Quantity <span class="text-red-500">*</span></FieldLabel>
-            <FieldContent>
-              <Input type="number" v-model="form.quantity" min="0" />
-            </FieldContent>
-            <FieldError>{{ form.errors.quantity }}</FieldError>
-          </Field>
+				<Field v-if="!initialData" name="quantity" :invalid="!!form.errors.quantity">
+					<FieldLabel>Quantity <span class="text-red-500">*</span></FieldLabel>
+					<FieldContent>
+						<Input type="number" v-model="form.quantity" min="0" />
+					</FieldContent>
+					<FieldError>{{ form.errors.quantity }}</FieldError>
+				</Field>
+
+				<Field v-else name="quantity" :invalid="!!form.errors.quantity">
+					<FieldLabel>Quantity</FieldLabel>
+					<FieldContent>
+						<Input type="number" v-model="form.quantity" min="0" disabled />
+					</FieldContent>
+					<FieldError>{{ form.errors.quantity }}</FieldError>
+				</Field>
         </div>
       </div>
 
+		<div v-if="initialData" class="space-y-2">
+			<Field name="stock_adjustment" :invalid="!!form.errors.stock_adjustment">
+				<FieldLabel>Stock Adjustment</FieldLabel>
+				<FieldContent>
+					<Input
+						type="number"
+						v-model="form.stock_adjustment"
+						placeholder="e.g. 10 or -5"
+					/>
+				</FieldContent>
+				<FieldError>{{ form.errors.stock_adjustment }}</FieldError>
+			</Field>
+		</div>
+
       <div class="space-y-2">
         <DateTimeRangePicker
-          v-model:startDate="form.sale_start_date"
-          v-model:endDate="form.sale_end_date"
-          :error="form.errors.sale_start_date || form.errors.sale_end_date"
+          v-model:startDate="form.start_sale_date"
+          v-model:endDate="form.end_sale_date"
+          :error="form.errors.start_sale_date || form.errors.end_sale_date"
         />
       </div>
     </div>
