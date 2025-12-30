@@ -21,6 +21,9 @@ import DateTimeRangePicker from '@/components/common/DateTimeRangePicker.vue';
 import currencyData from '@/data/currencies.json';
 import FileUploader from '@/components/common/FileUploader.vue';
 import { useTimezones } from '@/composables/useTimezones';
+import { ref, watch } from 'vue';
+import axios from 'axios';
+import { useDebounceFn } from '@vueuse/core';
 
 const currencies = currencyData;
 import type { Event, Organization } from '@/types/dashboard';
@@ -46,6 +49,7 @@ const user = page.props.auth.user;
 
 const form = useForm({
 	name: props.initialData?.name || '',
+	slug: props.initialData?.slug || '',
 	description: props.initialData?.description || '',
 	start_date: props.initialData?.start_date ? formatDate(props.initialData.start_date) : '',
 	end_date: props.initialData?.end_date ? formatDate(props.initialData.end_date) : '',
@@ -59,6 +63,65 @@ const form = useForm({
 	is_parent: props.initialData?.is_parent || false,
 	parent_event_id: props.initialData?.parent_event_id || props.parentEvent?.id || '',
 });
+
+// Slug auto-generation logic
+const slugManuallyEdited = ref(!!props.initialData?.slug);
+const isCheckingSlug = ref(false);
+const slugAvailable = ref<boolean | null>(null);
+
+// Generate slug from name
+const generateSlug = (name: string): string => {
+	return name
+		.toLowerCase()
+		.trim()
+		.replace(/[^\w\s-]/g, '') // Remove special characters
+		.replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
+		.replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+};
+
+// Debounced slug availability check
+const checkSlugAvailability = useDebounceFn(async (slug: string) => {
+	if (!slug) {
+		slugAvailable.value = null;
+		return;
+	}
+
+	isCheckingSlug.value = true;
+	try {
+		const response = await axios.get('/event/check-slug', {
+			params: {
+				slug,
+				exclude_id: props.initialData?.id || undefined,
+			},
+		});
+		slugAvailable.value = response.data.available;
+	} catch (error) {
+		console.error('Error checking slug availability:', error);
+		slugAvailable.value = null;
+	} finally {
+		isCheckingSlug.value = false;
+	}
+}, 500);
+
+// Watch for name changes to auto-generate slug
+watch(() => form.name, (newName) => {
+	// Only auto-generate if slug hasn't been manually edited and both fields were empty initially
+	if (!slugManuallyEdited.value) {
+		const newSlug = generateSlug(newName);
+		form.slug = newSlug;
+		checkSlugAvailability(newSlug);
+	}
+});
+
+// Watch for slug changes to check availability
+watch(() => form.slug, (newSlug) => {
+	checkSlugAvailability(newSlug);
+});
+
+// Handle manual slug edit
+const onSlugInput = () => {
+	slugManuallyEdited.value = true;
+};
 
 const submit = () => {
 	if (props.initialData) {
@@ -104,6 +167,22 @@ const submit = () => {
               <Input v-model="form.name" />
           </FieldContent>
           <FieldError>{{ form.errors.name }}</FieldError>
+        </Field>
+      </div>
+
+      <div class="space-y-2">
+        <Field name="slug" :invalid="!!form.errors.slug || slugAvailable === false">
+          <FieldLabel>
+            Slug <span class="text-red-500">*</span>
+            <span v-if="isCheckingSlug" class="ml-2 text-xs text-muted-foreground">Checking...</span>
+            <span v-else-if="slugAvailable === true" class="ml-2 text-xs text-green-600">✓ Available</span>
+            <span v-else-if="slugAvailable === false" class="ml-2 text-xs text-red-500">✗ Already taken</span>
+          </FieldLabel>
+          <FieldContent>
+              <Input v-model="form.slug" @input="onSlugInput" placeholder="auto-generated-from-name" />
+          </FieldContent>
+          <FieldError v-if="form.errors.slug">{{ form.errors.slug }}</FieldError>
+          <p class="text-xs text-muted-foreground">URL-friendly identifier for the event. Auto-generated from name if left empty.</p>
         </Field>
       </div>
 

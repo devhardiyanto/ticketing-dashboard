@@ -33,14 +33,35 @@ class PaymentGateway extends Model
      *
      * @var string
      */
-    protected $connection = 'pgsql';
+    protected $connection = 'core_pgsql';
 
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'core.payment_gateways';
+    protected $table = 'payment_gateways';
+
+    /**
+     * The primary key for the model.
+     *
+     * @var string
+     */
+    protected $primaryKey = 'id';
+
+    /**
+     * The "type" of the primary key ID.
+     *
+     * @var string
+     */
+    protected $keyType = 'string';
+
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
+    public $incrementing = false;
 
     /**
      * The attributes that are mass assignable.

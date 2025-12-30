@@ -45,6 +45,7 @@ class EventController extends Controller
 	{
 		$validated = $request->validate([
 			'name' => 'required|string|max:255',
+			'slug' => 'required|string|max:255|unique:core_pgsql.events,slug',
 			'description' => 'nullable|string',
 			'start_date' => 'required|date',
 			'end_date' => 'required|date|after:start_date',
@@ -74,6 +75,7 @@ class EventController extends Controller
 
 		$rules = [
 			'name' => 'required|string|max:255',
+			'slug' => 'required|string|max:255|unique:core_pgsql.events,slug,' . $id . ',id',
 			'description' => 'nullable|string',
 			'start_date' => 'required|date',
 			'end_date' => 'required|date|after:start_date',
@@ -133,5 +135,25 @@ class EventController extends Controller
 	{
 		$this->event_repo->delete($id);
 		return redirect()->back()->with('success', 'Event deleted successfully.');
+	}
+
+	/**
+	 * Check if a slug is available
+	 */
+	public function checkSlug(Request $request)
+	{
+		$slug = $request->query('slug');
+		$excludeId = $request->query('exclude_id');
+
+		if (!$slug) {
+			return response()->json(['available' => false, 'message' => 'Slug is required']);
+		}
+
+		$query = $this->event_repo->findBySlug($slug, $excludeId);
+
+		return response()->json([
+			'available' => !$query,
+			'slug' => $slug,
+		]);
 	}
 }
