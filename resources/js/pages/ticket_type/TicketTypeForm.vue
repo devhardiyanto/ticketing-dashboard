@@ -26,6 +26,7 @@ const form = useForm({
 	description: props.initialData?.description || '',
 	price: props.initialData?.price || 0,
 	quantity: props.initialData?.quantity || 0,
+	stock_adjustment: '',
 	start_sale_date: props.initialData?.start_sale_date || '',
 	end_sale_date: props.initialData?.end_sale_date || '',
 });
@@ -82,15 +83,37 @@ const submit = () => {
             <FieldError>{{ form.errors.price }}</FieldError>
           </Field>
 
-          <Field name="quantity" :invalid="!!form.errors.quantity">
-            <FieldLabel>Quantity <span class="text-red-500">*</span></FieldLabel>
-            <FieldContent>
-              <Input type="number" v-model="form.quantity" min="0" />
-            </FieldContent>
-            <FieldError>{{ form.errors.quantity }}</FieldError>
-          </Field>
+				<Field v-if="!initialData" name="quantity" :invalid="!!form.errors.quantity">
+					<FieldLabel>Quantity <span class="text-red-500">*</span></FieldLabel>
+					<FieldContent>
+						<Input type="number" v-model="form.quantity" min="0" />
+					</FieldContent>
+					<FieldError>{{ form.errors.quantity }}</FieldError>
+				</Field>
+
+				<Field v-else name="quantity" :invalid="!!form.errors.quantity">
+					<FieldLabel>Quantity</FieldLabel>
+					<FieldContent>
+						<Input type="number" v-model="form.quantity" min="0" disabled />
+					</FieldContent>
+					<FieldError>{{ form.errors.quantity }}</FieldError>
+				</Field>
         </div>
       </div>
+
+		<div v-if="initialData" class="space-y-2">
+			<Field name="stock_adjustment" :invalid="!!form.errors.stock_adjustment">
+				<FieldLabel>Stock Adjustment</FieldLabel>
+				<FieldContent>
+					<Input
+						type="number"
+						v-model="form.stock_adjustment"
+						placeholder="e.g. 10 or -5"
+					/>
+				</FieldContent>
+				<FieldError>{{ form.errors.stock_adjustment }}</FieldError>
+			</Field>
+		</div>
 
       <div class="space-y-2">
         <DateTimeRangePicker

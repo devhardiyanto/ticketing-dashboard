@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Core\TicketType;
 use App\Repositories\Contracts\TicketTypeRepositoryInterface;
+use Illuminate\Support\Facades\DB;
 
 class TicketTypeRepository extends BaseRepository implements TicketTypeRepositoryInterface
 {
@@ -53,5 +54,21 @@ class TicketTypeRepository extends BaseRepository implements TicketTypeRepositor
 			return $ticket_type->delete();
 		}
 		return false;
+	}
+
+	public function adjustStock($id, $amount)
+	{
+		return DB::transaction(function () use ($id, $amount) {
+			$ticket = TicketType::lockForUpdate()->find($id);
+			
+			if ($amount < 0 && ($ticket->quantity_available + $amount < 0)) {
+				throw new \Exception("Not enough stock");
+			}
+
+			return TicketType::where('id', $id)->update([
+				'quantity' => DB::raw("quantity + $amount"),
+				'quantity_available' => DB::raw("quantity_available + $amount")
+			]);
+		});
 	}
 }
