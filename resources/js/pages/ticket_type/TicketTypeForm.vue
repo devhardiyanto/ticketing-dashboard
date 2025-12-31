@@ -10,6 +10,9 @@ import {
 import { useForm } from '@inertiajs/vue3';
 import { store, update } from "@/actions/App/Http/Controllers/TicketTypeController";
 import DateTimeRangePicker from '@/components/common/DateTimeRangePicker.vue';
+import QuillEditor from '@/components/common/QuillEditor.vue';
+import CurrencyInput from '@/components/common/CurrencyInput.vue';
+import NumberInput from '@/components/common/NumberInput.vue';
 import type { TicketType } from '@/types/dashboard';
 import { toast } from 'vue-sonner';
 
@@ -67,7 +70,7 @@ const submit = () => {
         <Field name="description" :invalid="!!form.errors.description">
           <FieldLabel>Description</FieldLabel>
           <FieldContent>
-            <Input v-model="form.description" />
+            <QuillEditor v-model="form.description" :height="150" />
           </FieldContent>
           <FieldError>{{ form.errors.description }}</FieldError>
         </Field>
@@ -78,26 +81,26 @@ const submit = () => {
            <Field name="price" :invalid="!!form.errors.price">
             <FieldLabel>Price <span class="text-red-500">*</span></FieldLabel>
             <FieldContent>
-              <Input type="number" v-model="form.price" min="0" step="0.01" />
+              <CurrencyInput v-model="form.price" />
             </FieldContent>
             <FieldError>{{ form.errors.price }}</FieldError>
           </Field>
 
-				<Field v-if="!initialData" name="quantity" :invalid="!!form.errors.quantity">
-					<FieldLabel>Quantity <span class="text-red-500">*</span></FieldLabel>
-					<FieldContent>
-						<Input type="number" v-model="form.quantity" min="0" />
-					</FieldContent>
-					<FieldError>{{ form.errors.quantity }}</FieldError>
-				</Field>
+          <Field v-if="!initialData" name="quantity" :invalid="!!form.errors.quantity">
+            <FieldLabel>Quantity <span class="text-red-500">*</span></FieldLabel>
+            <FieldContent>
+              <NumberInput v-model="form.quantity" :min="0" />
+            </FieldContent>
+            <FieldError>{{ form.errors.quantity }}</FieldError>
+          </Field>
 
-				<Field v-else name="quantity" :invalid="!!form.errors.quantity">
-					<FieldLabel>Quantity</FieldLabel>
-					<FieldContent>
-						<Input type="number" v-model="form.quantity" min="0" disabled />
-					</FieldContent>
-					<FieldError>{{ form.errors.quantity }}</FieldError>
-				</Field>
+          <Field v-else name="quantity" :invalid="!!form.errors.quantity">
+            <FieldLabel>Quantity</FieldLabel>
+            <FieldContent>
+              <Input type="number" v-model="form.quantity" min="0" disabled />
+            </FieldContent>
+            <FieldError>{{ form.errors.quantity }}</FieldError>
+          </Field>
         </div>
       </div>
 
