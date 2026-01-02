@@ -52,11 +52,16 @@ class EventController extends Controller
 			'timezone' => 'nullable|string|max:50',
 			'location' => 'required|string',
 			'address' => 'nullable|string',
+			'venue_name' => 'nullable|string|max:255',
+			'venue_city' => 'nullable|string|max:255',
 			'status' => 'required|string|in:draft,published,archived',
 			'currency' => 'required',
 			'is_parent' => 'boolean',
 			'organization_id' => 'required|exists:core_pgsql.organizations,id',
-			'image_url' => 'nullable|image|max:5120', // Max 5MB
+			'image_url' => 'nullable|image|max:5120',
+			'banner_image_url' => 'nullable|string|max:500',
+			'venue_map_url' => 'nullable|string|max:500',
+			'terms' => 'nullable|string',
 		]);
 
 		if ($request->hasFile('image_url')) {
@@ -82,9 +87,14 @@ class EventController extends Controller
 			'timezone' => 'nullable|string|max:50',
 			'location' => 'required|string',
 			'address' => 'nullable|string',
+			'venue_name' => 'nullable|string|max:255',
+			'venue_city' => 'nullable|string|max:255',
 			'status' => 'required|string|in:draft,published,archived',
 			'currency' => 'required',
 			'is_parent' => 'boolean',
+			'banner_image_url' => 'nullable|string|max:500',
+			'venue_map_url' => 'nullable|string|max:500',
+			'terms' => 'nullable|string',
 		];
 
 		// Check if image_url is a file or a string (existing image)
