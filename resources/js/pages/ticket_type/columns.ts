@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import type { TicketType } from '@/types/dashboard';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ArrowUpDown } from 'lucide-vue-next';
- import { usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { h } from 'vue';
 import TicketTypeActions from './TicketTypeActions.vue';
 
@@ -77,6 +77,20 @@ export const useColumns = () => {
 		{
 			accessorKey: 'status',
 			header: 'Status',
+		},
+		{
+			accessorKey: 'category',
+			header: 'Category',
+			cell: ({ row }) => row.getValue('category') || '-',
+		},
+		{
+			accessorKey: 'is_hidden',
+			header: 'Hidden',
+			cell: ({ row }) => row.getValue('is_hidden') ? 'Yes' : 'No',
+		},
+		{
+			accessorKey: 'sort_order',
+			header: 'Order',
 		},
 		{
 			id: 'actions',

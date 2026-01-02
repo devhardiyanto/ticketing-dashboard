@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
-	Field,
-	FieldContent,
-	FieldError,
-	FieldLabel,
+  Field,
+  FieldContent,
+  FieldError,
+  FieldLabel,
 } from '@/components/ui/field';
 import { useForm } from '@inertiajs/vue3';
 import { store, update } from "@/actions/App/Http/Controllers/TicketTypeController";
@@ -17,39 +18,42 @@ import type { TicketType } from '@/types/dashboard';
 import { toast } from 'vue-sonner';
 
 const props = defineProps<{
-	initialData?: TicketType | null;
-	eventId: string | undefined;
+  initialData?: TicketType | null;
+  eventId: string | undefined;
 }>();
 
 const emit = defineEmits(['success']);
 
 const form = useForm({
-	event_id: props.eventId,
-	name: props.initialData?.name || '',
-	description: props.initialData?.description || '',
-	price: props.initialData?.price || 0,
-	quantity: props.initialData?.quantity || 0,
-	stock_adjustment: '',
-	start_sale_date: props.initialData?.start_sale_date || '',
-	end_sale_date: props.initialData?.end_sale_date || '',
+  event_id: props.eventId,
+  name: props.initialData?.name || '',
+  category: props.initialData?.category || '',
+  description: props.initialData?.description || '',
+  price: props.initialData?.price || 0,
+  quantity: props.initialData?.quantity || 0,
+  stock_adjustment: '',
+  start_sale_date: props.initialData?.start_sale_date || '',
+  end_sale_date: props.initialData?.end_sale_date || '',
+  is_hidden: props.initialData?.is_hidden || false,
+  sort_order: props.initialData?.sort_order || 0,
 });
 
 const submit = () => {
-	if (props.initialData) {
-		form.submit(update(props.initialData.id), {
-			onSuccess: () => {
-				emit('success');
-				toast.success('Ticket type updated successfully');
-			},
-		})
-	} else {
-		form.submit(store(), {
-			onSuccess: () => {
-				emit('success');
-				toast.success('Ticket type created successfully');
-			},
-		})
-	}
+  if (props.initialData) {
+    form.submit(update(props.initialData.id), {
+      onSuccess: () => {
+        emit('success');
+        toast.success('Ticket type updated successfully');
+      },
+    })
+  } else {
+    form.submit(store(), {
+      onSuccess: () => {
+        emit('success');
+        toast.success('Ticket type created successfully');
+      },
+    })
+  }
 };
 </script>
 
@@ -63,6 +67,16 @@ const submit = () => {
               <Input v-model="form.name" />
           </FieldContent>
           <FieldError>{{ form.errors.name }}</FieldError>
+        </Field>
+      </div>
+
+      <div class="space-y-2">
+        <Field name="category" :invalid="!!form.errors.category">
+          <FieldLabel>Category</FieldLabel>
+          <FieldContent>
+              <Input v-model="form.category" placeholder="e.g. General Admission, Free Entry, VIP" />
+          </FieldContent>
+          <FieldError>{{ form.errors.category }}</FieldError>
         </Field>
       </div>
 
@@ -124,6 +138,27 @@ const submit = () => {
           v-model:endDate="form.end_sale_date"
           :error="form.errors.start_sale_date || form.errors.end_sale_date"
         />
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <Field name="sort_order" :invalid="!!form.errors.sort_order">
+          <FieldLabel>Sort Order</FieldLabel>
+          <FieldContent>
+            <NumberInput v-model="form.sort_order" :min="0" />
+          </FieldContent>
+          <FieldError>{{ form.errors.sort_order }}</FieldError>
+        </Field>
+
+        <Field name="is_hidden" :invalid="!!form.errors.is_hidden">
+          <FieldLabel>Visibility</FieldLabel>
+          <FieldContent>
+            <div class="flex items-center gap-2 h-9">
+              <Checkbox v-model:checked="form.is_hidden" id="is_hidden" />
+              <label for="is_hidden" class="text-sm">Hidden (tidak tampil di public)</label>
+            </div>
+          </FieldContent>
+          <FieldError>{{ form.errors.is_hidden }}</FieldError>
+        </Field>
       </div>
     </div>
 

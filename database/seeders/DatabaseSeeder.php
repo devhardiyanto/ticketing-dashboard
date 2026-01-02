@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             OrganizationSeeder::class,
             EventSeeder::class,
+            TicketTypeSeeder::class,
         ]);
 
         // Step 3: Seed dashboard users with 4 types
