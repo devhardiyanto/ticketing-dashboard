@@ -4,6 +4,7 @@ export interface Event {
 	id: string;
 	organization_id: string;
 	image_url?: string | null;
+	image_signed_url?: string | null; // Signed URL for display
 	name: string;
 	slug: string;
 	description?: string;

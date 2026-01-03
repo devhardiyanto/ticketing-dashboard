@@ -10,6 +10,16 @@ use Illuminate\Support\Str;
 class EventSeeder extends Seeder
 {
   /**
+   * Sample image paths for seeding
+   * These are placeholder paths - in production, actual images would be uploaded to MinIO
+   */
+  private array $sampleImages = [
+    'music' => 'events/sample-music-festival.jpg',
+    'tech' => 'events/sample-tech-summit.jpg',
+    'marathon' => 'events/sample-marathon.jpg',
+  ];
+
+  /**
    * Run the database seeds.
    */
   public function run(): void
@@ -28,7 +38,7 @@ class EventSeeder extends Seeder
       'organization_id' => $org->id,
       'name' => 'Summer Music Festival 2025',
       'slug' => 'summer-music-festival-2025',
-      'description' => 'The biggest summer music festival in Jakarta.',
+      'description' => '<p>The biggest summer music festival in Jakarta.</p><p>Featuring top artists from around the world.</p>',
       'start_date' => '2025-07-20 10:00:00',
       'end_date' => '2025-07-22 23:00:00',
       'location' => 'GBK Senayan',
@@ -36,6 +46,7 @@ class EventSeeder extends Seeder
       'status' => 'published',
       'currency' => 'IDR',
       'is_parent' => true,
+      'image_url' => $this->sampleImages['music'],
     ]);
 
     $this->createChildEvent($musicFest, 'Day 1 Pass', '2025-07-20 10:00:00', '2025-07-20 23:00:00');
@@ -48,7 +59,7 @@ class EventSeeder extends Seeder
       'organization_id' => $org->id,
       'name' => 'Tech Innovation Summit 2025',
       'slug' => 'tech-innovation-summit-2025',
-      'description' => 'Exploring the future of AI and Technology.',
+      'description' => '<p>Exploring the future of AI and Technology.</p><p>Join industry leaders for keynotes, workshops, and networking.</p>',
       'start_date' => '2025-09-15 09:00:00',
       'end_date' => '2025-09-16 17:00:00',
       'location' => 'Convention Center BSD',
@@ -56,6 +67,7 @@ class EventSeeder extends Seeder
       'status' => 'published',
       'currency' => 'IDR',
       'is_parent' => true,
+      'image_url' => $this->sampleImages['tech'],
     ]);
 
     $this->createChildEvent($techSummit, 'Workshop: Generative AI', '2025-09-15 09:00:00', '2025-09-15 12:00:00');
@@ -67,7 +79,7 @@ class EventSeeder extends Seeder
       'organization_id' => $org->id,
       'name' => 'Jakarta City Marathon 2025',
       'slug' => 'jakarta-city-marathon-2025',
-      'description' => 'Run through the heart of the city.',
+      'description' => '<p>Run through the heart of the city.</p><p>Multiple categories for all fitness levels.</p>',
       'start_date' => '2025-10-26 05:00:00',
       'end_date' => '2025-10-26 12:00:00',
       'location' => 'Monas',
@@ -75,6 +87,7 @@ class EventSeeder extends Seeder
       'status' => 'published',
       'currency' => 'IDR',
       'is_parent' => true,
+      'image_url' => $this->sampleImages['marathon'],
     ]);
 
     $this->createChildEvent($marathon, '5K Fun Run', '2025-10-26 06:00:00', '2025-10-26 08:00:00');
@@ -92,7 +105,7 @@ class EventSeeder extends Seeder
       'parent_event_id' => $parent->id,
       'name' => $name,
       'slug' => Str::slug($name),
-      'description' => "Sub-event of {$parent->name}",
+      'description' => "<p>Sub-event of {$parent->name}</p>",
       'start_date' => $start,
       'end_date' => $end,
       'location' => $parent->location,

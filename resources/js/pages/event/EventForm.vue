@@ -65,6 +65,24 @@ const form = useForm({
   parent_event_id: props.initialData?.parent_event_id || props.parentEvent?.id || '',
 });
 
+// Hydrate content with fresh signed URLs
+import { useContentHydration } from '@/composables/useContentHydration';
+import { onMounted } from 'vue';
+
+const { hydrateContent } = useContentHydration();
+
+onMounted(async () => {
+  if (form.description) {
+    const hydrated = await hydrateContent(form.description);
+    if (hydrated !== form.description) {
+      form.description = hydrated;
+      // Update defaults so the form isn't considered dirty
+      form.defaults('description', hydrated);
+    }
+  }
+});
+
+
 // Slug auto-generation logic
 const slugManuallyEdited = ref(!!props.initialData?.slug);
 const isCheckingSlug = ref(false);
@@ -201,6 +219,7 @@ const submit = () => {
         <FieldLabel>Event Banner</FieldLabel>
         <FileUploader
           v-model="form.image_url"
+          :display-url="initialData?.image_signed_url"
           accept="image/*"
           :max-size="5 * 1024 * 1024"
           @error="(err) => console.error(err)"

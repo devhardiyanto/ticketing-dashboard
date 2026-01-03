@@ -6,6 +6,7 @@ use App\Repositories\Contracts\EventRepositoryInterface;
 use App\Repositories\Contracts\OrganizationRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class EventController extends Controller
@@ -28,9 +29,22 @@ class EventController extends Controller
 		$event = null;
 		if ($event_id) {
 			$event = $this->event_repo->find($event_id);
+			// Generate signed URL for parent event image
+			if ($event && $event->image_url) {
+				$event->image_signed_url = $this->getSignedUrl($event->image_url);
+			}
 		}
 
 		$events = $this->event_repo->getAll($params);
+
+		// Generate signed URLs for all events
+		$events->getCollection()->transform(function ($event) {
+			if ($event->image_url) {
+				$event->image_signed_url = $this->getSignedUrl($event->image_url);
+			}
+			return $event;
+		});
+
 		$organizations = $this->organization_repo->all();
 
 		return Inertia::render('event/EventIndex', [
@@ -65,8 +79,12 @@ class EventController extends Controller
 		]);
 
 		if ($request->hasFile('image_url')) {
-			$path = $request->file('image_url')->store('events', 'public');
-			$validated['image_url'] = asset('storage/' . $path);
+			// Upload to S3/MinIO and store path only
+			$file = $request->file('image_url');
+			$filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+			$path = 'events/' . $filename;
+			Storage::disk('s3')->put($path, file_get_contents($file), 'private');
+			$validated['image_url'] = $path;
 		}
 
 		$this->event_repo->create($validated);
@@ -97,44 +115,32 @@ class EventController extends Controller
 			'terms' => 'nullable|string',
 		];
 
-		// Check if image_url is a file or a string (existing image)
+		// Check if image_url is a file or a string (existing path)
 		if ($request->hasFile('image_url')) {
 			$rules['image_url'] = 'required|image|max:5120'; // Max 5MB
 		} else {
-			// If it's not a file, it must be a string (existing URL) and not null
-			$rules['image_url'] = 'required|string';
+			// If it's not a file, it must be a string (existing path)
+			$rules['image_url'] = 'nullable|string';
 		}
 
 		$validated = $request->validate($rules);
 
 		if ($request->hasFile('image_url')) {
-			// Delete old image if exists
+			// Delete old image from S3/MinIO
 			if ($event && $event->image_url) {
-				$oldPath = str_replace(asset('storage/'), '', $event->image_url);
-				// Handle case where asset() might not include storage/ if configured differently,
-				// but based on store method: asset('storage/' . $path)
-				// So we remove the full prefix.
-				// Safer way: parse_url or just check if it contains storage/
-				// Let's assume standard storage link structure.
-				// If $event->image_url is full URL, we need to extract relative path.
-				// $path was stored as 'events/filename.ext'
-				// $validated['image_url'] was asset('storage/events/filename.ext')
-
-				// Simple extraction strategy:
-				$relativePath = null;
-				$pattern = '/storage\/(.*)$/';
-				if (preg_match($pattern, $event->image_url, $matches)) {
-					$relativePath = $matches[1];
-				}
-
-				if ($relativePath && Storage::disk('public')->exists($relativePath)) {
-					Storage::disk('public')->delete($relativePath);
-				}
+				$this->deleteStorageFile($event->image_url);
 			}
 
-			$path = $request->file('image_url')->store('events', 'public');
-			$validated['image_url'] = asset('storage/' . $path);
+			// Upload new image to S3/MinIO
+			$file = $request->file('image_url');
+			$filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+			$path = 'events/' . $filename;
+			Storage::disk('s3')->put($path, file_get_contents($file), 'private');
+			$validated['image_url'] = $path;
 		}
+
+		// Handle description image cleanup
+		$this->cleanupDescriptionImages($event->description ?? '', $validated['description'] ?? '');
 
 		$this->event_repo->update($id, $validated);
 
@@ -143,6 +149,19 @@ class EventController extends Controller
 
 	public function destroy(string $id)
 	{
+		$event = $this->event_repo->find($id);
+
+		// Delete event image from storage
+		if ($event && $event->image_url) {
+			$this->deleteStorageFile($event->image_url);
+		}
+
+		// Delete description images from storage
+		if ($event && $event->description) {
+			$paths = UploadController::extractImagePathsFromHtml($event->description);
+			UploadController::deleteFiles($paths);
+		}
+
 		$this->event_repo->delete($id);
 		return redirect()->back()->with('success', 'Event deleted successfully.');
 	}
@@ -165,5 +184,61 @@ class EventController extends Controller
 			'available' => !$query,
 			'slug' => $slug,
 		]);
+	}
+
+	/**
+	 * Generate signed URL for a storage path
+	 */
+	private function getSignedUrl(?string $path): ?string
+	{
+		if (empty($path)) {
+			return null;
+		}
+
+		// Check if it's already a full URL (legacy data)
+		if (filter_var($path, FILTER_VALIDATE_URL)) {
+			return $path;
+		}
+
+		try {
+			$expiry = (int) config('app.signed_url_expiry', 60);
+			return Storage::disk('s3')->temporaryUrl($path, now()->addMinutes($expiry));
+		} catch (\Exception $e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Delete file from S3/MinIO storage
+	 */
+	private function deleteStorageFile(?string $path): void
+	{
+		if (empty($path)) {
+			return;
+		}
+
+		// Skip if it's a full URL (legacy data)
+		if (filter_var($path, FILTER_VALIDATE_URL)) {
+			return;
+		}
+
+		if (Storage::disk('s3')->exists($path)) {
+			Storage::disk('s3')->delete($path);
+		}
+	}
+
+	/**
+	 * Cleanup images removed from description
+	 */
+	private function cleanupDescriptionImages(string $oldDescription, string $newDescription): void
+	{
+		$oldPaths = UploadController::extractImagePathsFromHtml($oldDescription);
+		$newPaths = UploadController::extractImagePathsFromHtml($newDescription);
+
+		// Find paths that were in old description but not in new
+		$removedPaths = array_diff($oldPaths, $newPaths);
+
+		// Delete removed images
+		UploadController::deleteFiles($removedPaths);
 	}
 }
