@@ -5,12 +5,26 @@ import { ArrowUpDown } from 'lucide-vue-next';
 import { usePage } from '@inertiajs/vue3';
 import { h } from 'vue';
 import EventActions from './EventActions.vue';
+import ImagePreview from '@/components/common/ImagePreview.vue';
 
 export const useColumns = () => {
 	const page = usePage();
 	const user = page.props.auth.user;
 
 	const columns: ColumnDef<Event>[] = [
+		{
+			accessorKey: 'image_signed_url',
+			header: 'Image',
+			size: 80,
+			enableSorting: false,
+			cell: ({ row }) => {
+				const signedUrl = row.getValue('image_signed_url') as string | null;
+				return h(ImagePreview, {
+					src: signedUrl,
+					alt: row.original.name,
+				});
+			},
+		},
 		{
 			accessorKey: 'name',
 			header: ({ column }) => {
