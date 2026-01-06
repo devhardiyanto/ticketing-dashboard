@@ -14,13 +14,19 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Step 1: Clean up existing data to allow re-seeding
+        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
+        \App\Models\Dashboard\User::truncate();
+        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
+
         // Step 2: Seed roles and permissions
         $this->call([
             RoleSeeder::class,
             PermissionSeeder::class,
-            OrganizationSeeder::class,
-            EventSeeder::class,
-            TicketTypeSeeder::class,
+            // Domain data (Orgs, Events, Tickets) is now handled by the Core Service seeder
+            // OrganizationSeeder::class,
+            // EventSeeder::class,
+            // TicketTypeSeeder::class,
         ]);
 
         // Step 3: Seed dashboard users with 4 types
