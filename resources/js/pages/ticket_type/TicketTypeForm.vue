@@ -28,6 +28,7 @@ const form = useForm({
   event_id: props.eventId,
   name: props.initialData?.name || '',
   category: props.initialData?.category || '',
+  type: props.initialData?.type || 'PAID',
   description: props.initialData?.description || '',
   price: props.initialData?.price || 0,
   quantity: props.initialData?.quantity || 0,
@@ -91,9 +92,47 @@ const submit = () => {
       </div>
 
       <div class="space-y-2">
+        <FieldLabel>Ticket Type</FieldLabel>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <label
+            class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all hover:bg-neutral-50"
+            :class="{ 'border-primary-500 bg-primary-50 ring-1 ring-primary-500': form.type === 'PAID' }"
+          >
+            <input type="radio" v-model="form.type" value="PAID" class="w-4 h-4 accent-primary-600">
+            <div>
+              <div class="font-medium text-sm">Berbayar</div>
+              <div class="text-xs text-neutral-500">Tiket dengan harga tetap</div>
+            </div>
+          </label>
+
+          <label
+            class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all hover:bg-neutral-50"
+            :class="{ 'border-primary-500 bg-primary-50 ring-1 ring-primary-500': form.type === 'FREE' }"
+          >
+            <input type="radio" v-model="form.type" value="FREE" @change="form.price = 0" class="w-4 h-4 accent-primary-600">
+            <div>
+              <div class="font-medium text-sm">Gratis</div>
+              <div class="text-xs text-neutral-500">Tiket tanpa biaya (Rp 0)</div>
+            </div>
+          </label>
+
+            <label
+            class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all hover:bg-neutral-50"
+            :class="{ 'border-primary-500 bg-primary-50 ring-1 ring-primary-500': form.type === 'DONATION' }"
+          >
+            <input type="radio" v-model="form.type" value="DONATION" class="w-4 h-4 accent-primary-600">
+            <div>
+              <div class="font-medium text-sm">Donasi</div>
+              <div class="text-xs text-neutral-500">Harga nominal sukarela</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="space-y-2">
         <div class="grid grid-cols-2 gap-4">
-           <Field name="price" :invalid="!!form.errors.price">
-            <FieldLabel>Price <span class="text-red-500">*</span></FieldLabel>
+           <Field name="price" :invalid="!!form.errors.price" v-if="form.type !== 'FREE'">
+            <FieldLabel>{{ form.type === 'DONATION' ? 'Minimum Donation' : 'Price' }} <span class="text-red-500">*</span></FieldLabel>
             <FieldContent>
               <CurrencyInput v-model="form.price" />
             </FieldContent>
