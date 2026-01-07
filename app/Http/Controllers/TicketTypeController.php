@@ -63,6 +63,7 @@ class TicketTypeController extends Controller
 			'start_sale_date' => 'nullable|date',
 			'end_sale_date' => 'nullable|date|after_or_equal:start_sale_date',
 			'is_hidden' => 'nullable|boolean',
+			'inventory_status' => 'nullable|integer|in:0,1,2',
 			'sort_order' => 'nullable|integer|min:0',
 		]);
 
@@ -94,6 +95,7 @@ class TicketTypeController extends Controller
         'end_sale_date' => 'nullable|date|after_or_equal:start_sale_date',
         'stock_adjustment' => 'nullable|integer|not_in:0',
         'is_hidden' => 'nullable|boolean',
+        'inventory_status' => 'nullable|integer|in:0,1,2',
         'sort_order' => 'nullable|integer|min:0',
     ]);
 
