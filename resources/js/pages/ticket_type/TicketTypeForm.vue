@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Field,
-  FieldContent,
-  FieldError,
-  FieldLabel,
+	Field,
+	FieldContent,
+	FieldError,
+	FieldLabel,
 } from '@/components/ui/field';
 import { useForm } from '@inertiajs/vue3';
 import { store, update } from "@/actions/App/Http/Controllers/TicketTypeController";
@@ -18,43 +18,44 @@ import type { TicketType } from '@/types/dashboard';
 import { toast } from 'vue-sonner';
 
 const props = defineProps<{
-  initialData?: TicketType | null;
-  eventId: string | undefined;
+	initialData?: TicketType | null;
+	eventId: string | undefined;
 }>();
 
 const emit = defineEmits(['success']);
 
 const form = useForm({
-  event_id: props.eventId,
-  name: props.initialData?.name || '',
-  category: props.initialData?.category || '',
-  type: props.initialData?.type || 'PAID',
-  description: props.initialData?.description || '',
-  price: props.initialData?.price || 0,
-  quantity: props.initialData?.quantity || 0,
-  stock_adjustment: '',
-  start_sale_date: props.initialData?.start_sale_date || '',
-  end_sale_date: props.initialData?.end_sale_date || '',
-  is_hidden: props.initialData?.is_hidden || false,
-  sort_order: props.initialData?.sort_order || 0,
+	event_id: props.eventId,
+	name: props.initialData?.name || '',
+	category: props.initialData?.category || '',
+	type: props.initialData?.type || 'PAID',
+	description: props.initialData?.description || '',
+	price: props.initialData?.price || 0,
+	quantity: props.initialData?.quantity || 0,
+	stock_adjustment: '',
+	start_sale_date: props.initialData?.start_sale_date || '',
+	end_sale_date: props.initialData?.end_sale_date || '',
+	is_hidden: props.initialData?.is_hidden || false,
+	inventory_status: props.initialData?.inventory_status ?? 0,
+	sort_order: props.initialData?.sort_order || 0,
 });
 
 const submit = () => {
-  if (props.initialData) {
-    form.submit(update(props.initialData.id), {
-      onSuccess: () => {
-        emit('success');
-        toast.success('Ticket type updated successfully');
-      },
-    })
-  } else {
-    form.submit(store(), {
-      onSuccess: () => {
-        emit('success');
-        toast.success('Ticket type created successfully');
-      },
-    })
-  }
+	if (props.initialData) {
+		form.submit(update(props.initialData.id), {
+			onSuccess: () => {
+				emit('success');
+				toast.success('Ticket type updated successfully');
+			},
+		})
+	} else {
+		form.submit(store(), {
+			onSuccess: () => {
+				emit('success');
+				toast.success('Ticket type created successfully');
+			},
+		})
+	}
 };
 </script>
 
@@ -197,6 +198,49 @@ const submit = () => {
             </div>
           </FieldContent>
           <FieldError>{{ form.errors.is_hidden }}</FieldError>
+        </Field>
+      </div>
+
+      <div class="space-y-2">
+        <Field name="inventory_status" :invalid="!!form.errors.inventory_status">
+          <FieldLabel>Status Ketersediaan (Gimmick)</FieldLabel>
+          <FieldContent>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <label
+                class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all hover:bg-neutral-50"
+                :class="{ 'border-primary-500 bg-primary-50 ring-1 ring-primary-500': form.inventory_status === 0 }"
+              >
+                <input type="radio" v-model="form.inventory_status" :value="0" class="w-4 h-4 accent-primary-600">
+                <div>
+                  <div class="font-medium text-sm">Default</div>
+                  <div class="text-xs text-neutral-500">Sesuai stok asli</div>
+                </div>
+              </label>
+
+              <label
+                class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all hover:bg-neutral-50"
+                :class="{ 'border-warning-500 bg-warning-50 ring-1 ring-warning-500': form.inventory_status === 1 }"
+              >
+                <input type="radio" v-model="form.inventory_status" :value="1" class="w-4 h-4 accent-warning-600">
+                <div>
+                  <div class="font-medium text-sm">Hampir Habis</div>
+                  <div class="text-xs text-neutral-500">Tampilkan badge "Hampir Habis"</div>
+                </div>
+              </label>
+
+              <label
+                class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all hover:bg-neutral-50"
+                :class="{ 'border-red-500 bg-red-50 ring-1 ring-red-500': form.inventory_status === 2 }"
+              >
+                <input type="radio" v-model="form.inventory_status" :value="2" class="w-4 h-4 accent-red-600">
+                <div>
+                  <div class="font-medium text-sm">Sold Out</div>
+                  <div class="text-xs text-neutral-500">Paksa tampil sebagai habis</div>
+                </div>
+              </label>
+            </div>
+          </FieldContent>
+          <FieldError>{{ form.errors.inventory_status }}</FieldError>
         </Field>
       </div>
     </div>

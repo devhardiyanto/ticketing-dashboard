@@ -15,4 +15,5 @@ export interface TicketType {
 	type?: string,
 	is_hidden?: boolean,
 	sort_order?: number,
+	inventory_status?: number,
 }
