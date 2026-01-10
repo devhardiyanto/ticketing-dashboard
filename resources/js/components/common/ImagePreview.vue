@@ -18,35 +18,37 @@ const openPreview = () => {
 </script>
 
 <template>
-  <div
-    class="cursor-pointer hover:opacity-80 transition-opacity"
-    @click="openPreview"
-  >
-    <img
-      v-if="src"
-      :src="src"
-      :alt="alt"
-      class="w-12 h-12 rounded object-cover border border-border"
-      loading="lazy"
-    />
+  <div>
     <div
-      v-else
-      class="w-12 h-12 rounded bg-muted flex items-center justify-center border border-border"
+      class="cursor-pointer hover:opacity-80 transition-opacity"
+      @click="openPreview"
     >
-      <Camera class="w-6 h-6 text-muted-foreground" />
-    </div>
-  </div>
-
-  <Dialog v-model:open="isOpen">
-    <DialogContent class="max-w-4xl">
-      <div class="flex items-center justify-center">
-        <img
-          v-if="src"
-          :src="src"
-          :alt="alt"
-          class="w-full h-auto max-h-[80vh] object-contain rounded"
-        />
+      <img
+        v-if="src"
+        :src="src"
+        :alt="alt"
+        class="w-12 h-12 rounded object-cover border border-border"
+        loading="lazy"
+      />
+      <div
+        v-else
+        class="w-12 h-12 rounded bg-muted flex items-center justify-center border border-border"
+      >
+        <Camera class="w-6 h-6 text-muted-foreground" />
       </div>
-    </DialogContent>
-  </Dialog>
+    </div>
+
+    <Dialog v-model:open="isOpen">
+      <DialogContent class="max-w-4xl">
+        <div class="flex items-center justify-center">
+          <img
+            v-if="src"
+            :src="src"
+            :alt="alt"
+            class="w-full h-auto max-h-[80vh] object-contain rounded"
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
+  </div>
 </template>
