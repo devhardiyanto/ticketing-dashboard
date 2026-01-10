@@ -33,6 +33,9 @@ class EventController extends Controller
 			if ($event && $event->image_url) {
 				$event->image_signed_url = $this->getSignedUrl($event->image_url);
 			}
+			if ($event && $event->venue_map_url) {
+				$event->venue_map_signed_url = $this->getSignedUrl($event->venue_map_url);
+			}
 		}
 
 		$events = $this->event_repo->getAll($params);
@@ -41,6 +44,9 @@ class EventController extends Controller
 		$events->getCollection()->transform(function ($event) {
 			if ($event->image_url) {
 				$event->image_signed_url = $this->getSignedUrl($event->image_url);
+			}
+			if ($event->venue_map_url) {
+				$event->venue_map_signed_url = $this->getSignedUrl($event->venue_map_url);
 			}
 			return $event;
 		});
@@ -74,7 +80,7 @@ class EventController extends Controller
 			'organization_id' => 'required|exists:core_pgsql.organizations,id',
 			'image_url' => 'nullable|image|max:5120',
 			'banner_image_url' => 'nullable|string|max:500',
-			'venue_map_url' => 'nullable|string|max:500',
+			'venue_map_url' => 'nullable|image|max:5120',
 			'terms' => 'nullable|string',
 		]);
 
@@ -85,6 +91,14 @@ class EventController extends Controller
 			$path = 'events/' . $filename;
 			Storage::disk('s3')->put($path, file_get_contents($file), 'private');
 			$validated['image_url'] = $path;
+		}
+
+		if ($request->hasFile('venue_map_url')) {
+			$file = $request->file('venue_map_url');
+			$filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+			$path = 'events/venue-maps/' . $filename;
+			Storage::disk('s3')->put($path, file_get_contents($file), 'private');
+			$validated['venue_map_url'] = $path;
 		}
 
 		$this->event_repo->create($validated);
@@ -111,7 +125,6 @@ class EventController extends Controller
 			'currency' => 'required',
 			'is_parent' => 'boolean',
 			'banner_image_url' => 'nullable|string|max:500',
-			'venue_map_url' => 'nullable|string|max:500',
 			'terms' => 'nullable|string',
 		];
 
@@ -122,6 +135,14 @@ class EventController extends Controller
 			// If it's not a file, it must be a string (existing path)
 			$rules['image_url'] = 'nullable|string';
 		}
+
+		// Check if venue_map_url is a file or a string (existing path)
+		if ($request->hasFile('venue_map_url')) {
+			$rules['venue_map_url'] = 'nullable|image|max:5120'; // Max 5MB
+		} else {
+			$rules['venue_map_url'] = 'nullable|string';
+		}
+
 
 		$validated = $request->validate($rules);
 
@@ -139,6 +160,20 @@ class EventController extends Controller
 			$validated['image_url'] = $path;
 		}
 
+		if ($request->hasFile('venue_map_url')) {
+			// Delete old venue map from S3/MinIO
+			if ($event && $event->venue_map_url) {
+				$this->deleteStorageFile($event->venue_map_url);
+			}
+
+			// Upload new venue map to S3/MinIO
+			$file = $request->file('venue_map_url');
+			$filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+			$path = 'events/venue-maps/' . $filename;
+			Storage::disk('s3')->put($path, file_get_contents($file), 'private');
+			$validated['venue_map_url'] = $path;
+		}
+
 		// Handle description image cleanup
 		$this->cleanupDescriptionImages($event->description ?? '', $validated['description'] ?? '');
 
@@ -154,6 +189,11 @@ class EventController extends Controller
 		// Delete event image from storage
 		if ($event && $event->image_url) {
 			$this->deleteStorageFile($event->image_url);
+		}
+
+		// Delete venue map from storage
+		if ($event && $event->venue_map_url) {
+			$this->deleteStorageFile($event->venue_map_url);
 		}
 
 		// Delete description images from storage

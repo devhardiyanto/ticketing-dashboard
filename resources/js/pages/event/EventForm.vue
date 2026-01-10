@@ -58,6 +58,7 @@ const form = useForm({
   organization_id: props.initialData?.organization_id || props.parentEvent?.organization_id || '',
   timezone: 'UTC', // Default to UTC or infer from browser
   image_url: props.initialData?.image_url || (null as File | string | null),
+  venue_map_url: props.initialData?.venue_map_url || (null as File | string | null),
   address: props.initialData?.address || '',
   status: props.initialData?.status || 'draft',
   currency: props.initialData?.currency || 'IDR',
@@ -144,7 +145,7 @@ const onSlugInput = () => {
 
 const submit = () => {
   if (props.initialData) {
-    if (form.image_url) {
+    if (form.image_url || form.venue_map_url) {
       const updateConfig = update(props.initialData.id);
       const url = typeof updateConfig === 'string' ? updateConfig : updateConfig.url;
 
@@ -225,6 +226,19 @@ const submit = () => {
           @error="(err) => console.error(err)"
         />
         <FieldError>{{ form.errors.image_url }}</FieldError>
+      </div>
+
+      <div class="space-y-2">
+        <FieldLabel>Venue Map</FieldLabel>
+        <FileUploader
+          v-model="form.venue_map_url"
+          :display-url="initialData?.venue_map_signed_url"
+          accept="image/*"
+          :max-size="5 * 1024 * 1024"
+          @error="(err) => console.error(err)"
+        />
+        <FieldError>{{ form.errors.venue_map_url }}</FieldError>
+        <p class="text-xs text-muted-foreground">Upload peta/layout venue untuk membantu pengunjung.</p>
       </div>
 
       <div class="space-y-2">
