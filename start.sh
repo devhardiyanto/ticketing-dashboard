@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# Clear cached config (built with .env.example values)
+php artisan config:clear
+
+# Rebuild cache with runtime environment variables
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# Start PHP-FPM in background
+php-fpm -D
+
+# Start Nginx in foreground
+nginx -g "daemon off;"
