@@ -14,11 +14,12 @@ const props = defineProps<{
 	multiple?: boolean
 	accept?: string
 	maxSize?: number // in bytes
+	displayUrl?: string | null // Signed URL for displaying existing image
 }>()
 
 const emit = defineEmits(['update:modelValue', 'change', 'error'])
 
-const internalFiles = ref<Array<{ file?: File; preview?: string; id: string; name?: string }>>([])
+const internalFiles = ref<Array<{ file?: File; preview?: string; id: string; name?: string; storagePath?: string }>>([])
 const isDragging = ref(false)
 const previewImage = ref<string | null>(null)
 const isPreviewOpen = ref(false)
@@ -38,20 +39,25 @@ const createPreview = (file: File) => {
 
 // Watch for external model changes
 watch(
-	() => props.modelValue,
-	(newVal) => {
+	[() => props.modelValue, () => props.displayUrl],
+	([newVal, displayUrl]) => {
 		if (!newVal || (Array.isArray(newVal) && newVal.length === 0)) {
 			if (internalFiles.value.length > 0) {
 				internalFiles.value = []
 			}
 		} else if (typeof newVal === 'string') {
-			// Handle existing image URL
-			if (internalFiles.value.length === 0 || internalFiles.value[0].preview !== newVal) {
+			// newVal is a storage path, use displayUrl for preview
+			const previewSrc = displayUrl || newVal
+			if (internalFiles.value.length === 0 || internalFiles.value[0].storagePath !== newVal) {
 				internalFiles.value = [{
 					id: generateId(),
-					preview: newVal,
+					preview: previewSrc,
+					storagePath: newVal,
 					name: 'Existing Image'
 				}]
+			} else if (internalFiles.value[0].preview !== previewSrc) {
+				// Update preview URL if displayUrl changed
+				internalFiles.value[0].preview = previewSrc
 			}
 		}
 	},
@@ -104,8 +110,8 @@ const processFiles = (files: File[]) => {
 		emit('update:modelValue', internalFiles.value.map(f => f.file).filter(Boolean))
 	} else {
 		// Single file mode - replace existing
-		// Cleanup old preview if exists
-		if (internalFiles.value.length > 0 && internalFiles.value[0].preview) {
+		// Cleanup old preview if exists (only for blob URLs)
+		if (internalFiles.value.length > 0 && internalFiles.value[0].preview?.startsWith('blob:')) {
 			URL.revokeObjectURL(internalFiles.value[0].preview)
 		}
 
@@ -120,7 +126,8 @@ const removeFile = (id: string) => {
 	const index = internalFiles.value.findIndex((f) => f.id === id)
 	if (index !== -1) {
 		const file = internalFiles.value[index]
-		if (file.preview) {
+		// Only revoke blob URLs
+		if (file.preview?.startsWith('blob:')) {
 			URL.revokeObjectURL(file.preview)
 		}
 		internalFiles.value.splice(index, 1)
@@ -141,7 +148,7 @@ const openPreview = (url: string) => {
 // Cleanup object URLs
 onUnmounted(() => {
 	internalFiles.value.forEach((f) => {
-		if (f.preview) URL.revokeObjectURL(f.preview)
+		if (f.preview?.startsWith('blob:')) URL.revokeObjectURL(f.preview)
 	})
 })
 </script>

@@ -15,6 +15,7 @@ class AppServiceProvider extends ServiceProvider
 			\App\Repositories\Contracts\EventRepositoryInterface::class => \App\Repositories\Eloquent\EventRepository::class,
 			\App\Repositories\Contracts\OrganizationRepositoryInterface::class => \App\Repositories\Eloquent\OrganizationRepository::class,
 			\App\Repositories\Contracts\TicketTypeRepositoryInterface::class => \App\Repositories\Eloquent\TicketTypeRepository::class,
+			\App\Repositories\Contracts\BannerRepositoryInterface::class => \App\Repositories\Eloquent\BannerRepository::class,
 		];
 
 		foreach ($repositories as $interface => $implementation) {

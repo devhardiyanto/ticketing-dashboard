@@ -16,6 +16,7 @@ class TicketType extends Model
   protected $fillable = [
     'event_id',
     'name',
+    'category',
     'description',
     'price',
     'quantity',
@@ -23,12 +24,17 @@ class TicketType extends Model
     'max_per_order',
     'start_sale_date',
     'end_sale_date',
+    'status',
+    'is_hidden',
+    'sort_order',
   ];
 
   protected $casts = [
     'price' => 'decimal:2',
     'start_sale_date' => 'datetime',
     'end_sale_date' => 'datetime',
+    'is_hidden' => 'boolean',
+    'sort_order' => 'integer',
   ];
 
   public function event(): BelongsTo
@@ -36,3 +42,4 @@ class TicketType extends Model
     return $this->belongsTo(Event::class, 'event_id');
   }
 }
+

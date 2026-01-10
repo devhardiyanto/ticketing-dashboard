@@ -56,11 +56,15 @@ class TicketTypeController extends Controller
 		$data = $request->validate([
 			'event_id' => 'required|string|exists:core_pgsql.events,id',
 			'name' => 'required|string|max:255',
+			'category' => 'nullable|string|max:100',
 			'description' => 'nullable|string',
 			'price' => 'required|numeric|min:0',
 			'quantity' => 'required|integer|min:0',
 			'start_sale_date' => 'nullable|date',
 			'end_sale_date' => 'nullable|date|after_or_equal:start_sale_date',
+			'is_hidden' => 'nullable|boolean',
+			'inventory_status' => 'nullable|integer|in:0,1,2',
+			'sort_order' => 'nullable|integer|min:0',
 		]);
 
 		if (!empty($data['start_sale_date'])) {
@@ -84,11 +88,15 @@ class TicketTypeController extends Controller
 	{
     $data = $request->validate([
         'name' => 'required|string|max:255',
+        'category' => 'nullable|string|max:100',
         'description' => 'nullable|string',
         'price' => 'required|numeric|min:0',
         'start_sale_date' => 'nullable|date',
         'end_sale_date' => 'nullable|date|after_or_equal:start_sale_date',
-        'stock_adjustment' => 'nullable|integer|not_in:0', 
+        'stock_adjustment' => 'nullable|integer|not_in:0',
+        'is_hidden' => 'nullable|boolean',
+        'inventory_status' => 'nullable|integer|in:0,1,2',
+        'sort_order' => 'nullable|integer|min:0',
     ]);
 
     if (!empty($data['start_sale_date'])) {
@@ -99,8 +107,8 @@ class TicketTypeController extends Controller
     }
 
     $adjustment = $data['stock_adjustment'] ?? 0;
-    
-    unset($data['stock_adjustment']); 
+
+    unset($data['stock_adjustment']);
 
     $this->ticket_type_repo->update($id, $data);
 

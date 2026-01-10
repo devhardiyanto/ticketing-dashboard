@@ -11,4 +11,9 @@ export interface TicketType {
 	status: string,
 	created_at: string,
 	updated_at: string,
+	category?: string,
+	type?: string,
+	is_hidden?: boolean,
+	sort_order?: number,
+	inventory_status?: number,
 }

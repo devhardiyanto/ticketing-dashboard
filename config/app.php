@@ -56,6 +56,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Signed URL Expiry
+    |--------------------------------------------------------------------------
+    |
+    | This value determines the expiry time (in minutes) for signed URLs
+    | generated for accessing files stored in S3/MinIO storage.
+    |
+    */
+
+    'signed_url_expiry' => (int) env('SIGNED_URL_EXPIRY', 60),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

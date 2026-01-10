@@ -2,22 +2,23 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-	Field,
-	FieldContent,
-	FieldError,
-	FieldLabel,
+  Field,
+  FieldContent,
+  FieldError,
+  FieldLabel,
 } from '@/components/ui/field';
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { store, update } from "@/actions/App/Http/Controllers/EventController";
 import DateTimeRangePicker from '@/components/common/DateTimeRangePicker.vue';
+import QuillEditor from '@/components/common/QuillEditor.vue';
 import currencyData from '@/data/currencies.json';
 import FileUploader from '@/components/common/FileUploader.vue';
 import { useTimezones } from '@/composables/useTimezones';
@@ -30,9 +31,9 @@ import type { Event, Organization } from '@/types/dashboard';
 import { toast } from 'vue-sonner'
 
 const props = defineProps<{
-	initialData?: Event | null;
-	organizations: Organization[];
-	parentEvent?: Event | null;
+  initialData?: Event | null;
+  organizations: Organization[];
+  parentEvent?: Event | null;
 }>();
 
 const emit = defineEmits(['success']);
@@ -40,29 +41,47 @@ const emit = defineEmits(['success']);
 const { timezones } = useTimezones();
 
 const formatDate = (dateString: string) => {
-	if (!dateString) return '';
-	return new Date(dateString); // VueDatePicker works best with Date objects
+  if (!dateString) return '';
+  return new Date(dateString); // VueDatePicker works best with Date objects
 };
 
 const page = usePage();
 const user = page.props.auth.user;
 
 const form = useForm({
-	name: props.initialData?.name || '',
-	slug: props.initialData?.slug || '',
-	description: props.initialData?.description || '',
-	start_date: props.initialData?.start_date ? formatDate(props.initialData.start_date) : '',
-	end_date: props.initialData?.end_date ? formatDate(props.initialData.end_date) : '',
-	location: props.initialData?.location || '',
-	organization_id: props.initialData?.organization_id || props.parentEvent?.organization_id || '',
-	timezone: 'UTC', // Default to UTC or infer from browser
-	image_url: props.initialData?.image_url || (null as File | string | null),
-	address: props.initialData?.address || '',
-	status: props.initialData?.status || 'draft',
-	currency: props.initialData?.currency || 'IDR',
-	is_parent: props.initialData?.is_parent || false,
-	parent_event_id: props.initialData?.parent_event_id || props.parentEvent?.id || '',
+  name: props.initialData?.name || '',
+  slug: props.initialData?.slug || '',
+  description: props.initialData?.description || '',
+  start_date: props.initialData?.start_date ? formatDate(props.initialData.start_date) : '',
+  end_date: props.initialData?.end_date ? formatDate(props.initialData.end_date) : '',
+  location: props.initialData?.location || '',
+  organization_id: props.initialData?.organization_id || props.parentEvent?.organization_id || '',
+  timezone: 'UTC', // Default to UTC or infer from browser
+  image_url: props.initialData?.image_url || (null as File | string | null),
+  address: props.initialData?.address || '',
+  status: props.initialData?.status || 'draft',
+  currency: props.initialData?.currency || 'IDR',
+  is_parent: props.initialData?.is_parent || false,
+  parent_event_id: props.initialData?.parent_event_id || props.parentEvent?.id || '',
 });
+
+// Hydrate content with fresh signed URLs
+import { useContentHydration } from '@/composables/useContentHydration';
+import { onMounted } from 'vue';
+
+const { hydrateContent } = useContentHydration();
+
+onMounted(async () => {
+  if (form.description) {
+    const hydrated = await hydrateContent(form.description);
+    if (hydrated !== form.description) {
+      form.description = hydrated;
+      // Update defaults so the form isn't considered dirty
+      form.defaults('description', hydrated);
+    }
+  }
+});
+
 
 // Slug auto-generation logic
 const slugManuallyEdited = ref(!!props.initialData?.slug);
@@ -71,89 +90,89 @@ const slugAvailable = ref<boolean | null>(null);
 
 // Generate slug from name
 const generateSlug = (name: string): string => {
-	return name
-		.toLowerCase()
-		.trim()
-		.replace(/[^\w\s-]/g, '') // Remove special characters
-		.replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
-		.replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove special characters
+    .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
 };
 
 // Debounced slug availability check
 const checkSlugAvailability = useDebounceFn(async (slug: string) => {
-	if (!slug) {
-		slugAvailable.value = null;
-		return;
-	}
+  if (!slug) {
+    slugAvailable.value = null;
+    return;
+  }
 
-	isCheckingSlug.value = true;
-	try {
-		const response = await axios.get('/event/check-slug', {
-			params: {
-				slug,
-				exclude_id: props.initialData?.id || undefined,
-			},
-		});
-		slugAvailable.value = response.data.available;
-	} catch (error) {
-		console.error('Error checking slug availability:', error);
-		slugAvailable.value = null;
-	} finally {
-		isCheckingSlug.value = false;
-	}
+  isCheckingSlug.value = true;
+  try {
+    const response = await axios.get('/event/check-slug', {
+      params: {
+        slug,
+        exclude_id: props.initialData?.id || undefined,
+      },
+    });
+    slugAvailable.value = response.data.available;
+  } catch (error) {
+    console.error('Error checking slug availability:', error);
+    slugAvailable.value = null;
+  } finally {
+    isCheckingSlug.value = false;
+  }
 }, 500);
 
 // Watch for name changes to auto-generate slug
 watch(() => form.name, (newName) => {
-	// Only auto-generate if slug hasn't been manually edited and both fields were empty initially
-	if (!slugManuallyEdited.value) {
-		const newSlug = generateSlug(newName);
-		form.slug = newSlug;
-		checkSlugAvailability(newSlug);
-	}
+  // Only auto-generate if slug hasn't been manually edited and both fields were empty initially
+  if (!slugManuallyEdited.value) {
+    const newSlug = generateSlug(newName);
+    form.slug = newSlug;
+    checkSlugAvailability(newSlug);
+  }
 });
 
 // Watch for slug changes to check availability
 watch(() => form.slug, (newSlug) => {
-	checkSlugAvailability(newSlug);
+  checkSlugAvailability(newSlug);
 });
 
 // Handle manual slug edit
 const onSlugInput = () => {
-	slugManuallyEdited.value = true;
+  slugManuallyEdited.value = true;
 };
 
 const submit = () => {
-	if (props.initialData) {
-		if (form.image_url) {
-			const updateConfig = update(props.initialData.id);
-			const url = typeof updateConfig === 'string' ? updateConfig : updateConfig.url;
+  if (props.initialData) {
+    if (form.image_url) {
+      const updateConfig = update(props.initialData.id);
+      const url = typeof updateConfig === 'string' ? updateConfig : updateConfig.url;
 
-			form.transform((data) => ({
-				...data,
-				_method: 'PUT',
-			})).post(url, {
-				onSuccess: () => {
-					emit('success');
-					toast.success('Event updated successfully');
-				},
-			});
-		} else {
-			form.submit(update(props.initialData.id), {
-				onSuccess: () => {
-					emit('success');
-					toast.success('Event updated successfully');
-				},
-			})
-		}
-	} else {
-		form.submit(store(), {
-			onSuccess: () => {
-				emit('success');
-				toast.success('Event created successfully');
-			},
-		})
-	}
+      form.transform((data) => ({
+        ...data,
+        _method: 'PUT',
+      })).post(url, {
+        onSuccess: () => {
+          emit('success');
+          toast.success('Event updated successfully');
+        },
+      });
+    } else {
+      form.submit(update(props.initialData.id), {
+        onSuccess: () => {
+          emit('success');
+          toast.success('Event updated successfully');
+        },
+      })
+    }
+  } else {
+    form.submit(store(), {
+      onSuccess: () => {
+        emit('success');
+        toast.success('Event created successfully');
+      },
+    })
+  }
 };
 </script>
 
@@ -190,7 +209,7 @@ const submit = () => {
         <Field name="description" :invalid="!!form.errors.description">
           <FieldLabel>Description</FieldLabel>
           <FieldContent>
-            <Input v-model="form.description" />
+            <QuillEditor v-model="form.description" :height="200" />
           </FieldContent>
           <FieldError>{{ form.errors.description }}</FieldError>
         </Field>
@@ -200,6 +219,7 @@ const submit = () => {
         <FieldLabel>Event Banner</FieldLabel>
         <FileUploader
           v-model="form.image_url"
+          :display-url="initialData?.image_signed_url"
           accept="image/*"
           :max-size="5 * 1024 * 1024"
           @error="(err) => console.error(err)"
