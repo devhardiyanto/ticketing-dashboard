@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Tickets, Image } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Tickets, Image, Settings } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 /* Routes */
@@ -21,6 +21,7 @@ import { dashboard } from '@/routes';
 import event from '@/routes/event';
 import ticket_type from '@/routes/ticket_type';
 import banner from '@/routes/banner';
+import platform_fee from '@/routes/platform_fee';
 
 const mainNavItems: NavItem[] = [
 	{
@@ -42,6 +43,11 @@ const mainNavItems: NavItem[] = [
 		title: 'Banners',
 		href: banner.index(),
 		icon: Image,
+	},
+	{
+		title: 'Platform Fee',
+		href: platform_fee.index(),
+		icon: Settings,
 	},
 ];
 
