@@ -9,14 +9,14 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import order from '@/routes/order';
+import orderRoute from '@/routes/order';
 
 const props = defineProps<{
 	order: Order;
 }>();
 
 const viewDetail = () => {
-	router.visit(order.show(props.order.id).url);
+	router.visit(orderRoute.show(props.order.id).url);
 };
 </script>
 

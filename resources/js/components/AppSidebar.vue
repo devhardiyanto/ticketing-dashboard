@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Tickets, Image, Settings, ShoppingCart } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Tickets, Image, Settings, ShoppingCart, Users, Building2 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 /* Routes */
@@ -23,12 +23,24 @@ import ticket_type from '@/routes/ticket_type';
 import banner from '@/routes/banner';
 import platform_fee from '@/routes/platform_fee';
 import order from '@/routes/order';
+import user from '@/routes/user';
+import organization from '@/routes/organization';
 
 const mainNavItems: NavItem[] = [
 	{
 		title: 'Dashboard',
 		href: dashboard(),
 		icon: LayoutGrid,
+	},
+	{
+		title: 'Users',
+		href: user.index(),
+		icon: Users,
+	},
+	{
+		title: 'Organization',
+		href: organization.user.index(), // Linking to the User Management within Organization context
+		icon: Building2,
 	},
 	{
 		title: 'Events',

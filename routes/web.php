@@ -23,3 +23,5 @@ require __DIR__ . '/dashboard/upload.php';
 require __DIR__ . '/dashboard/banner.php';
 require __DIR__ . '/dashboard/platform_fee.php';
 require __DIR__ . '/dashboard/order.php';
+require __DIR__ . '/dashboard/user.php';
+require __DIR__ . '/dashboard/organization_user.php';

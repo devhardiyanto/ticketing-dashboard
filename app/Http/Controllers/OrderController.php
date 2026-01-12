@@ -22,7 +22,7 @@ class OrderController extends Controller
 		$orders = $this->order_repo->getAll($params);
 
 		// Transform orders to include event name
-		$orders->getCollection()->transform(function ($order) {
+		$orders->through(function ($order) {
 			// Get event from first order item
 			$event = $order->event;
 			$order->event_name = $event?->name ?? 'N/A';

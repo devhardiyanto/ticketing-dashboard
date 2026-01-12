@@ -5,7 +5,7 @@ import { useColumns } from './columns';
 import type { Order } from './columns';
 import type { BreadcrumbItem } from '@/types';
 
-const props = defineProps<{
+defineProps<{
 	orders: {
 		data: Order[];
 		current_page: number;
