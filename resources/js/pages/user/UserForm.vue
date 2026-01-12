@@ -48,7 +48,7 @@ const form = useForm({
   name: props.initialData?.name || '',
   email: props.initialData?.email || '',
   password: '',
-  organization_id: props.initialData?.organization_id || props.lockedOrganizationId || '',
+  organization_id: props.initialData?.organization_id || props.lockedOrganizationId || '__none__',
   role_id: props.initialData?.role_id || null,
   phone_number: props.initialData?.phone_number || '',
   status: props.initialData?.status || 'active',
@@ -61,7 +61,7 @@ const submit = () => {
   // Use case: Creating user via "Menu Users" and selecting an Org.
   // Warning says: "User will be assigned to Org... cannot be changed."
 
-  if (!isEditMode.value && form.organization_id && !props.isLockedOrganization) {
+  if (!isEditMode.value && form.organization_id && form.organization_id !== '__none__' && !props.isLockedOrganization) {
     showOrgWarning.value = true;
     return;
   }
@@ -75,8 +75,14 @@ const confirmCreate = () => {
 };
 
 const executeSubmit = () => {
+  // Convert '__none__' back to empty string for backend
+  const submitData = {
+    ...form.data(),
+    organization_id: form.organization_id === '__none__' ? null : form.organization_id,
+  };
+
   if (isEditMode.value) {
-    form.put(userRoute.update(props.initialData.id).url, {
+    form.transform(() => submitData).put(userRoute.update(props.initialData.id).url, {
       onSuccess: () => {
         toast.success('User updated successfully');
         emit('success');
@@ -84,7 +90,7 @@ const executeSubmit = () => {
       onError: () => toast.error('Failed to update user'),
     });
   } else {
-    form.post(userRoute.store().url, {
+    form.transform(() => submitData).post(userRoute.store().url, {
       onSuccess: () => {
         toast.success('User created successfully');
         emit('success');
@@ -136,7 +142,7 @@ const executeSubmit = () => {
             <SelectValue placeholder="Select Organization" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">None (System Admin)</SelectItem> <!-- Empty string for null? needs handling in backend -->
+            <SelectItem value="__none__">None (System Admin)</SelectItem>
             <SelectItem v-for="org in organizations" :key="org.id" :value="org.id">
               {{ org.name }}
             </SelectItem>

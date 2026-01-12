@@ -94,7 +94,7 @@ const orgItems = computed(() => props.organizations.map(org => ({
       :filters="filters"
       :pagination="users"
       :on-create="openCreate"
-      :create-label="`Add User to ${organization_model.name}`"
+      :create-label="`Add User to Orgs`"
     />
 
     <div v-else class="text-center py-10 text-muted-foreground border rounded-lg bg-muted/10">
