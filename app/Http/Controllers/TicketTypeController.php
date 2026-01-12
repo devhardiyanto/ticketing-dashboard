@@ -26,7 +26,14 @@ class TicketTypeController extends Controller
 	 */
 	public function index(Request $request)
 	{
-		$events = $this->event_repo->all();
+		// Get only events that can have ticket types:
+		// 1. Standalone events (not a parent)
+		// 2. Child events (have a parent)
+		$events = $this->event_repo->all()->filter(function ($event) {
+			// Exclude parent events (they have children, ticket types go on children)
+			return !$event->is_parent;
+		})->values();
+
 		$params = $request->only(['event_id']);
 
 		$event = null;
@@ -34,6 +41,10 @@ class TicketTypeController extends Controller
 			$event = $this->event_repo->find($params['event_id']);
 			if (!$event) {
 				abort(404, 'Event not found');
+			}
+			// Validate that this event can have ticket types
+			if ($event->is_parent) {
+				abort(403, 'Parent events cannot have ticket types. Please select a child event.');
 			}
 		}
 
@@ -66,6 +77,12 @@ class TicketTypeController extends Controller
 			'inventory_status' => 'nullable|integer|in:0,1,2',
 			'sort_order' => 'nullable|integer|min:0',
 		]);
+
+		// Validate that this event can have ticket types (not a parent event)
+		$event = $this->event_repo->find($data['event_id']);
+		if ($event && $event->is_parent) {
+			abort(403, 'Parent events cannot have ticket types. Please select a child event.');
+		}
 
 		if (!empty($data['start_sale_date'])) {
 			$data['start_sale_date'] = Carbon::parse($data['start_sale_date'])->format('Y-m-d H:i:s');

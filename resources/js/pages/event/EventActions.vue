@@ -79,7 +79,7 @@ const handleDelete = () => {
 					</Link>
         </DropdownMenuItem>
         <DropdownMenuItem as-child class="hover:cursor-pointer" v-if="!event.is_parent">
-					<Link :href="`/ticket_type/${event.id}`">
+					<Link :href="`/ticket_type?event_id=${event.id}`">
 						<Ticket class="mr-2 h-4 w-4" />
 						Ticket Settings
 					</Link>

@@ -22,3 +22,4 @@ require __DIR__ . '/dashboard/ticket_type.php';
 require __DIR__ . '/dashboard/upload.php';
 require __DIR__ . '/dashboard/banner.php';
 require __DIR__ . '/dashboard/platform_fee.php';
+require __DIR__ . '/dashboard/order.php';
