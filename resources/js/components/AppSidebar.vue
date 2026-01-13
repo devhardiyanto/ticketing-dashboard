@@ -11,61 +11,91 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { type NavItem } from '@/types';
+import { type NavGroup, type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Tickets, Image, Settings, ShoppingCart, Users, Building2 } from 'lucide-vue-next';
+import {
+	BookOpen,
+	Building2,
+	Folder,
+	Image,
+	LayoutGrid,
+	Settings,
+	ShoppingCart,
+	Tickets,
+	Users,
+} from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 /* Routes */
 import { dashboard } from '@/routes';
-import event from '@/routes/event';
-import ticket_type from '@/routes/ticket_type';
 import banner from '@/routes/banner';
-import platform_fee from '@/routes/platform_fee';
+import event from '@/routes/event';
 import order from '@/routes/order';
-import user from '@/routes/user';
 import organization from '@/routes/organization';
+import platform_fee from '@/routes/platform_fee';
+import ticket_type from '@/routes/ticket_type';
+import user from '@/routes/user';
 
-const mainNavItems: NavItem[] = [
+const navGroups: NavGroup[] = [
 	{
-		title: 'Dashboard',
-		href: dashboard(),
-		icon: LayoutGrid,
+		label: 'Overview',
+		items: [
+			{
+				title: 'Dashboard',
+				href: dashboard(),
+				icon: LayoutGrid,
+			},
+		],
 	},
 	{
-		title: 'Users',
-		href: user.index(),
-		icon: Users,
+		label: 'User Management',
+		items: [
+			{
+				title: 'Users',
+				href: user.index(),
+				icon: Users,
+			},
+			{
+				title: 'Organization',
+				href: organization.user.index(),
+				icon: Building2,
+			},
+		],
 	},
 	{
-		title: 'Organization',
-		href: organization.user.index(), // Linking to the User Management within Organization context
-		icon: Building2,
+		label: 'Event Management',
+		items: [
+			{
+				title: 'Events',
+				href: event.index(),
+				icon: BookOpen,
+			},
+			{
+				title: 'Ticket Types',
+				href: ticket_type.index(),
+				icon: Tickets,
+			},
+			{
+				title: 'Orders',
+				href: order.index(),
+				icon: ShoppingCart,
+			},
+		],
 	},
 	{
-		title: 'Events',
-		href: event.index(),
-		icon: BookOpen,
-	},
-	{
-		title: 'Ticket Types',
-		href: ticket_type.index(),
-		icon: Tickets,
-	},
-	{
-		title: 'Orders',
-		href: order.index(),
-		icon: ShoppingCart,
-	},
-	{
-		title: 'Banners',
-		href: banner.index(),
-		icon: Image,
-	},
-	{
-		title: 'Platform Fee',
-		href: platform_fee.index(),
-		icon: Settings,
+		label: 'Content & Settings',
+		items: [
+			{
+				title: 'Banners',
+				href: banner.index(),
+				icon: Image,
+			},
+			{
+				title: 'Platform Fee',
+				href: platform_fee.index(),
+				icon: Settings,
+			},
+		],
 	},
 ];
 
@@ -84,27 +114,27 @@ const footerNavItems: NavItem[] = [
 </script>
 
 <template>
-    <Sidebar collapsible="icon" variant="inset">
-        <SidebarHeader>
-            <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton size="lg" as-child>
-                        <Link :href="dashboard()">
-                            <AppLogo />
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            </SidebarMenu>
-        </SidebarHeader>
+	<Sidebar collapsible="icon" variant="inset">
+		<SidebarHeader>
+			<SidebarMenu>
+				<SidebarMenuItem>
+					<SidebarMenuButton size="lg" as-child>
+						<Link :href="dashboard()">
+							<AppLogo />
+						</Link>
+					</SidebarMenuButton>
+				</SidebarMenuItem>
+			</SidebarMenu>
+		</SidebarHeader>
 
-        <SidebarContent>
-            <NavMain :items="mainNavItems" />
-        </SidebarContent>
+		<SidebarContent>
+			<NavMain :groups="navGroups" />
+		</SidebarContent>
 
-        <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
-            <NavUser />
-        </SidebarFooter>
-    </Sidebar>
-    <slot />
+		<SidebarFooter>
+			<NavFooter :items="footerNavItems" />
+			<NavUser />
+		</SidebarFooter>
+	</Sidebar>
+	<slot />
 </template>
