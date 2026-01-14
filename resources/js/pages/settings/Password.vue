@@ -13,10 +13,10 @@ import { Label } from '@/components/ui/label';
 import { type BreadcrumbItem } from '@/types';
 
 const breadcrumbItems: BreadcrumbItem[] = [
-    {
-        title: 'Password settings',
-        href: edit().url,
-    },
+	{
+		title: 'Password settings',
+		href: edit().url,
+	},
 ];
 </script>
 
@@ -34,14 +34,14 @@ const breadcrumbItems: BreadcrumbItem[] = [
                 <Form
                     v-bind="PasswordController.update.form()"
                     :options="{
-                        preserveScroll: true,
-                    }"
+											preserveScroll: true,
+										}"
                     reset-on-success
                     :reset-on-error="[
-                        'password',
-                        'password_confirmation',
-                        'current_password',
-                    ]"
+											'password',
+											'password_confirmation',
+											'current_password',
+										]"
                     class="space-y-6"
                     v-slot="{ errors, processing, recentlySuccessful }"
                 >

@@ -2,17 +2,17 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from '@/components/ui/select';
 import {
-	Field,
-	FieldContent,
-	FieldError,
-	FieldLabel,
+    Field,
+    FieldContent,
+    FieldError,
+    FieldLabel,
 } from '@/components/ui/field';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -23,25 +23,25 @@ import { ref, computed } from 'vue';
 import userRoute from '@/routes/user';
 import { Loader2, Lock } from 'lucide-vue-next';
 import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
 const props = defineProps<{
-	initialData?: any | null;
-	organizations?: { id: string; name: string }[];
-	roles?: { id: number; name: string; display_name: string; permissions: string[] }[];
-	availablePermissions?: { id: number; name: string }[];
+    initialData?: any | null;
+    organizations?: { id: string; name: string }[];
+    roles?: { id: number; name: string; display_name: string; permissions: string[] }[];
+    availablePermissions?: { id: number; name: string }[];
 
-	isLockedOrganization?: boolean;
-	lockedOrganizationId?: string;
-	lockedOrganizationName?: string;
+    isLockedOrganization?: boolean;
+    lockedOrganizationId?: string;
+    lockedOrganizationName?: string;
 }>();
 
 const emit = defineEmits(['success']);
@@ -49,139 +49,139 @@ const emit = defineEmits(['success']);
 const isEditMode = computed(() => !!props.initialData);
 
 const form = useForm({
-	name: props.initialData?.name || '',
-	email: props.initialData?.email || '',
-	password: '',
-	organization_id: props.initialData?.organization_id || props.lockedOrganizationId || '__none__',
-	role_id: props.initialData?.role_id || null,
-	phone_number: props.initialData?.phone_number || '',
-	status: props.initialData?.status || 'active',
-	permissions: props.initialData?.permissions?.map((p: any) => p.name) || [],
+    name: props.initialData?.name || '',
+    email: props.initialData?.email || '',
+    password: '',
+    organization_id: props.initialData?.organization_id || props.lockedOrganizationId || '__none__',
+    role_id: props.initialData?.role_id || null,
+    phone_number: props.initialData?.phone_number || '',
+    status: props.initialData?.status || 'active',
+    permissions: props.initialData?.permissions?.map((p: any) => p.name) || [],
 });
 
 const showOrgWarning = ref(false);
 
 const inheritedPermissions = computed(() => {
-	if (!form.role_id) return [];
-	const role = props.roles?.find(r => r.id === form.role_id);
-	return role ? role.permissions : [];
+    if (!form.role_id) return [];
+    const role = props.roles?.find(r => r.id === form.role_id);
+    return role ? role.permissions : [];
 });
 
 const isPermissionInherited = (permissionName: string) => {
-	return inheritedPermissions.value.includes(permissionName);
+    return inheritedPermissions.value.includes(permissionName);
 };
 
 const isPermissionChecked = (permissionName: string) => {
-	return isPermissionInherited(permissionName) || form.permissions.includes(permissionName);
+    return isPermissionInherited(permissionName) || form.permissions.includes(permissionName);
 };
 
 const togglePermission = (permissionName: string, checked: boolean) => {
-	if (isPermissionInherited(permissionName)) return; // Cannot toggle inherited
+    if (isPermissionInherited(permissionName)) return; // Cannot toggle inherited
 
-	if (checked) {
-		if (!form.permissions.includes(permissionName)) {
-			form.permissions.push(permissionName);
-		}
-	} else {
-		form.permissions = form.permissions.filter((p: string) => p !== permissionName);
-	}
+    if (checked) {
+        if (!form.permissions.includes(permissionName)) {
+            form.permissions.push(permissionName);
+        }
+    } else {
+        form.permissions = form.permissions.filter((p: string) => p !== permissionName);
+    }
 };
 
 const submit = () => {
-	if (!isEditMode.value && form.organization_id && form.organization_id !== '__none__' && !props.isLockedOrganization) {
-		showOrgWarning.value = true;
-		return;
-	}
-	executeSubmit();
+    if (!isEditMode.value && form.organization_id && form.organization_id !== '__none__' && !props.isLockedOrganization) {
+        showOrgWarning.value = true;
+        return;
+    }
+    executeSubmit();
 };
 
 const confirmCreate = () => {
-	showOrgWarning.value = false;
-	executeSubmit();
+    showOrgWarning.value = false;
+    executeSubmit();
 };
 
 const groupedPermissions = computed(() => {
-	if (!props.availablePermissions) return {};
+    if (!props.availablePermissions) return {};
 
-	const groups: Record<string, typeof props.availablePermissions> = {};
+    const groups: Record<string, typeof props.availablePermissions> = {};
 
-	props.availablePermissions.forEach(permission => {
-		let group = 'System'; // Default group
+    props.availablePermissions.forEach(permission => {
+        let group = 'System'; // Default group
 
-		if (permission.name.includes('event')) group = 'Event';
-		else if (permission.name.includes('ticket')) group = 'Ticket';
-		else if (permission.name.includes('order')) group = 'Order';
-		else if (permission.name.includes('user')) group = 'User';
-		else if (permission.name.includes('banner')) group = 'Content';
-		else if (permission.name.includes('dashboard')) group = 'System';
+        if (permission.name.includes('event')) group = 'Event';
+        else if (permission.name.includes('ticket')) group = 'Ticket';
+        else if (permission.name.includes('order')) group = 'Order';
+        else if (permission.name.includes('user')) group = 'User';
+        else if (permission.name.includes('banner')) group = 'Content';
+        else if (permission.name.includes('dashboard')) group = 'System';
 
-		if (!groups[group]) {
-			groups[group] = [];
-		}
-		groups[group].push(permission);
-	});
+        if (!groups[group]) {
+            groups[group] = [];
+        }
+        groups[group].push(permission);
+    });
 
-	// Sort keys for consistent ordering
-	const orderedKeys = ['Event', 'Ticket', 'Order', 'User', 'Content', 'System'];
-	const sortedGroups: Record<string, typeof props.availablePermissions> = {};
+    // Sort keys for consistent ordering
+    const orderedKeys = ['Event', 'Ticket', 'Order', 'User', 'Content', 'System'];
+    const sortedGroups: Record<string, typeof props.availablePermissions> = {};
 
-	orderedKeys.forEach(key => {
-		if (groups[key]) sortedGroups[key] = groups[key];
-	});
+    orderedKeys.forEach(key => {
+        if (groups[key]) sortedGroups[key] = groups[key];
+    });
 
-	// Add any remaining keys
-	Object.keys(groups).forEach(key => {
-		if (!orderedKeys.includes(key)) sortedGroups[key] = groups[key];
-	});
+    // Add any remaining keys
+    Object.keys(groups).forEach(key => {
+        if (!orderedKeys.includes(key)) sortedGroups[key] = groups[key];
+    });
 
-	return sortedGroups;
+    return sortedGroups;
 });
 
 const formatPermissionLabel = (name: string) => {
-	// manage-users -> Manage Users
-	return name
-		.split('-')
-		.map(word => word.charAt(0).toUpperCase() + word.slice(1))
-		.join(' ');
+    // manage-users -> Manage Users
+    return name
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
 };
 
 const formatRoleName = (name: string) => {
-	// super_admin -> Super Admin
-	return name
-		.split('_')
-		.map(word => word.charAt(0).toUpperCase() + word.slice(1))
-		.join(' ');
+    // super_admin -> Super Admin
+    return name
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
 };
 
 const shouldShowOrganization = computed(() => {
-	if (!form.role_id) return false;
-	const role = props.roles?.find(r => r.id === form.role_id);
-	return role?.name === 'organization';
+    if (!form.role_id) return false;
+    const role = props.roles?.find(r => r.id === form.role_id);
+    return role?.name === 'organization';
 });
 
 const executeSubmit = () => {
-	const submitData = {
-		...form.data(),
-		organization_id: form.organization_id === '__none__' ? null : form.organization_id,
-	};
+    const submitData = {
+        ...form.data(),
+        organization_id: form.organization_id === '__none__' ? null : form.organization_id,
+    };
 
-	if (isEditMode.value) {
-		form.transform(() => submitData).put(userRoute.update(props.initialData.id).url, {
-			onSuccess: () => {
-				toast.success('User updated successfully');
-				emit('success');
-			},
-			onError: () => toast.error('Failed to update user'),
-		});
-	} else {
-		form.transform(() => submitData).post(userRoute.store().url, {
-			onSuccess: () => {
-				toast.success('User created successfully');
-				emit('success');
-			},
-			onError: () => toast.error('Failed to create user'),
-		});
-	}
+    if (isEditMode.value) {
+        form.transform(() => submitData).put(userRoute.update(props.initialData.id).url, {
+            onSuccess: () => {
+                toast.success('User updated successfully');
+                emit('success');
+            },
+            onError: () => toast.error('Failed to update user'),
+        });
+    } else {
+        form.transform(() => submitData).post(userRoute.store().url, {
+            onSuccess: () => {
+                toast.success('User created successfully');
+                emit('success');
+            },
+            onError: () => toast.error('Failed to create user'),
+        });
+    }
 };
 </script>
 

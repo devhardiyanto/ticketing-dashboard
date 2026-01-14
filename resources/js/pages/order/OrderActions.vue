@@ -4,19 +4,19 @@ import { MoreHorizontal, Eye } from 'lucide-vue-next';
 import { router } from '@inertiajs/vue3';
 import type { Order } from './columns';
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import orderRoute from '@/routes/order';
 
 const props = defineProps<{
-	order: Order;
+  order: Order;
 }>();
 
 const viewDetail = () => {
-	router.visit(orderRoute.show(props.order.id).url);
+  router.visit(orderRoute.show(props.order.id).url);
 };
 </script>
 

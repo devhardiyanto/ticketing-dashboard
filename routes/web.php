@@ -24,3 +24,4 @@ require __DIR__ . '/dashboard/order.php';
 require __DIR__ . '/dashboard/user.php';
 require __DIR__ . '/dashboard/organization_user.php';
 require __DIR__ . '/dashboard/system.php';
+require __DIR__ . '/dashboard/analytics.php';

@@ -24,6 +24,7 @@ import {
 	Tickets,
 	Users,
 	Activity,
+	ChartArea,
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { computed } from 'vue';
@@ -31,6 +32,7 @@ import { computed } from 'vue';
 /* Routes */
 import { dashboard } from '@/routes';
 import banner from '@/routes/banner';
+import analytics from '@/routes/analytics';
 import event from '@/routes/event';
 import order from '@/routes/order';
 import organization from '@/routes/organization';
@@ -61,6 +63,12 @@ const rawNavGroups: NavGroup[] = [
 				href: dashboard(),
 				icon: LayoutGrid,
 				permission: 'view-dashboard',
+			},
+			{
+				title: 'Analytics',
+				href: analytics.index(),
+				icon: ChartArea,
+				permission: 'view-analytics', // Assuming this permission or generic
 			},
 		],
 	},
@@ -117,17 +125,11 @@ const rawNavGroups: NavGroup[] = [
 				title: 'Platform Fee',
 				href: platform_fee.index(),
 				icon: Settings,
-				// Assuming Super Admin only for platform fee if no specific permission?
-				// Or maybe 'manage-platform-fee' if it existed.
-				// For now, let's assume it requires 'manage-users' (admin) or just show to all with sidebar access?
-				// Let's use a computed permission for now or leave empty if public to dashboard users.
-				// Ideally, explicit permission. Let's assume 'manage-platform-fee' doesn't exist yet, so check role?
 			},
 			{
 				title: 'Activity Logs',
-				href: '/activity-logs', // Route::get('activity-logs', ...)->name('activity-logs.index')
+				href: '/activity-logs',
 				icon: Activity,
-				// Only Super Admin should see this usually
 			},
 		],
 	},

@@ -3,11 +3,11 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CheckCircle } from 'lucide-vue-next';
 
 interface Props {
-  title?: string;
+	title?: string;
 }
 
 withDefaults(defineProps<Props>(), {
-  title: 'Operation successful.',
+	title: 'Operation successful.',
 });
 </script>
 

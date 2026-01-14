@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ContentLayout from '@/layouts/ContentLayout.vue';
-import { ref, computed, watch } from 'vue';
-import { Head, router, useForm } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+import { Head, useForm } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,60 +11,60 @@ import { toast } from 'vue-sonner';
 import platformFeeRoute from '@/routes/platform_fee';
 
 interface PlatformFeeConfig {
-  id: string;
-  percentage_fee: number;
-  fixed_fee: number;
-  is_active: boolean;
-  updated_at: string | null;
+	id: string;
+	percentage_fee: number;
+	fixed_fee: number;
+	is_active: boolean;
+	updated_at: string | null;
 }
 
 const props = defineProps<{
-  config: PlatformFeeConfig | null;
+	config: PlatformFeeConfig | null;
 }>();
 
 // Form setup
 const form = useForm({
-  percentage_fee: props.config?.percentage_fee ?? 5,
-  fixed_fee: props.config?.fixed_fee ?? 2500,
-  is_active: props.config?.is_active ?? true,
+	percentage_fee: props.config?.percentage_fee ?? 5,
+	fixed_fee: props.config?.fixed_fee ?? 2500,
+	is_active: props.config?.is_active ?? true,
 });
 
 // Preview calculation
 const previewSubtotal = ref(1000000); // Rp 1.000.000
 const previewFee = computed(() => {
-  if (!form.is_active) return 0;
-  const percentageAmount = (previewSubtotal.value * form.percentage_fee) / 100;
-  return Math.round(percentageAmount + form.fixed_fee);
+	if (!form.is_active) return 0;
+	const percentageAmount = (previewSubtotal.value * form.percentage_fee) / 100;
+	return Math.round(percentageAmount + form.fixed_fee);
 });
 
 const previewTotal = computed(() => {
-  return previewSubtotal.value + previewFee.value;
+	return previewSubtotal.value + previewFee.value;
 });
 
 // Format currency helper
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-  }).format(value);
+	return new Intl.NumberFormat('id-ID', {
+		style: 'currency',
+		currency: 'IDR',
+		minimumFractionDigits: 0,
+	}).format(value);
 };
 
 // Submit handler
 const handleSubmit = () => {
-  form.put(platformFeeRoute.update().url, {
-    preserveScroll: true,
-    onSuccess: () => {
-      toast.success('Platform fee configuration updated successfully');
-    },
-    onError: () => {
-      toast.error('Failed to update platform fee configuration');
-    }
-  });
+	form.put(platformFeeRoute.update().url, {
+		preserveScroll: true,
+		onSuccess: () => {
+			toast.success('Platform fee configuration updated successfully');
+		},
+		onError: () => {
+			toast.error('Failed to update platform fee configuration');
+		}
+	});
 };
 
 const breadcrumbs = computed(() => [
-  { title: 'Platform Fee', href: platformFeeRoute.index().url }
+	{ title: 'Platform Fee', href: platformFeeRoute.index().url }
 ]);
 </script>
 

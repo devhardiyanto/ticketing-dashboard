@@ -11,7 +11,7 @@ import { email } from '@/routes/password';
 import { Form, Head } from '@inertiajs/vue3';
 
 defineProps<{
-    status?: string;
+	status?: string;
 }>();
 </script>
 

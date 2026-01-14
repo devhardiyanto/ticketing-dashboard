@@ -6,26 +6,26 @@ import { useForm, router, Link } from '@inertiajs/vue3';
 import type { Event } from '@/types/dashboard/event';
 import BaseDialog from '@/components/common/BaseDialog.vue';
 import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { destroy } from '@/actions/App/Http/Controllers/EventController';
 import { toast } from 'vue-sonner'
 
 const props = defineProps<{
-	event: Event;
+  event: Event;
 }>();
 
 const emit = defineEmits(['edit', 'success']);
@@ -35,22 +35,22 @@ const isDeleteOpen = ref(false);
 const isTicketTypeOpen = ref(false);
 
 const handleChildSelect = (childId: string) => {
-	router.visit(route('ticket_type.index', childId));
+  router.visit(route('ticket_type.index', childId));
 };
 
 const form = useForm({
-	id: props.event.id || '',
+  id: props.event.id || '',
 });
 
 const handleDelete = () => {
-	form.submit(destroy(props.event.id), {
-		preserveScroll: true,
-		onSuccess: () => {
-			emit('success');
-			isDeleteOpen.value = false;
-			toast.success('Event deleted successfully');
-		},
-	})
+  form.submit(destroy(props.event.id), {
+    preserveScroll: true,
+    onSuccess: () => {
+      emit('success');
+      isDeleteOpen.value = false;
+      toast.success('Event deleted successfully');
+    },
+  })
 };
 </script>
 

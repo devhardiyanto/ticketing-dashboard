@@ -2,17 +2,17 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-	Field,
-	FieldContent,
-	FieldError,
-	FieldLabel,
+    Field,
+    FieldContent,
+    FieldError,
+    FieldLabel,
 } from '@/components/ui/field';
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from '@/components/ui/select';
 import { useForm } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
@@ -20,52 +20,52 @@ import bannerRoute from '@/routes/banner';
 import FileUploader from '@/components/common/FileUploader.vue';
 
 const props = defineProps<{
-	initialData?: any;
-	events: any[];
+    initialData?: any;
+    events: any[];
 }>();
 
 const emit = defineEmits(['success']);
 
 const form = useForm({
-	title: props.initialData?.title || '',
-	event_id: props.initialData?.event_id || '',
-	status: props.initialData?.status || 'active',
-	image: null as File | null,
-	image_url: props.initialData?.image_signed_url || null,
+    title: props.initialData?.title || '',
+    event_id: props.initialData?.event_id || '',
+    status: props.initialData?.status || 'active',
+    image: null as File | null,
+    image_url: props.initialData?.image_signed_url || null,
 });
 
 const submit = () => {
-	// Logic aligned with EventForm.vue
-	const url = props.initialData
-		? bannerRoute.update(props.initialData.id).url
-		: bannerRoute.store().url;
+    // Logic aligned with EventForm.vue
+    const url = props.initialData
+        ? bannerRoute.update(props.initialData.id).url
+        : bannerRoute.store().url;
 
-	if (props.initialData) {
-		// For updates, we must use POST with _method="PUT" to handle file uploads in Laravel
-		form.transform((data) => ({
-			...data,
-			_method: 'PUT',
-		})).post(url, {
-			onSuccess: () => {
-				toast.success('Banner updated successfully');
-				emit('success');
-			},
-			onError: () => {
-				toast.error('Failed to update banner');
-			}
-		});
-	} else {
-		// For creation, standard POST
-		form.post(url, {
-			onSuccess: () => {
-				toast.success('Banner created successfully');
-				emit('success');
-			},
-			onError: () => {
-				toast.error('Failed to create banner');
-			}
-		});
-	}
+    if (props.initialData) {
+        // For updates, we must use POST with _method="PUT" to handle file uploads in Laravel
+        form.transform((data) => ({
+            ...data,
+            _method: 'PUT',
+        })).post(url, {
+            onSuccess: () => {
+                toast.success('Banner updated successfully');
+                emit('success');
+            },
+            onError: () => {
+                toast.error('Failed to update banner');
+            }
+        });
+    } else {
+        // For creation, standard POST
+        form.post(url, {
+            onSuccess: () => {
+                toast.success('Banner created successfully');
+                emit('success');
+            },
+            onError: () => {
+                toast.error('Failed to create banner');
+            }
+        });
+    }
 };
 </script>
 

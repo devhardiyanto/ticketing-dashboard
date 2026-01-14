@@ -5,6 +5,7 @@ export interface Event {
 	organization_id: string;
 	image_url?: string | null;
 	image_signed_url?: string | null; // Signed URL for display
+	venue_map_url?: string | null;
 	name: string;
 	slug: string;
 	description?: string;

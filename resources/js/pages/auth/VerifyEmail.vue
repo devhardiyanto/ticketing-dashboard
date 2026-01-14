@@ -8,7 +8,7 @@ import { send } from '@/routes/verification';
 import { Form, Head } from '@inertiajs/vue3';
 
 defineProps<{
-    status?: string;
+	status?: string;
 }>();
 </script>
 
