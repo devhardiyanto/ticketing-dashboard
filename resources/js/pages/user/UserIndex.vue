@@ -27,6 +27,7 @@ const props = defineProps<{
     organization_id?: string;
     role_id?: string;
   };
+  availablePermissions: any[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -83,6 +84,7 @@ const tableData = computed(() =>
         :initial-data="selectedItem"
         :organizations="organizations"
         :roles="roles"
+        :available-permissions="availablePermissions"
         @success="isDialogOpen = false"
       />
     </BaseDialog>

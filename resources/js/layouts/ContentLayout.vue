@@ -26,7 +26,7 @@ defineProps<{
     <div class="py-12">
       <div class="mx-auto sm:px-6 lg:px-8">
         <div class="overflow-hidden shadow-sm sm:rounded-lg">
-          <div class="px-6">
+          <div class="p-6">
             <slot />
           </div>
         </div>

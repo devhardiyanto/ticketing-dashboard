@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\OrganizationRepositoryInterface;
-use App\Models\Dashboard\Role;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Illuminate\Support\Arr;
 
 class UserController extends Controller
 {
@@ -26,8 +28,14 @@ class UserController extends Controller
 	public function index(Request $request)
 	{
 		$params = $request->only(['search', 'limit', 'page', 'organization_id', 'role_id', 'status']);
+        $params['exclude_id'] = auth()->id();
 
 		$users = $this->user_repo->getAll($params);
+
+        // Map roles for specific user serialization if needed, but 'with' in repo helps.
+        // Frontend expects 'role' object. Spatie provides 'roles' array.
+        // We might need to transform the collection to mapped structure if frontend expects single role.
+        // Assuming single role per user for now based on UI 'Form Select Role'.
 
 		$organizations = $this->org_repo->all()->map(function ($org) {
 			return [
@@ -36,43 +44,34 @@ class UserController extends Controller
 			];
 		});
 
-		$roles = Role::all()->map(function ($role) {
+		$roles = Role::with('permissions')->get()->map(function ($role) {
 			return [
 				'id' => $role->id,
-				'display_name' => $role->display_name,
+				'display_name' => $role->display_name ?? $role->name,
+                'name' => $role->name,
+                'permissions' => $role->permissions->pluck('name'),
 			];
 		});
 
-		// If scoped by organization (Menu Organization), fetch the org model context
+
+		$available_permissions = Permission::all()->map(function ($p) {
+			return ['id' => $p->id, 'name' => $p->name];
+		});
+
 		$organization_model = null;
 		if (isset($params['organization_id'])) {
 			$organization_model = $this->org_repo->find($params['organization_id']);
 		}
 
-		// Determine view based on context?
-		// Actually, we can share the same controller method but render different Inertia pages
-		// based on the route or request.
-		// Or simpler: The Frontend decides which "Page Component" to use if we just return data.
-		// But here we must return Inertia::render('PageComponent').
-		// User requested distinct menus.
-
-		// If the request comes from the "Organization Scoped" route (e.g. via 'organization/..' prefix check or param)
-		// But cleaner way: use distinct route definitions calling same controller but passing a 'view' hint?
-		// No, standard Inertia way is distinct Controller method or logic.
-
-		// Let's assume for now we use one 'user/UserIndex' for standalone.
-		// And maybe we return 'organization/OrganizationUserIndex' if explicit 'scoped' param is passed?
-		// User requested: Menu Users (Standalone) and Menu Organization.
-
-		// Let's check the route name to decide?
 		$routeName = $request->route()->getName();
 
 		if (str_contains($routeName ?? '', 'organization.user')) {
 			return Inertia::render('organization/OrganizationUserIndex', [
 				'users' => $users,
-				'organizations' => $organizations, // For the top combobox
+				'organizations' => $organizations,
 				'roles' => $roles,
-				'organization_model' => $organization_model, // The selected org context
+				'availablePermissions' => $available_permissions,
+				'organization_model' => $organization_model,
 				'filters' => $params,
 			]);
 		}
@@ -81,6 +80,7 @@ class UserController extends Controller
 			'users' => $users,
 			'organizations' => $organizations,
 			'roles' => $roles,
+			'availablePermissions' => $available_permissions,
 			'filters' => $params,
 		]);
 	}
@@ -90,18 +90,39 @@ class UserController extends Controller
 		$data = $request->validate([
 			'name' => 'required|string|max:255',
 			'email' => 'required|string|email|max:255|unique:pgsql.users',
-			'password' => 'required|string|min:8',
+			// 'password' => 'required|string|min:8', // Generated automatically
 			'organization_id' => 'nullable|string|exists:core_pgsql.organizations,id',
 			'role_id' => 'nullable|integer|exists:pgsql.roles,id',
 			'phone_number' => 'nullable|string|max:20',
 			'status' => 'required|string|in:active,inactive',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'string|exists:permissions,name',
 		]);
 
-		$data['password'] = Hash::make($data['password']);
+		// Generate random password
+		$rawPassword = \Illuminate\Support\Str::random(10);
+		$data['password'] = Hash::make($rawPassword);
 
-		$this->user_repo->create($data);
+		$user = $this->user_repo->create(Arr::except($data, ['role_id', 'permissions']));
 
-		return redirect()->back();
+        if (!empty($data['role_id'])) {
+            $role = Role::findById($data['role_id']); // Spatie method
+            $user->assignRole($role);
+        }
+
+        if (!empty($data['permissions'])) {
+            $user->syncPermissions($data['permissions']);
+        }
+
+        // Send email
+        try {
+            \Illuminate\Support\Facades\Mail::to($user)->send(new \App\Mail\UserCreated($user->email, $rawPassword));
+        } catch (\Exception $e) {
+            // Log error but don't fail the request
+            \Illuminate\Support\Facades\Log::error('Failed to send user creation email: ' . $e->getMessage());
+        }
+
+		return redirect()->back()->with('success', 'User created. Password sent to email.');
 	}
 
 	public function update(Request $request, string $id)
@@ -114,16 +135,17 @@ class UserController extends Controller
 		$data = $request->validate([
 			'name' => 'required|string|max:255',
 			'email' => ['required', 'string', 'email', 'max:255', Rule::unique('pgsql.users')->ignore($user->id)],
-			'password' => 'nullable|string|min:8', // Nullable on update
+			// Allow empty password (no change)
+			'password' => 'nullable|string|min:8',
 			'organization_id' => 'nullable|string|exists:core_pgsql.organizations,id',
 			'role_id' => 'nullable|integer|exists:pgsql.roles,id',
 			'phone_number' => 'nullable|string|max:20',
 			'status' => 'required|string|in:active,inactive',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'string|exists:permissions,name',
 		]);
 
-		// Logic: If user already has organization_id, it cannot be changed.
 		if ($user->organization_id && isset($data['organization_id']) && $data['organization_id'] !== $user->organization_id) {
-			// Ignore the change attempt (or could throw error)
 			unset($data['organization_id']);
 		}
 
@@ -133,7 +155,25 @@ class UserController extends Controller
 			unset($data['password']);
 		}
 
-		$this->user_repo->update($id, $data);
+		$this->user_repo->update($id, Arr::except($data, ['role_id', 'permissions']));
+
+        // Refresh model to handle relations
+        $user->refresh();
+
+        if (!empty($data['role_id'])) {
+             $user->syncRoles([$data['role_id']]);
+        } else {
+             // If role_id is explicit null/empty but present in request?
+             // If frontend sends null, we remove roles?
+             // Usually default to no change or remove. Assuming 'sync' means set to this.
+             if (array_key_exists('role_id', $data)) {
+                 $user->syncRoles([]);
+             }
+        }
+
+        if (array_key_exists('permissions', $data)) {
+            $user->syncPermissions($data['permissions']);
+        }
 
 		return redirect()->back();
 	}

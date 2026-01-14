@@ -15,7 +15,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
 
 	public function getAll(array $params = []): LengthAwarePaginator
 	{
-		$query = $this->model->with(['organization', 'role'])->newQuery();
+		$query = $this->model->with(['organization', 'roles', 'permissions'])->newQuery();
 
 		if (isset($params['search']) && $params['search']) {
 			$search = $params['search'];
@@ -30,12 +30,16 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
 		}
 
 		if (isset($params['role_id']) && $params['role_id']) {
-			$query->where('role_id', $params['role_id']);
+			$query->role((int) $params['role_id']);
 		}
 
 		if (isset($params['status']) && $params['status']) {
 			$query->where('status', $params['status']);
 		}
+
+        if (isset($params['exclude_id']) && $params['exclude_id']) {
+            $query->where('id', '!=', $params['exclude_id']);
+        }
 
 		$perPage = $params['limit'] ?? 10;
 		return $query->orderBy('created_at', 'desc')->paginate($perPage);

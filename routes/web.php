@@ -5,9 +5,7 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
 Route::get('/', function () {
-	return Inertia::render('Welcome', [
-		'canRegister' => Features::enabled(Features::registration()),
-	]);
+    return Auth::check() ? redirect()->route('dashboard') : redirect()->route('login');
 })->name('home');
 
 Route::get('dashboard', function () {
@@ -25,3 +23,4 @@ require __DIR__ . '/dashboard/platform_fee.php';
 require __DIR__ . '/dashboard/order.php';
 require __DIR__ . '/dashboard/user.php';
 require __DIR__ . '/dashboard/organization_user.php';
+require __DIR__ . '/dashboard/system.php';

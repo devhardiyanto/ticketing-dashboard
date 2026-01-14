@@ -15,6 +15,8 @@ export interface NavItem {
   href: NonNullable<InertiaLinkProps['href']>;
   icon?: LucideIcon;
   isActive?: boolean;
+  permission?: string;
+  items?: NavItem[]; // recursive for submenus if needed
 }
 
 export interface NavGroup {
@@ -36,9 +38,11 @@ export interface User {
   name: string
   avatar?: string;
   phone_number: string
-  role_id: number
+  phone_number: string
   organization_id: any
   status: string
+  permissions: string[]
+  roles: string[]
   email_verified_at: string
   last_login_at: string
   created_at: string

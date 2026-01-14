@@ -9,30 +9,31 @@ import { computed, ref } from 'vue';
 import { BreadcrumbItem } from '@/types';
 
 const props = defineProps<{
-	users: {
-		data: any[];
-		current_page: number;
-		per_page: number;
-		total: number;
-		last_page: number;
-		from: number;
-		to: number;
-	};
-	organizations: any[];
-	roles: any[];
-	organization_model?: any; // The selected org context
-	filters?: {
-		search?: string;
-		limit?: number;
-		// ...
-	};
+  users: {
+    data: any[];
+    current_page: number;
+    per_page: number;
+    total: number;
+    last_page: number;
+    from: number;
+    to: number;
+  };
+  organizations: any[];
+  roles: any[];
+  organization_model?: any; // The selected org context
+  filters?: {
+    search?: string;
+    limit?: number;
+    // ...
+  };
+  availablePermissions: any[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-	{
-		title: 'Organization Users',
-		href: '/organization-users', // Hardcoded or use route helper if available e.g. route('organization.user.index')
-	},
+  {
+    title: 'Organization Users',
+    href: '/organization-users', // Hardcoded or use route helper if available e.g. route('organization.user.index')
+  },
 ];
 
 // Configure columns: Hide Organization column, Disable Delete
@@ -42,31 +43,31 @@ const isDialogOpen = ref(false);
 const selectedItem = ref<any>(null);
 
 const openCreate = () => {
-	selectedItem.value = null;
-	isDialogOpen.value = true;
+  selectedItem.value = null;
+  isDialogOpen.value = true;
 };
 
 const openEdit = (item: any) => {
-	selectedItem.value = item;
-	isDialogOpen.value = true;
+  selectedItem.value = item;
+  isDialogOpen.value = true;
 };
 
 const tableData = computed(() =>
-	props.users.data.map((item) => ({
-		...item,
-		onEdit: openEdit,
-	}))
+  props.users.data.map((item) => ({
+    ...item,
+    onEdit: openEdit,
+  }))
 );
 
 // Combobox items
 const orgId = computed(() => props.organization_model?.id);
 const orgItems = computed(() => props.organizations.map(org => ({
-	id: org.id,
-	label: org.name, // Combobox usually expects label/value or matches logic
-	// Check Combobox implementation if it needs specific keys.
-	// TicketTypeIndex uses ...event which has name/id.
-	name: org.name,
-	url: `/organization-users?organization_id=${org.id}`
+  id: org.id,
+  label: org.name, // Combobox usually expects label/value or matches logic
+  // Check Combobox implementation if it needs specific keys.
+  // TicketTypeIndex uses ...event which has name/id.
+  name: org.name,
+  url: `/organization-users?organization_id=${org.id}`
 })));
 
 </script>
@@ -112,6 +113,7 @@ const orgItems = computed(() => props.organizations.map(org => ({
         :is-locked-organization="true"
         :locked-organization-id="organization_model?.id"
         :locked-organization-name="organization_model?.name"
+        :available-permissions="availablePermissions"
         @success="isDialogOpen = false"
       />
     </BaseDialog>

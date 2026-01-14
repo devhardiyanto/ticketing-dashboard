@@ -15,6 +15,14 @@ use App\Models\Core\Organization;
 class User extends Authenticatable
 {
   use HasFactory, Notifiable, TwoFactorAuthenticatable, SoftDeletes;
+  use \Spatie\Permission\Traits\HasRoles;
+  use \Spatie\Activitylog\Traits\LogsActivity;
+
+  public function getActivitylogOptions(): \Spatie\Activitylog\LogOptions
+  {
+      return \Spatie\Activitylog\LogOptions::defaults()->logOnly(['*']);
+  }
+
 
   /**
    * The connection name for the model.
@@ -40,7 +48,6 @@ class User extends Authenticatable
     'email',
     'password',
     'phone_number',
-    'role_id',
     'organization_id',
     'status',
     'last_login_at',
@@ -75,14 +82,6 @@ class User extends Authenticatable
   }
 
   /**
-   * Get the role that the user belongs to.
-   */
-  public function role(): BelongsTo
-  {
-    return $this->belongsTo(Role::class, 'role_id');
-  }
-
-  /**
    * Get the organization that the user belongs to (cross-schema relationship to core.organizations)
    */
   public function organization(): BelongsTo
@@ -96,55 +95,6 @@ class User extends Authenticatable
   public function activityLogs(): HasMany
   {
     return $this->hasMany(ActivityLog::class, 'user_id');
-  }
-
-  /**
-   * Check if user has a specific permission.
-   */
-  public function hasPermission(string $permissionCode): bool
-  {
-    return $this->role
-      ? $this->role->permissions()->where('code', $permissionCode)->exists()
-      : false;
-  }
-
-  /**
-   * Check if user has any of the given permissions.
-   */
-  public function hasAnyPermission(array $permissionCodes): bool
-  {
-    return $this->role
-      ? $this->role->permissions()->whereIn('code', $permissionCodes)->exists()
-      : false;
-  }
-
-  /**
-   * Check if user has all of the given permissions.
-   */
-  public function hasAllPermissions(array $permissionCodes): bool
-  {
-    if (!$this->role) {
-      return false;
-    }
-
-    $userPermissions = $this->role->permissions()->pluck('code')->toArray();
-    return count(array_intersect($permissionCodes, $userPermissions)) === count($permissionCodes);
-  }
-
-  /**
-   * Check if user is a super admin.
-   */
-  public function isSuperAdmin(): bool
-  {
-    return $this->role && $this->role->name === 'super_admin';
-  }
-
-  /**
-   * Check if user is an organization admin.
-   */
-  public function isOrgAdmin(): bool
-  {
-    return $this->role && $this->role->name === 'org_admin';
   }
 
   /**
