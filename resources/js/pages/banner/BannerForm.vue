@@ -17,7 +17,13 @@ import {
 import { useForm } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 import bannerRoute from '@/routes/banner';
-import FileUploader from '@/components/common/FileUploader.vue';
+import { defineAsyncComponent } from 'vue';
+import { Spinner } from '@/components/ui/spinner';
+
+const FileUploader = defineAsyncComponent({
+    loader: () => import('@/components/common/FileUploader.vue'),
+    loadingComponent: Spinner
+});
 
 const props = defineProps<{
     initialData?: any;

@@ -2,9 +2,14 @@
 import BaseDialog from '@/components/common/BaseDialog.vue';
 import DataTable from '@/components/common/DataTable.vue';
 import ContentLayout from '@/layouts/ContentLayout.vue';
-import { computed, ref, h } from 'vue';
+import { computed, ref, h, defineAsyncComponent } from 'vue';
 import { useColumns } from './columns';
-import EventForm from './EventForm.vue';
+import { Spinner } from '@/components/ui/spinner';
+
+const EventForm = defineAsyncComponent({
+	loader: () => import('./EventForm.vue'),
+	loadingComponent: Spinner,
+});
 
 import type { Event, Organization } from '@/types/dashboard';
 import event from '@/routes/event';
@@ -80,7 +85,7 @@ const titleEvent = () => {
       :columns="columns"
       :on-create="openCreate"
       create-label="Add Event"
-      :api-url="event.data({ parent_id: parent_event?.id } as any).url"
+      :api-url="event.data({ query: { parent_id: parent_event?.id } }).url"
       :query-key="['events', parent_event?.id]"
     />
 

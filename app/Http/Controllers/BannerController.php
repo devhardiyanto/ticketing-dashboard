@@ -36,7 +36,16 @@ class BannerController extends Controller
 
     public function index(Request $request)
     {
-        $params = $request->only(['search', 'limit']);
+        $events = $this->event_repo->all()->select('id', 'name')->toArray();
+
+        return Inertia::render('banner/BannerIndex', [
+            'events' => $events,
+        ]);
+    }
+
+    public function data(Request $request)
+    {
+        $params = $request->only(['search', 'limit', 'page', 'sort', 'order']);
         $banners = $this->banner_repo->getAll($params);
 
         // Generate signed URLs
@@ -48,13 +57,23 @@ class BannerController extends Controller
             return $banner;
         });
 
-        $events = $this->event_repo->all()->select('id', 'name')->toArray();
+        return response()->json($banners);
+    }
 
-        return Inertia::render('banner/BannerIndex', [
-            'banners' => $banners,
-            'events' => $events,
-            'filters' => $request->only(['search']),
-        ]);
+    public function reorderList()
+    {
+        $banners = $this->banner_repo->all();
+
+        // Generate signed URLs
+        $banners->transform(function ($banner) {
+            if ($banner->image) {
+                $banner->image_signed_url = $this->getSignedUrl($banner->image);
+            }
+
+            return $banner;
+        });
+
+        return response()->json($banners);
     }
 
     public function store(Request $request)

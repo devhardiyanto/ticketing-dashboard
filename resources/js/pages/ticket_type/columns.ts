@@ -6,7 +6,10 @@ import { usePage } from '@inertiajs/vue3';
 import { h } from 'vue';
 import TicketTypeActions from './TicketTypeActions.vue';
 
-export const useColumns = () => {
+export const useColumns = (
+	openEdit?: (ticketType: TicketType) => void,
+	onSuccess?: () => void
+) => {
 	const page = usePage();
 	const user = page.props.auth.user;
 
@@ -101,7 +104,8 @@ export const useColumns = () => {
 				const ticket_type = row.original;
 				return h(TicketTypeActions, {
 					ticket_type,
-					onEdit: (e: TicketType) => (ticket_type as any).onEdit?.(e),
+					onEdit: () => openEdit?.(ticket_type),
+					onSuccess,
 				});
 			},
 		},

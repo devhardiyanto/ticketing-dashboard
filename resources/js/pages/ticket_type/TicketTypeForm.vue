@@ -3,59 +3,74 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-	Field,
-	FieldContent,
-	FieldError,
-	FieldLabel,
+  Field,
+  FieldContent,
+  FieldError,
+  FieldLabel,
 } from '@/components/ui/field';
 import { useForm } from '@inertiajs/vue3';
 import { store, update } from "@/actions/App/Http/Controllers/TicketTypeController";
-import DateTimeRangePicker from '@/components/common/DateTimeRangePicker.vue';
-import QuillEditor from '@/components/common/QuillEditor.vue';
-import CurrencyInput from '@/components/common/CurrencyInput.vue';
-import NumberInput from '@/components/common/NumberInput.vue';
+import { defineAsyncComponent } from 'vue';
+import { Spinner } from '@/components/ui/spinner';
+
+const DateTimeRangePicker = defineAsyncComponent({
+  loader: () => import('@/components/common/DateTimeRangePicker.vue'),
+  loadingComponent: Spinner,
+});
+const QuillEditor = defineAsyncComponent({
+  loader: () => import('@/components/common/QuillEditor.vue'),
+  loadingComponent: Spinner,
+});
+const CurrencyInput = defineAsyncComponent({
+  loader: () => import('@/components/common/CurrencyInput.vue'),
+  loadingComponent: Spinner,
+});
+const NumberInput = defineAsyncComponent({
+  loader: () => import('@/components/common/NumberInput.vue'),
+  loadingComponent: Spinner,
+});
 import type { TicketType } from '@/types/dashboard';
 import { toast } from 'vue-sonner';
 
 const props = defineProps<{
-	initialData?: TicketType | null;
-	eventId: string | undefined;
+  initialData?: TicketType | null;
+  eventId: string | undefined;
 }>();
 
 const emit = defineEmits(['success']);
 
 const form = useForm({
-	event_id: props.eventId,
-	name: props.initialData?.name || '',
-	category: props.initialData?.category || '',
-	type: props.initialData?.type || 'PAID',
-	description: props.initialData?.description || '',
-	price: props.initialData?.price || 0,
-	quantity: props.initialData?.quantity || 0,
-	stock_adjustment: '',
-	start_sale_date: props.initialData?.start_sale_date || '',
-	end_sale_date: props.initialData?.end_sale_date || '',
-	is_hidden: props.initialData?.is_hidden || false,
-	inventory_status: props.initialData?.inventory_status ?? 0,
-	sort_order: props.initialData?.sort_order || 0,
+  event_id: props.eventId,
+  name: props.initialData?.name || '',
+  category: props.initialData?.category || '',
+  type: props.initialData?.type || 'PAID',
+  description: props.initialData?.description || '',
+  price: props.initialData?.price || 0,
+  quantity: props.initialData?.quantity || 0,
+  stock_adjustment: '',
+  start_sale_date: props.initialData?.start_sale_date || '',
+  end_sale_date: props.initialData?.end_sale_date || '',
+  is_hidden: props.initialData?.is_hidden || false,
+  inventory_status: props.initialData?.inventory_status ?? 0,
+  sort_order: props.initialData?.sort_order || 0,
 });
 
 const submit = () => {
-	if (props.initialData) {
-		form.submit(update(props.initialData.id), {
-			onSuccess: () => {
-				emit('success');
-				toast.success('Ticket type updated successfully');
-			},
-		})
-	} else {
-		form.submit(store(), {
-			onSuccess: () => {
-				emit('success');
-				toast.success('Ticket type created successfully');
-			},
-		})
-	}
+  if (props.initialData) {
+    form.submit(update(props.initialData.id), {
+      onSuccess: () => {
+        emit('success');
+        toast.success('Ticket type updated successfully');
+      },
+    })
+  } else {
+    form.submit(store(), {
+      onSuccess: () => {
+        emit('success');
+        toast.success('Ticket type created successfully');
+      },
+    })
+  }
 };
 </script>
 

@@ -6,26 +6,26 @@ import { useForm, router, Link } from '@inertiajs/vue3';
 import type { Event } from '@/types/dashboard/event';
 import BaseDialog from '@/components/common/BaseDialog.vue';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { destroy } from '@/actions/App/Http/Controllers/EventController';
 import { toast } from 'vue-sonner'
 
 const props = defineProps<{
-  event: Event;
+	event: Event;
 }>();
 
 const emit = defineEmits(['edit', 'success']);
@@ -34,33 +34,35 @@ const isViewOpen = ref(false);
 const isDeleteOpen = ref(false);
 const isTicketTypeOpen = ref(false);
 
+import ticket_type from '@/routes/ticket_type';
+
 const handleChildSelect = (childId: string) => {
-  router.visit(route('ticket_type.index', childId));
+	router.visit(ticket_type.index({ query: { event_id: childId } }).url);
 };
 
 const form = useForm({
-  id: props.event.id || '',
+	id: props.event.id || '',
 });
 
 const handleDelete = () => {
-  form.submit(destroy(props.event.id), {
-    preserveScroll: true,
-    onSuccess: () => {
-      emit('success');
-      isDeleteOpen.value = false;
-      toast.success('Event deleted successfully');
-    },
-  })
+	form.submit(destroy(props.event.id), {
+		preserveScroll: true,
+		onSuccess: () => {
+			emit('success');
+			isDeleteOpen.value = false;
+			toast.success('Event deleted successfully');
+		},
+	})
 };
 </script>
 
 <template>
-  <div class="flex items-center justify-end">
-    <DropdownMenu>
-      <DropdownMenuTrigger as-child>
-        <Button variant="ghost" size="icon" class="h-8 w-8 p-0">
-          <span class="sr-only">Open menu</span>
-          <MoreHorizontal class="h-4 w-4" />
+	<div class="flex items-center justify-end">
+		<DropdownMenu>
+			<DropdownMenuTrigger as-child>
+				<Button variant="ghost" size="icon" class="h-8 w-8 p-0">
+					<span class="sr-only">Open menu</span>
+					<MoreHorizontal class="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

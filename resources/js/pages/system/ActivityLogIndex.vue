@@ -3,29 +3,12 @@ import DataTable from '@/components/common/DataTable.vue';
 import ContentLayout from '@/layouts/ContentLayout.vue';
 import { BreadcrumbItem } from '@/types';
 import type { ColumnDef } from '@tanstack/vue-table';
-
-defineProps<{
-	logs: {
-		data: any[];
-		current_page: number;
-		per_page: number;
-		total: number;
-		last_page: number;
-		from: number;
-		to: number;
-	};
-	filters?: {
-		search?: string;
-		limit?: number;
-		event?: string;
-		causer_id?: number;
-	};
-}>();
+import activityLogs from '@/routes/activity-logs';
 
 const breadcrumbs: BreadcrumbItem[] = [
 	{
 		title: 'Activity Logs',
-		href: '/activity-logs',
+		href: activityLogs.index().url,
 	},
 ];
 
@@ -64,10 +47,8 @@ const columns: ColumnDef<any>[] = [
 
     <DataTable
       :columns="columns"
-      :data="logs.data"
-      :filters="filters"
-      :pagination="logs"
-      create-label=""
+      :api-url="activityLogs.data().url"
+      :query-key="['activity_logs']"
     />
   </ContentLayout>
 </template>

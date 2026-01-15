@@ -3,7 +3,13 @@ import BaseDialog from '@/components/common/BaseDialog.vue';
 import DataTable from '@/components/common/DataTable.vue';
 import ContentLayout from '@/layouts/ContentLayout.vue';
 import { useColumns } from './columns';
-import TicketTypeForm from './TicketTypeForm.vue';
+import { Spinner } from '@/components/ui/spinner';
+import { defineAsyncComponent } from 'vue';
+
+const TicketTypeForm = defineAsyncComponent({
+	loader: () => import('./TicketTypeForm.vue'),
+	loadingComponent: Spinner,
+});
 
 import Combobox from '@/components/common/Combobox.vue';
 import { computed, ref } from 'vue';
@@ -13,25 +19,14 @@ import { BreadcrumbItem } from '@/types';
 
 import event from '@/routes/event';
 import ticket_type from '@/routes/ticket_type';
+import { useQueryClient } from '@tanstack/vue-query';
 
 const props = defineProps<{
 	events: Event[];
 	event_model?: Event;
-	ticket_types: {
-		data: TicketType[];
-		current_page: number;
-		per_page: number;
-		total: number;
-		last_page: number;
-		from: number;
-		to: number;
-	};
-	filters?: {
-		search?: string;
-		limit?: number;
-	};
 }>();
 
+const queryClient = useQueryClient();
 const event_id = computed(() => props.event_model?.id);
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -45,12 +40,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 	}
 ];
 
-const eventItems = computed(() => props.events.map(event => ({
-	...event,
-	url: `/ticket_type?event_id=${event.id}`
+const eventItems = computed(() => props.events.map(evt => ({
+	...evt,
+	url: `/ticket_type?event_id=${evt.id}`
 })));
-
-const columns = useColumns();
 
 const isDialogOpen = ref(false);
 const selectedItem = ref<TicketType | null>(null);
@@ -65,12 +58,18 @@ const openEdit = (item: TicketType) => {
 	isDialogOpen.value = true;
 };
 
-const tableData = computed(() =>
-	props.ticket_types.data.map((item) => ({
-		...item,
-		onEdit: openEdit,
-	})),
-);
+const onActionSuccess = () => {
+	queryClient.invalidateQueries({ queryKey: ['ticket_types', event_id.value] });
+	isDialogOpen.value = false;
+};
+
+const columns = useColumns(openEdit, onActionSuccess);
+
+// Compute API URL with event_id filter
+const apiUrl = computed(() => {
+	if (!event_id.value) return '';
+	return ticket_type.data({ query: { event_id: event_id.value } }).url;
+});
 </script>
 
 <template>
@@ -90,13 +89,12 @@ const tableData = computed(() =>
 		</div>
 
 		<DataTable
-			v-if="event_model"
+			v-if="event_model && apiUrl"
       :columns="columns"
-      :data="tableData"
-      :filters="filters"
-      :pagination="ticket_types"
       :on-create="openCreate"
-	  create-label="Add Ticket Type"
+	    create-label="Add Ticket Type"
+      :api-url="apiUrl"
+      :query-key="['ticket_types', event_id]"
     />
 
     <BaseDialog
@@ -105,8 +103,8 @@ const tableData = computed(() =>
     >
       <TicketTypeForm
         :initial-data="selectedItem"
-        :event-id="event_model?.id"
-        @success="isDialogOpen = false"
+        :event-id="props.event_model?.id"
+        @success="onActionSuccess"
       />
     </BaseDialog>
   </ContentLayout>

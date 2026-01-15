@@ -11,5 +11,6 @@ Route::controller(User::class)
     ->middleware(['auth', 'verified'])
     ->prefix('organization-users')
     ->group(function () use ($name) {
+        Route::get('/data', 'data')->name("$name.data");
         Route::get('/', 'index')->name("$name.index");
     });

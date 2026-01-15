@@ -17,7 +17,12 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
-        $params = $request->only(['search', 'limit', 'page', 'status', 'date_from', 'date_to']);
+        return Inertia::render('order/OrderIndex', []);
+    }
+
+    public function data(Request $request)
+    {
+        $params = $request->only(['search', 'limit', 'page', 'status', 'date_from', 'date_to', 'sort', 'order']);
 
         $orders = $this->order_repo->getAll($params);
 
@@ -31,10 +36,7 @@ class OrderController extends Controller
             return $order;
         });
 
-        return Inertia::render('order/OrderIndex', [
-            'orders' => $orders,
-            'filters' => $request->only(['search', 'limit', 'status', 'date_from', 'date_to']),
-        ]);
+        return response()->json($orders);
     }
 
     public function show(string $id)

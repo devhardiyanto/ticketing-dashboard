@@ -25,7 +25,4 @@ declare module 'vue' {
   }
 }
 
-declare global {
-  import { route as routeFn } from 'ziggy-js';
-  var route: typeof routeFn;
-}
+// ziggy-js declaration removed

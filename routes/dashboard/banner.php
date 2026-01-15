@@ -8,6 +8,8 @@ Route::controller(BannerController::class)
     ->middleware(['auth', 'verified'])
     ->prefix($name)
     ->group(function () use ($name) {
+        Route::get('/data', 'data')->name("$name.data");
+        Route::get('/reorder-list', 'reorderList')->name("$name.reorder-list");
         Route::get('/', 'index')->name("$name.index");
         Route::post('/', 'store')->name("$name.store");
         Route::put('{id}', 'update')->name("$name.update");

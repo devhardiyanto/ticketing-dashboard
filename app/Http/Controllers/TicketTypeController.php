@@ -49,16 +49,34 @@ class TicketTypeController extends Controller
             }
         }
 
-        $ticket_types = [];
-        if ($event) {
-            $ticket_types = $this->ticket_type_repo->getByEventId($event->id);
-        }
-
         return Inertia::render('ticket_type/TicketTypeIndex', [
             'events' => $events,
             'event_model' => $event,
-            'ticket_types' => $ticket_types,
         ]);
+    }
+
+    /**
+     * Get ticket types data for client-side DataTable
+     */
+    public function data(Request $request)
+    {
+        $params = $request->only(['event_id', 'search', 'limit', 'page', 'sort', 'order']);
+
+        if (! isset($params['event_id']) || ! $params['event_id']) {
+            return response()->json([
+                'data' => [],
+                'total' => 0,
+                'current_page' => 1,
+                'last_page' => 1,
+                'per_page' => 10,
+                'from' => 0,
+                'to' => 0,
+            ]);
+        }
+
+        $ticket_types = $this->ticket_type_repo->getByEventId($params['event_id'], $params);
+
+        return response()->json($ticket_types);
     }
 
     /**

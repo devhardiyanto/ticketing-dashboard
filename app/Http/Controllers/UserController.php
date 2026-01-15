@@ -28,15 +28,7 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        $params = $request->only(['search', 'limit', 'page', 'organization_id', 'role_id', 'status']);
-        $params['exclude_id'] = auth()->id();
-
-        $users = $this->user_repo->getAll($params);
-
-        // Map roles for specific user serialization if needed, but 'with' in repo helps.
-        // Frontend expects 'role' object. Spatie provides 'roles' array.
-        // We might need to transform the collection to mapped structure if frontend expects single role.
-        // Assuming single role per user for now based on UI 'Form Select Role'.
+        $params = $request->only(['organization_id']);
 
         $organizations = $this->org_repo->all()->map(function ($org) {
             return [
@@ -67,22 +59,28 @@ class UserController extends Controller
 
         if (str_contains($routeName ?? '', 'organization.user')) {
             return Inertia::render('organization/OrganizationUserIndex', [
-                'users' => $users,
                 'organizations' => $organizations,
                 'roles' => $roles,
                 'availablePermissions' => $available_permissions,
                 'organization_model' => $organization_model,
-                'filters' => $params,
             ]);
         }
 
         return Inertia::render('user/UserIndex', [
-            'users' => $users,
             'organizations' => $organizations,
             'roles' => $roles,
             'availablePermissions' => $available_permissions,
-            'filters' => $params,
         ]);
+    }
+
+    public function data(Request $request)
+    {
+        $params = $request->only(['search', 'limit', 'page', 'organization_id', 'role_id', 'status', 'sort', 'order']);
+        $params['exclude_id'] = auth()->id();
+
+        $users = $this->user_repo->getAll($params);
+
+        return response()->json($users);
     }
 
     public function store(Request $request)

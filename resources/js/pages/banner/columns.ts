@@ -7,7 +7,10 @@ import BannerStatusSwitch from './BannerStatusSwitch.vue';
 import ImagePreview from '@/components/common/ImagePreview.vue';
 import type { Banner } from '@/types/dashboard/banner';
 
-export const useColumns = () => {
+export const useColumns = (
+	openEdit?: (banner: Banner) => void,
+	onSuccess?: () => void
+) => {
 	const columns: ColumnDef<Banner>[] = [
 		{
 			accessorKey: 'image_signed_url',
@@ -50,6 +53,7 @@ export const useColumns = () => {
 				return h(BannerStatusSwitch, {
 					bannerId: banner.id,
 					status: banner.status,
+					onSuccess,
 				});
 			}
 		},
@@ -62,8 +66,8 @@ export const useColumns = () => {
 				const banner = row.original;
 				return h(BannerActions, {
 					banner,
-					onEdit: (b: any) => (banner as any).onEdit?.(b),
-					onSuccess: () => (banner as any).onSuccess?.(),
+					onEdit: () => openEdit?.(banner),
+					onSuccess,
 				});
 			},
 		},

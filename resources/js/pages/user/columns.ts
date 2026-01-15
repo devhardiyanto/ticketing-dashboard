@@ -15,7 +15,11 @@ export interface User {
 	status: 'active' | 'inactive';
 }
 
-export const useColumns = (options: { hideOrganization?: boolean; canDelete?: boolean } = {}) => {
+export const useColumns = (
+	options: { hideOrganization?: boolean; canDelete?: boolean } = {},
+	openEdit?: (user: User) => void,
+	onSuccess?: () => void
+) => {
 	const { hideOrganization = false, canDelete = true } = options;
 
 	const columns: ColumnDef<User>[] = [
@@ -57,6 +61,7 @@ export const useColumns = (options: { hideOrganization?: boolean; canDelete?: bo
 				return h(UserStatusSwitch, {
 					userId: user.id,
 					status: user.status,
+					onSuccess,
 				});
 			},
 		},
@@ -68,7 +73,8 @@ export const useColumns = (options: { hideOrganization?: boolean; canDelete?: bo
 				return h(UserActions, {
 					user,
 					canDelete,
-					onEdit: (u: any) => (user as any).onEdit?.(u),
+					onEdit: () => openEdit?.(user),
+					onSuccess,
 				});
 			},
 		},

@@ -5,45 +5,58 @@ import { Head, router } from '@inertiajs/vue3';
 import { GripVertical, ArrowDownUp } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import BaseDialog from '@/components/common/BaseDialog.vue';
-import BannerForm from './BannerForm.vue';
+import { Spinner } from '@/components/ui/spinner';
 import DataTable from '@/components/common/DataTable.vue';
 import draggable from 'vuedraggable';
 import { toast } from 'vue-sonner';
 import bannerRoute from '@/routes/banner';
 import { useColumns } from './columns';
+import { useQueryClient } from '@tanstack/vue-query';
+import axios from 'axios';
 import type { Banner } from '@/types/dashboard/banner';
+import { defineAsyncComponent } from 'vue';
+
+const BannerForm = defineAsyncComponent({
+	loader: () => import('./BannerForm.vue'),
+	loadingComponent: Spinner,
+});
 
 const props = defineProps<{
-	banners: {
-		data: any[];
-		current_page: number;
-		per_page: number;
-		total: number;
-		last_page: number;
-		from: number;
-		to: number;
-	};
 	events: any[];
-	filters?: {
-		search?: string;
-		limit?: number;
-	};
 }>();
 
-const columns = useColumns();
+const queryClient = useQueryClient();
 const isDialogOpen = ref(false);
 const isReorderOpen = ref(false);
-const selectedItem = ref<any>(null);
+const selectedItem = ref<Banner | null>(null);
 const localBanners = ref<Banner[]>([]);
+const isLoadingReorder = ref(false);
 
-// Sync localBanners when reorder opens
-const openReorder = () => {
-	// We ideally should fetch *all* banners for reordering if pagination is active,
-	// but for now we work with current page or assume low count.
-	// If explicit reordering is needed across pages, backend should support fetching all for list.
-	// Assuming banners are few (e.g. < 50), passing them all or handle reorder on current page.
-	localBanners.value = [...props.banners.data];
-	isReorderOpen.value = true;
+const openEdit = (item: Banner) => {
+	selectedItem.value = item;
+	isDialogOpen.value = true;
+};
+
+const onActionSuccess = () => {
+	queryClient.invalidateQueries({ queryKey: ['banners'] });
+	isDialogOpen.value = false;
+};
+
+const columns = useColumns(openEdit, onActionSuccess);
+
+// Fetch all banners for reorder dialog
+const openReorder = async () => {
+	isLoadingReorder.value = true;
+	try {
+		const res = await axios.get(bannerRoute.reorderList().url);
+		localBanners.value = res.data;
+		isReorderOpen.value = true;
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	} catch (error) {
+		toast.error('Failed to load banners for reorder');
+	} finally {
+		isLoadingReorder.value = false;
+	}
 };
 
 const openCreate = () => {
@@ -51,28 +64,13 @@ const openCreate = () => {
 	isDialogOpen.value = true;
 };
 
-const openEdit = (item: any) => {
-	selectedItem.value = item;
-	isDialogOpen.value = true;
-};
-
-// Prepare data for DataTable with callbacks attached
-const tableData = computed(() =>
-	props.banners.data.map(banner => ({
-		...banner,
-		onEdit: openEdit,
-		onSuccess: () => {
-			// Optional: Force reload if needed, usually Inertia handles it
-		}
-	}))
-);
-
 const saveOrder = () => {
 	const ids = localBanners.value.map((b: any) => b.id);
 	router.patch(bannerRoute.reorder().url, { ids }, {
 		preserveScroll: true,
 		onSuccess: () => {
 			toast.success('Banners reordered successfully');
+			queryClient.invalidateQueries({ queryKey: ['banners'] });
 			isReorderOpen.value = false;
 		},
 		onError: () => {
@@ -92,27 +90,26 @@ const breadcrumbs = computed(() => [
 		<div class="flex justify-between items-center mb-6">
 				<h2 class="text-2xl font-bold tracking-tight">Banner Management</h2>
 				<div class="flex space-x-2">
-						<Button variant="outline" @click="openReorder">
-									<ArrowDownUp class="mr-2 h-4 w-4" /> Reorder
+						<Button variant="outline" @click="openReorder" :disabled="isLoadingReorder">
+								<ArrowDownUp class="mr-2 h-4 w-4" /> Reorder
 						</Button>
 				</div>
 		</div>
 
 		<DataTable
 			:columns="columns"
-			:data="tableData"
-			:filters="filters"
-			:pagination="banners"
 			:on-create="openCreate"
 			create-label="Add Banner"
+			:api-url="bannerRoute.data().url"
+			:query-key="['banners']"
 		/>
 
 		<!-- Create/Edit Dialog -->
 		<BaseDialog v-model:open="isDialogOpen" :title="selectedItem ? 'Edit Banner' : 'Create Banner'">
 			<BannerForm
 				:initial-data="selectedItem"
-				:events="events"
-				@success="isDialogOpen = false"
+				:events="props.events"
+				@success="onActionSuccess"
 			/>
 		</BaseDialog>
 

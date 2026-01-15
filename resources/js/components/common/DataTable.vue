@@ -16,11 +16,9 @@ import {
 	TableHeader,
 	TableRow
 } from '@/components/ui/table'
-import { router } from '@inertiajs/vue3'
 import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
 import { debounce } from 'lodash'
 import { ref, watch, computed } from 'vue';
-import { route } from 'ziggy-js'
 import { ChevronRight, ChevronLeft, Loader2, AlertCircle } from 'lucide-vue-next';
 import { useQuery, keepPreviousData } from '@tanstack/vue-query';
 import axios from 'axios';
@@ -39,29 +37,14 @@ import {
 */
 const props = defineProps<{
 	columns: any[] | null
-	// Data props (biasanya dari Inertia)
-	data?: TData[] | null
-	loading?: boolean
-	pagination?: {
-		current_page: number
-		per_page: number
-		total: number
-		last_page: number
-		from: number
-		to: number
-	} | null
 
-	// Async Data Support
-	apiUrl?: string
-	queryKey?: any[]
+	// Async Data Support (REQUIRED)
+	apiUrl: string
+	queryKey: any[]
 
 	// Common
 	onCreate?: () => void
 	createLabel?: string
-	filters?: {
-		search?: string
-		limit?: number
-	}
 }>()
 
 /*
@@ -69,8 +52,8 @@ const props = defineProps<{
 | STATE
 |--------------------------------------------------------------------------
 */
-const search = ref(props.filters?.search ?? '')
-const limit = ref(String(props.filters?.limit ?? '10'))
+const search = ref('')
+const limit = ref('10')
 
 // Local pagination state for Async mode
 const pageIndex = ref(0) // 0-indexed for TanStack Table
@@ -82,17 +65,12 @@ const sortOrder = ref<'asc' | 'desc'>('desc')
 
 /*
 |--------------------------------------------------------------------------
-| ASYNC DATA FETCHING (FIXED)
+| ASYNC DATA FETCHING
 |--------------------------------------------------------------------------
 */
-const isAsync = computed(() => !!props.apiUrl);
-
-// 1. FIX KEY: Gunakan props.queryKey sebagai base agar invalidation dari parent jalan
 const computedQueryKey = computed(() => {
-	const baseKey = props.queryKey ?? ['datatable', props.apiUrl];
-	// Kita masukkan params sebagai object di elemen terakhir array key
 	return [
-		...baseKey,
+		...props.queryKey,
 		{
 			page: pageIndex.value,
 			limit: pageSize.value,
@@ -114,8 +92,6 @@ const {
 	queryKey: computedQueryKey,
 
 	queryFn: async ({ signal }) => {
-		if (!props.apiUrl) throw new Error("API URL is missing");
-
 		const res = await axios.get(props.apiUrl, {
 			params: {
 				page: pageIndex.value + 1, // API is 1-indexed
@@ -124,29 +100,12 @@ const {
 				sort: sortColumn.value,
 				order: sortOrder.value,
 			},
-			signal // 2. FIX: Auto cancel request jika user mengetik cepat
+			signal
 		});
 		return res.data;
 	},
 
-	enabled: isAsync,
 	placeholderData: keepPreviousData,
-
-	// 3. FIX: Gunakan data Inertia sebagai cache awal (Initial Data)
-	// Ini mencegah loading spinner muncul saat halaman baru dibuka
-	initialData: () => {
-		// Syarat: Halaman 1, tidak ada search, dan props data tersedia
-		if (props.data && props.pagination && pageIndex.value === 0 && !search.value) {
-			return {
-				data: props.data,
-				...props.pagination // Gabungkan pagination info agar strukturnya sama dengan response API
-			} as any;
-		}
-		return undefined;
-	},
-
-	// 4. FIX: Hapus 'staleTime' hardcoded disini.
-	// Biarkan dia mengikuti setting global 'vue-query.ts' (5 menit)
 	retry: 1,
 });
 
@@ -155,46 +114,31 @@ const {
 | DATA COMPUTED
 |--------------------------------------------------------------------------
 */
-const tableData = computed(() => {
-	if (isAsync.value) {
-		return queryData.value?.data ?? [];
-	}
-	return props.data ?? [];
-});
+const tableData = computed(() => queryData.value?.data ?? []);
 
 const tablePagination = computed(() => {
-	if (isAsync.value) {
-		// Fallback jika queryData belum ready tapi kita punya initialProps (kasus edge case)
-		if (!queryData.value) {
-			return props.pagination ?? {
-				current_page: 1,
-				per_page: pageSize.value,
-				total: 0,
-				last_page: 1,
-				from: 0,
-				to: 0
-			};
-		}
-
+	if (!queryData.value) {
 		return {
-			current_page: queryData.value.current_page,
-			per_page: queryData.value.per_page,
-			total: queryData.value.total,
-			last_page: queryData.value.last_page,
-			from: queryData.value.from,
-			to: queryData.value.to,
+			current_page: 1,
+			per_page: pageSize.value,
+			total: 0,
+			last_page: 1,
+			from: 0,
+			to: 0
 		};
 	}
-	return props.pagination;
+
+	return {
+		current_page: queryData.value.current_page,
+		per_page: queryData.value.per_page,
+		total: queryData.value.total,
+		last_page: queryData.value.last_page,
+		from: queryData.value.from,
+		to: queryData.value.to,
+	};
 });
 
-const isLoading = computed(() => {
-	// Hanya loading jika async aktif, sedang loading awal, DAN tidak ada data di cache
-	if (isAsync.value) {
-		return isQueryLoading.value && !queryData.value;
-	}
-	return props.loading;
-});
+const isLoading = computed(() => isQueryLoading.value && !queryData.value);
 
 /*
 |--------------------------------------------------------------------------
@@ -202,20 +146,9 @@ const isLoading = computed(() => {
 |--------------------------------------------------------------------------
 */
 const paginationState = computed(() => ({
-	pageIndex: isAsync.value ? pageIndex.value : (props.pagination?.current_page ?? 1) - 1,
-	pageSize: isAsync.value ? pageSize.value : (props.pagination?.per_page ?? 10),
+	pageIndex: pageIndex.value,
+	pageSize: pageSize.value,
 }))
-
-const getCurrentUrl = () => {
-	try {
-		if (route().current()) {
-			return route(route().current() as string);
-		}
-		return window.location.pathname;
-	} catch {
-		return window.location.pathname;
-	}
-};
 
 const table = useVueTable({
 	get data() {
@@ -240,25 +173,9 @@ const table = useVueTable({
 			? updaterOrValue(paginationState.value)
 			: updaterOrValue
 
-		if (isAsync.value) {
-			pageIndex.value = newPagination.pageIndex;
-			pageSize.value = newPagination.pageSize;
-			limit.value = String(newPagination.pageSize);
-		} else {
-			router.get(
-				getCurrentUrl(),
-				{
-					search: search.value,
-					limit: newPagination.pageSize,
-					page: newPagination.pageIndex + 1,
-				},
-				{
-					preserveState: true,
-					replace: true,
-					preserveScroll: true,
-				}
-			)
-		}
+		pageIndex.value = newPagination.pageIndex;
+		pageSize.value = newPagination.pageSize;
+		limit.value = String(newPagination.pageSize);
 	},
 })
 
@@ -269,29 +186,13 @@ const table = useVueTable({
 */
 watch(limit, (newLimit) => {
 	const newSize = Number(newLimit);
-	if (isAsync.value) {
-		pageSize.value = newSize;
-		pageIndex.value = 0;
-	} else {
-		table.setPageSize(newSize)
-	}
+	pageSize.value = newSize;
+	pageIndex.value = 0;
 })
 
 watch(search, debounce(() => {
-	if (isAsync.value) {
-		pageIndex.value = 0;
-		// Query auto-refetches via computed key
-	} else {
-		router.get(
-			getCurrentUrl(),
-			{
-				search: search.value,
-				limit: Number(limit.value),
-				page: 1,
-			},
-			{ preserveState: true, replace: true, preserveScroll: true }
-		)
-	}
+	pageIndex.value = 0;
+	// Query auto-refetches via computed key
 }, 300))
 </script>
 
@@ -304,7 +205,7 @@ watch(search, debounce(() => {
           v-model="search"
           class="h-8 w-[150px] lg:w-[250px]"
         />
-        <Loader2 v-if="isAsync && isFetching && !isLoading" class="h-4 w-4 animate-spin text-muted-foreground" />
+        <Loader2 v-if="isFetching && !isLoading" class="h-4 w-4 animate-spin text-muted-foreground" />
       </div>
       <div class="flex items-center space-x-2">
         <Button v-if="onCreate" @click="onCreate" class="h-8">
@@ -339,7 +240,7 @@ watch(search, debounce(() => {
             </TableCell>
           </TableRow>
 
-          <TableRow v-else-if="isAsync && isError">
+          <TableRow v-else-if="isError">
             <TableCell :colspan="columns?.length ?? 1" class="h-24 text-center">
               <div class="flex flex-col items-center justify-center gap-2 text-destructive">
                   <div class="flex items-center gap-2">

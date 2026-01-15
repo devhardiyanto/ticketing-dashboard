@@ -11,6 +11,11 @@ class ActivityLogController extends Controller
 {
     public function index(Request $request)
     {
+        return Inertia::render('system/ActivityLogIndex', []);
+    }
+
+    public function data(Request $request)
+    {
         $query = Activity::latest()->with('causer');
 
         if ($request->search) {
@@ -26,16 +31,8 @@ class ActivityLogController extends Controller
             $query->where('causer_id', $request->causer_id);
         }
 
-        $logs = $query->paginate($request->limit ?? 10)
-            ->appends($request->all());
+        $logs = $query->paginate($request->limit ?? 10);
 
-        // Transform for frontend if needed, or rely on auto-serialization
-        // Need to handle 'causer' serialization properly if it's not standard
-        // Spatie activity has subject and causer morphs.
-
-        return Inertia::render('system/ActivityLogIndex', [
-            'logs' => $logs,
-            'filters' => $request->only(['search', 'limit', 'event', 'causer_id']),
-        ]);
+        return response()->json($logs);
     }
 }
