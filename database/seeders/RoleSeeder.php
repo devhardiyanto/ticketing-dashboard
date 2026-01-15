@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Dashboard\Role;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Role;
 
 class RoleSeeder extends Seeder
 {
@@ -15,33 +15,25 @@ class RoleSeeder extends Seeder
         $roles = [
             [
                 'name' => 'super_admin',
-                'display_name' => 'Super Admin',
-                'description' => 'Full access to all features and organizations. Can manage all organizations and users.',
-                'is_system_role' => true,
+                'guard_name' => 'web',
             ],
             [
                 'name' => 'platform_staff',
-                'display_name' => 'Platform Staff',
-                'description' => 'Internal platform staff for operational support. Can view and assist all organizations with limited operational access.',
-                'is_system_role' => true,
+                'guard_name' => 'web',
             ],
             [
                 'name' => 'org_admin',
-                'display_name' => 'Organization Admin',
-                'description' => 'Full access to their organization. Can manage users, events, tickets, and orders within their organization.',
-                'is_system_role' => true,
+                'guard_name' => 'web',
             ],
             [
                 'name' => 'org_staff',
-                'display_name' => 'Organization Staff',
-                'description' => 'Limited access to their organization. Can view and manage events and orders based on assigned permissions.',
-                'is_system_role' => true,
+                'guard_name' => 'web',
             ],
         ];
 
         foreach ($roles as $roleData) {
             Role::firstOrCreate(
-                ['name' => $roleData['name']],
+                ['name' => $roleData['name'], 'guard_name' => $roleData['guard_name']],
                 $roleData
             );
         }

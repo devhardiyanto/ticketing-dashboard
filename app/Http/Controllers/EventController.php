@@ -11,274 +11,239 @@ use Inertia\Inertia;
 
 class EventController extends Controller
 {
-	protected $organization_repo;
+    protected $organization_repo;
 
-	public function __construct(
-		EventRepositoryInterface $event_repo,
-		OrganizationRepositoryInterface $organization_repo
-	) {
-		$this->organization_repo = $organization_repo;
-		$this->event_repo = $event_repo;
-	}
+    public function __construct(
+        EventRepositoryInterface $event_repo,
+        OrganizationRepositoryInterface $organization_repo
+    ) {
+        $this->organization_repo = $organization_repo;
+        $this->event_repo = $event_repo;
+    }
 
-	public function index(Request $request, ?string $event_id = null)
-	{
-		$params = $request->only(['search', 'limit', 'page']);
-		$params['parent_id'] = $event_id ?? null;
+    public function index(Request $request, ?string $event_id = null)
+    {
+        $event = null;
+        if ($event_id) {
+            $event = $this->event_repo->find($event_id);
+            // Generate signed URL for parent event image
+            if ($event && $event->image_url) {
+                $event->image_signed_url = $this->getSignedUrl($event->image_url);
+            }
+            if ($event && $event->venue_map_url) {
+                $event->venue_map_signed_url = $this->getSignedUrl($event->venue_map_url);
+            }
+        }
 
-		$event = null;
-		if ($event_id) {
-			$event = $this->event_repo->find($event_id);
-			// Generate signed URL for parent event image
-			if ($event && $event->image_url) {
-				$event->image_signed_url = $this->getSignedUrl($event->image_url);
-			}
-			if ($event && $event->venue_map_url) {
-				$event->venue_map_signed_url = $this->getSignedUrl($event->venue_map_url);
-			}
-		}
+        $organizations = $this->organization_repo->all();
 
-		$events = $this->event_repo->getAll($params);
+        return Inertia::render('event/EventIndex', [
+            'parent_event' => $event,
+            'organizations' => $organizations->select('id', 'name')->toArray(),
+        ]);
+    }
 
-		// Generate signed URLs for all events
-		$events->getCollection()->transform(function ($event) {
-			if ($event->image_url) {
-				$event->image_signed_url = $this->getSignedUrl($event->image_url);
-			}
-			if ($event->venue_map_url) {
-				$event->venue_map_signed_url = $this->getSignedUrl($event->venue_map_url);
-			}
-			return $event;
-		});
+    public function data(Request $request)
+    {
+        $params = $request->only(['search', 'limit', 'page', 'parent_id', 'sort', 'order']);
 
-		$organizations = $this->organization_repo->all();
+        $events = $this->event_repo->getAll($params);
+        $this->transformEvents($events);
 
-		return Inertia::render('event/EventIndex', [
-			'events' => $events,
-			'parent_event' => $event,
-			'organizations' => $organizations->select('id', 'name')->toArray(),
-			'filters' => $request->only(['search', 'limit']),
-		]);
-	}
+        return response()->json($events);
+    }
 
-	public function store(Request $request)
-	{
-		$validated = $request->validate([
-			'name' => 'required|string|max:255',
-			'slug' => 'required|string|max:255|unique:core_pgsql.events,slug',
-			'description' => 'nullable|string',
-			'start_date' => 'required|date',
-			'end_date' => 'required|date|after:start_date',
-			'timezone' => 'nullable|string|max:50',
-			'location' => 'required|string',
-			'address' => 'nullable|string',
-			'venue_name' => 'nullable|string|max:255',
-			'venue_city' => 'nullable|string|max:255',
-			'status' => 'required|string|in:draft,published,archived',
-			'currency' => 'required',
-			'is_parent' => 'boolean',
-			'organization_id' => 'required|exists:core_pgsql.organizations,id',
-			'image_url' => 'nullable|image|max:5120',
-			'banner_image_url' => 'nullable|string|max:500',
-			'venue_map_url' => 'nullable|image|max:5120',
-			'terms' => 'nullable|string',
-		]);
+    private function transformEvents($events)
+    {
+        $events->getCollection()->transform(function ($event) {
+            if ($event->image_url) {
+                $event->image_signed_url = $this->getSignedUrl($event->image_url);
+            }
+            if ($event->venue_map_url) {
+                $event->venue_map_signed_url = $this->getSignedUrl($event->venue_map_url);
+            }
 
-		if ($request->hasFile('image_url')) {
-			// Upload to S3/MinIO and store path only
-			$file = $request->file('image_url');
-			$filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-			$path = 'events/' . $filename;
-			Storage::disk('s3')->put($path, file_get_contents($file), 'private');
-			$validated['image_url'] = $path;
-		}
+            return $event;
+        });
+    }
 
-		if ($request->hasFile('venue_map_url')) {
-			$file = $request->file('venue_map_url');
-			$filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-			$path = 'events/venue-maps/' . $filename;
-			Storage::disk('s3')->put($path, file_get_contents($file), 'private');
-			$validated['venue_map_url'] = $path;
-		}
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:core_pgsql.events,slug',
+            'description' => 'nullable|string',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'timezone' => 'nullable|string|max:50',
+            'location' => 'required|string',
+            'address' => 'nullable|string',
+            'venue_name' => 'nullable|string|max:255',
+            'venue_city' => 'nullable|string|max:255',
+            'status' => 'required|string|in:draft,published,archived',
+            'currency' => 'required',
+            'is_parent' => 'boolean',
+            'organization_id' => 'required|exists:core_pgsql.organizations,id',
+            'image_url' => 'nullable|image|max:5120',
+            'banner_image_url' => 'nullable|string|max:500',
+            'venue_map_url' => 'nullable|image|max:5120',
+            'terms' => 'nullable|string',
+        ]);
 
-		$this->event_repo->create($validated);
+        if ($request->hasFile('image_url')) {
+            // Upload to S3/MinIO and store path only
+            $file = $request->file('image_url');
+            $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
+            $path = 'events/'.$filename;
+            Storage::disk('s3')->put($path, file_get_contents($file), 'private');
+            $validated['image_url'] = $path;
+        }
 
-		return redirect()->back()->with('success', 'Event created successfully.');
-	}
+        if ($request->hasFile('venue_map_url')) {
+            $file = $request->file('venue_map_url');
+            $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
+            $path = 'events/venue-maps/'.$filename;
+            Storage::disk('s3')->put($path, file_get_contents($file), 'private');
+            $validated['venue_map_url'] = $path;
+        }
 
-	public function update(Request $request, string $id)
-	{
-		$event = $this->event_repo->find($id);
+        $this->event_repo->create($validated);
 
-		$rules = [
-			'name' => 'required|string|max:255',
-			'slug' => 'required|string|max:255|unique:core_pgsql.events,slug,' . $id . ',id',
-			'description' => 'nullable|string',
-			'start_date' => 'required|date',
-			'end_date' => 'required|date|after:start_date',
-			'timezone' => 'nullable|string|max:50',
-			'location' => 'required|string',
-			'address' => 'nullable|string',
-			'venue_name' => 'nullable|string|max:255',
-			'venue_city' => 'nullable|string|max:255',
-			'status' => 'required|string|in:draft,published,archived',
-			'currency' => 'required',
-			'is_parent' => 'boolean',
-			'banner_image_url' => 'nullable|string|max:500',
-			'terms' => 'nullable|string',
-		];
+        return redirect()->back()->with('success', 'Event created successfully.');
+    }
 
-		// Check if image_url is a file or a string (existing path)
-		if ($request->hasFile('image_url')) {
-			$rules['image_url'] = 'required|image|max:5120'; // Max 5MB
-		} else {
-			// If it's not a file, it must be a string (existing path)
-			$rules['image_url'] = 'nullable|string';
-		}
+    public function update(Request $request, string $id)
+    {
+        $event = $this->event_repo->find($id);
 
-		// Check if venue_map_url is a file or a string (existing path)
-		if ($request->hasFile('venue_map_url')) {
-			$rules['venue_map_url'] = 'nullable|image|max:5120'; // Max 5MB
-		} else {
-			$rules['venue_map_url'] = 'nullable|string';
-		}
+        $rules = [
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:core_pgsql.events,slug,'.$id.',id',
+            'description' => 'nullable|string',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'timezone' => 'nullable|string|max:50',
+            'location' => 'required|string',
+            'address' => 'nullable|string',
+            'venue_name' => 'nullable|string|max:255',
+            'venue_city' => 'nullable|string|max:255',
+            'status' => 'required|string|in:draft,published,archived',
+            'currency' => 'required',
+            'is_parent' => 'boolean',
+            'banner_image_url' => 'nullable|string|max:500',
+            'terms' => 'nullable|string',
+        ];
 
+        // Check if image_url is a file or a string (existing path)
+        if ($request->hasFile('image_url')) {
+            $rules['image_url'] = 'required|image|max:5120'; // Max 5MB
+        } else {
+            // If it's not a file, it must be a string (existing path)
+            $rules['image_url'] = 'nullable|string';
+        }
 
-		$validated = $request->validate($rules);
+        // Check if venue_map_url is a file or a string (existing path)
+        if ($request->hasFile('venue_map_url')) {
+            $rules['venue_map_url'] = 'nullable|image|max:5120'; // Max 5MB
+        } else {
+            $rules['venue_map_url'] = 'nullable|string';
+        }
 
-		if ($request->hasFile('image_url')) {
-			// Delete old image from S3/MinIO
-			if ($event && $event->image_url) {
-				$this->deleteStorageFile($event->image_url);
-			}
+        $validated = $request->validate($rules);
 
-			// Upload new image to S3/MinIO
-			$file = $request->file('image_url');
-			$filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-			$path = 'events/' . $filename;
-			Storage::disk('s3')->put($path, file_get_contents($file), 'private');
-			$validated['image_url'] = $path;
-		}
+        if ($request->hasFile('image_url')) {
+            // Delete old image from S3/MinIO
+            if ($event && $event->image_url) {
+                $this->deleteStorageFile($event->image_url);
+            }
 
-		if ($request->hasFile('venue_map_url')) {
-			// Delete old venue map from S3/MinIO
-			if ($event && $event->venue_map_url) {
-				$this->deleteStorageFile($event->venue_map_url);
-			}
+            // Upload new image to S3/MinIO
+            $file = $request->file('image_url');
+            $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
+            $path = 'events/'.$filename;
+            Storage::disk('s3')->put($path, file_get_contents($file), 'private');
+            $validated['image_url'] = $path;
+        }
 
-			// Upload new venue map to S3/MinIO
-			$file = $request->file('venue_map_url');
-			$filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-			$path = 'events/venue-maps/' . $filename;
-			Storage::disk('s3')->put($path, file_get_contents($file), 'private');
-			$validated['venue_map_url'] = $path;
-		}
+        if ($request->hasFile('venue_map_url')) {
+            // Delete old venue map from S3/MinIO
+            if ($event && $event->venue_map_url) {
+                $this->deleteStorageFile($event->venue_map_url);
+            }
 
-		// Handle description image cleanup
-		$this->cleanupDescriptionImages($event->description ?? '', $validated['description'] ?? '');
+            // Upload new venue map to S3/MinIO
+            $file = $request->file('venue_map_url');
+            $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
+            $path = 'events/venue-maps/'.$filename;
+            Storage::disk('s3')->put($path, file_get_contents($file), 'private');
+            $validated['venue_map_url'] = $path;
+        }
 
-		$this->event_repo->update($id, $validated);
+        // Handle description image cleanup
+        $this->cleanupDescriptionImages($event->description ?? '', $validated['description'] ?? '');
 
-		return redirect()->back()->with('success', 'Event updated successfully.');
-	}
+        $this->event_repo->update($id, $validated);
 
-	public function destroy(string $id)
-	{
-		$event = $this->event_repo->find($id);
+        return redirect()->back()->with('success', 'Event updated successfully.');
+    }
 
-		// Delete event image from storage
-		if ($event && $event->image_url) {
-			$this->deleteStorageFile($event->image_url);
-		}
+    public function destroy(string $id)
+    {
+        $event = $this->event_repo->find($id);
 
-		// Delete venue map from storage
-		if ($event && $event->venue_map_url) {
-			$this->deleteStorageFile($event->venue_map_url);
-		}
+        // Delete event image from storage
+        if ($event && $event->image_url) {
+            $this->deleteStorageFile($event->image_url);
+        }
 
-		// Delete description images from storage
-		if ($event && $event->description) {
-			$paths = UploadController::extractImagePathsFromHtml($event->description);
-			UploadController::deleteFiles($paths);
-		}
+        // Delete venue map from storage
+        if ($event && $event->venue_map_url) {
+            $this->deleteStorageFile($event->venue_map_url);
+        }
 
-		$this->event_repo->delete($id);
-		return redirect()->back()->with('success', 'Event deleted successfully.');
-	}
+        // Delete description images from storage
+        if ($event && $event->description) {
+            $paths = UploadController::extractImagePathsFromHtml($event->description);
+            UploadController::deleteFiles($paths);
+        }
 
-	/**
-	 * Check if a slug is available
-	 */
-	public function checkSlug(Request $request)
-	{
-		$slug = $request->query('slug');
-		$excludeId = $request->query('exclude_id');
+        $this->event_repo->delete($id);
 
-		if (!$slug) {
-			return response()->json(['available' => false, 'message' => 'Slug is required']);
-		}
+        return redirect()->back()->with('success', 'Event deleted successfully.');
+    }
 
-		$query = $this->event_repo->findBySlug($slug, $excludeId);
+    /**
+     * Check if a slug is available
+     */
+    public function checkSlug(Request $request)
+    {
+        $slug = $request->query('slug');
+        $excludeId = $request->query('exclude_id');
 
-		return response()->json([
-			'available' => !$query,
-			'slug' => $slug,
-		]);
-	}
+        if (! $slug) {
+            return response()->json(['available' => false, 'message' => 'Slug is required']);
+        }
 
-	/**
-	 * Generate signed URL for a storage path
-	 */
-	private function getSignedUrl(?string $path): ?string
-	{
-		if (empty($path)) {
-			return null;
-		}
+        $query = $this->event_repo->findBySlug($slug, $excludeId);
 
-		// Check if it's already a full URL (legacy data)
-		if (filter_var($path, FILTER_VALIDATE_URL)) {
-			return $path;
-		}
+        return response()->json([
+            'available' => ! $query,
+            'slug' => $slug,
+        ]);
+    }
 
-		try {
-			$expiry = (int) config('app.signed_url_expiry', 60);
-			return Storage::disk('s3')->temporaryUrl($path, now()->addMinutes($expiry));
-		} catch (\Exception $e) {
-			return null;
-		}
-	}
+    /**
+     * Cleanup images removed from description
+     */
+    private function cleanupDescriptionImages(string $oldDescription, string $newDescription): void
+    {
+        $oldPaths = UploadController::extractImagePathsFromHtml($oldDescription);
+        $newPaths = UploadController::extractImagePathsFromHtml($newDescription);
 
-	/**
-	 * Delete file from S3/MinIO storage
-	 */
-	private function deleteStorageFile(?string $path): void
-	{
-		if (empty($path)) {
-			return;
-		}
+        // Find paths that were in old description but not in new
+        $removedPaths = array_diff($oldPaths, $newPaths);
 
-		// Skip if it's a full URL (legacy data)
-		if (filter_var($path, FILTER_VALIDATE_URL)) {
-			return;
-		}
-
-		if (Storage::disk('s3')->exists($path)) {
-			Storage::disk('s3')->delete($path);
-		}
-	}
-
-	/**
-	 * Cleanup images removed from description
-	 */
-	private function cleanupDescriptionImages(string $oldDescription, string $newDescription): void
-	{
-		$oldPaths = UploadController::extractImagePathsFromHtml($oldDescription);
-		$newPaths = UploadController::extractImagePathsFromHtml($newDescription);
-
-		// Find paths that were in old description but not in new
-		$removedPaths = array_diff($oldPaths, $newPaths);
-
-		// Delete removed images
-		UploadController::deleteFiles($removedPaths);
-	}
+        // Delete removed images
+        UploadController::deleteFiles($removedPaths);
+    }
 }

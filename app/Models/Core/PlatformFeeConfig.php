@@ -7,9 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class PlatformFeeConfig extends Model
 {
     protected $connection = 'core_pgsql';
+
     protected $table = 'platform_fee_config';
+
     protected $primaryKey = 'id';
+
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -30,11 +34,12 @@ class PlatformFeeConfig extends Model
      */
     public function calculateFee(float $subtotal): float
     {
-        if (!$this->is_active) {
+        if (! $this->is_active) {
             return 0;
         }
 
         $percentageAmount = ($subtotal * $this->percentage_fee) / 100;
+
         return round($percentageAmount + $this->fixed_fee);
     }
 }

@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,15 +12,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // 1. Drop Foreign Key on users table referencing roles
-        Schema::table('users', function (Blueprint $table) {
-            try {
-                // Try dropping standard name
-                $table->dropForeign(['role_id']);
-            } catch (\Throwable $e) {
-                // Ignore
+        // 1. Drop Foreign Key on users table referencing roles (if exists)
+        if (Schema::hasTable('users') && Schema::hasColumn('users', 'role_id')) {
+            // Check if constraint exists (PostgreSQL specific)
+            $constraintExists = DB::select("
+                SELECT 1 FROM information_schema.table_constraints
+                WHERE constraint_name = 'users_role_id_foreign'
+                AND table_name = 'users'
+            ");
+
+            if (! empty($constraintExists)) {
+                Schema::table('users', function (Blueprint $table) {
+                    $table->dropForeign(['role_id']);
+                });
             }
-        });
+        }
 
         // 2. Drop pivot table
         Schema::dropIfExists('role_permissions');

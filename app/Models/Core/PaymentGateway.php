@@ -109,7 +109,7 @@ class PaymentGateway extends Model
     /**
      * Scope to get only active gateways
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeActive($query)
@@ -120,7 +120,7 @@ class PaymentGateway extends Model
     /**
      * Scope to get only production gateways
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeProduction($query)
@@ -131,7 +131,7 @@ class PaymentGateway extends Model
     /**
      * Scope to get only sandbox gateways
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeSandbox($query)
@@ -142,7 +142,7 @@ class PaymentGateway extends Model
     /**
      * Scope to order by priority (highest first)
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopePrioritized($query)
@@ -152,8 +152,6 @@ class PaymentGateway extends Model
 
     /**
      * Check if gateway is active
-     *
-     * @return bool
      */
     public function isActive(): bool
     {
@@ -162,8 +160,6 @@ class PaymentGateway extends Model
 
     /**
      * Check if gateway is in sandbox mode
-     *
-     * @return bool
      */
     public function isSandbox(): bool
     {
@@ -172,8 +168,6 @@ class PaymentGateway extends Model
 
     /**
      * Check if gateway config is set (not placeholder)
-     *
-     * @return bool
      */
     public function hasValidConfig(): bool
     {
@@ -182,16 +176,14 @@ class PaymentGateway extends Model
 
     /**
      * Get display status
-     *
-     * @return string
      */
     public function getStatusAttribute(): string
     {
-        if (!$this->is_active) {
+        if (! $this->is_active) {
             return 'inactive';
         }
 
-        if (!$this->hasValidConfig()) {
+        if (! $this->hasValidConfig()) {
             return 'not_configured';
         }
 
@@ -200,8 +192,6 @@ class PaymentGateway extends Model
 
     /**
      * Get status badge color for UI
-     *
-     * @return string
      */
     public function getStatusColorAttribute(): string
     {
@@ -216,8 +206,6 @@ class PaymentGateway extends Model
 
     /**
      * Get gateway icon/logo URL
-     *
-     * @return string
      */
     public function getIconUrlAttribute(): string
     {
@@ -232,8 +220,6 @@ class PaymentGateway extends Model
 
     /**
      * Get human-readable priority label
-     *
-     * @return string
      */
     public function getPriorityLabelAttribute(): string
     {
@@ -248,12 +234,11 @@ class PaymentGateway extends Model
     /**
      * Check if gateway supports a specific payment method
      *
-     * @param string $method Payment method code
-     * @return bool
+     * @param  string  $method  Payment method code
      */
     public function supportsMethod(string $method): bool
     {
-        if (!is_array($this->supported_methods)) {
+        if (! is_array($this->supported_methods)) {
             return false;
         }
 
@@ -262,12 +247,10 @@ class PaymentGateway extends Model
 
     /**
      * Get formatted list of supported methods
-     *
-     * @return string
      */
     public function getSupportedMethodsListAttribute(): string
     {
-        if (!is_array($this->supported_methods)) {
+        if (! is_array($this->supported_methods)) {
             return 'None';
         }
 

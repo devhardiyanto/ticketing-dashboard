@@ -9,26 +9,15 @@ import EventForm from './EventForm.vue';
 import type { Event, Organization } from '@/types/dashboard';
 import event from '@/routes/event';
 import { BreadcrumbItem } from '@/types';
+import { useQueryClient } from '@tanstack/vue-query';
+
 
 const props = defineProps<{
 	parent_event?: Event | null;
-	events: {
-		data: Event[];
-		current_page: number;
-		per_page: number;
-		total: number;
-		last_page: number;
-		from: number;
-		to: number;
-	};
 	organizations: Organization[];
-	filters?: {
-		search?: string;
-		limit?: number;
-	};
 }>();
 
-const columns = useColumns();
+const queryClient = useQueryClient();
 
 const isDialogOpen = ref(false);
 const selectedItem = ref<Event | null>(null);
@@ -43,12 +32,14 @@ const openEdit = (item: Event) => {
 	isDialogOpen.value = true;
 };
 
-const tableData = computed(() =>
-	props.events.data.map((event) => ({
-		...event,
-		onEdit: openEdit,
-	})),
-);
+const onActionSuccess = () => {
+	queryClient.invalidateQueries({ queryKey: ['events'] });
+	isDialogOpen.value = false;
+};
+
+const columns = useColumns(openEdit, onActionSuccess);
+
+
 
 const breadcrumbs = computed<BreadcrumbItem[]>(() => {
 	const items: BreadcrumbItem[] = [
@@ -80,18 +71,17 @@ const titleEvent = () => {
 </script>
 
 <template>
-  <ContentLayout title="" :breadcrumbs="breadcrumbs">
+  <ContentLayout :breadcrumbs="breadcrumbs">
     <div class="mb-4 flex justify-between">
 			<component :is="titleEvent" />
     </div>
 
     <DataTable
       :columns="columns"
-      :data="tableData"
-      :filters="filters"
-      :pagination="events"
       :on-create="openCreate"
       create-label="Add Event"
+      :api-url="event.data({ parent_id: parent_event?.id } as any).url"
+      :query-key="['events', parent_event?.id]"
     />
 
     <BaseDialog
@@ -102,7 +92,7 @@ const titleEvent = () => {
         :initial-data="selectedItem"
 				:parent-event="parent_event"
         :organizations="organizations"
-        @success="isDialogOpen = false"
+        @success="onActionSuccess"
       />
     </BaseDialog>
   </ContentLayout>

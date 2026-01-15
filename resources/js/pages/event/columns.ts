@@ -7,7 +7,10 @@ import { h } from 'vue';
 import EventActions from './EventActions.vue';
 import ImagePreview from '@/components/common/ImagePreview.vue';
 
-export const useColumns = () => {
+export const useColumns = (
+	onEdit?: (event: Event) => void,
+	onSuccess?: () => void
+) => {
 	const page = usePage();
 	const user = page.props.auth.user;
 
@@ -68,8 +71,8 @@ export const useColumns = () => {
 				const event = row.original;
 				return h(EventActions, {
 					event,
-					onEdit: (e: Event) => (event as any).onEdit?.(e),
-					onSuccess: () => (event as any).onSuccess?.(),
+					onEdit: (e: Event) => onEdit?.(e),
+					onSuccess: () => onSuccess?.(),
 				});
 			},
 		},

@@ -21,11 +21,11 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
         $totalRevenue = $query->sum('order_items.subtotal');
 
         $platformFee = Order::query()
-            ->whereIn('id', function($q) use ($eventId) {
+            ->whereIn('id', function ($q) use ($eventId) {
                 $q->select('order_id')
-                  ->from('order_items')
-                  ->join('ticket_types', 'order_items.ticket_type_id', '=', 'ticket_types.id')
-                  ->where('ticket_types.event_id', $eventId);
+                    ->from('order_items')
+                    ->join('ticket_types', 'order_items.ticket_type_id', '=', 'ticket_types.id')
+                    ->where('ticket_types.event_id', $eventId);
             })
             ->where('status', 'PAID')
             ->sum('platform_fee_amount');

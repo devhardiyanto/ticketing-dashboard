@@ -42,18 +42,13 @@ import user from '@/routes/user';
 
 const page = usePage();
 const userPermissions = computed(() => page.props.auth.user.permissions || []);
-const userRoles = computed(() => page.props.auth.user.roles || []);
 
 const hasPermission = (permission?: string) => {
 	if (!permission) return true;
 	return userPermissions.value.includes(permission);
 };
 
-const hasRole = (role: string) => {
-	return userRoles.value.includes(role);
-};
-
-// Define menu items with mapped permissions
+// Define menu items with mapped permissions (using Spatie format: resource.action)
 const rawNavGroups: NavGroup[] = [
 	{
 		label: 'Overview',
@@ -62,13 +57,13 @@ const rawNavGroups: NavGroup[] = [
 				title: 'Dashboard',
 				href: dashboard(),
 				icon: LayoutGrid,
-				permission: 'view-dashboard',
+				// No permission required - all authenticated users can view dashboard
 			},
 			{
 				title: 'Analytics',
 				href: analytics.index(),
 				icon: ChartArea,
-				permission: 'view-analytics', // Assuming this permission or generic
+				permission: 'reports.read',
 			},
 		],
 	},
@@ -79,13 +74,13 @@ const rawNavGroups: NavGroup[] = [
 				title: 'Users',
 				href: user.index(),
 				icon: Users,
-				permission: 'manage-users',
+				permission: 'dashboard_users.read',
 			},
 			{
 				title: 'Organization',
 				href: organization.user.index(),
 				icon: Building2,
-				permission: 'manage-users', // Or specific org perm if needed
+				permission: 'organizations.read',
 			},
 		],
 	},
@@ -96,19 +91,19 @@ const rawNavGroups: NavGroup[] = [
 				title: 'Events',
 				href: event.index(),
 				icon: BookOpen,
-				permission: 'view-event',
+				permission: 'events.read',
 			},
 			{
 				title: 'Ticket Types',
 				href: ticket_type.index(),
 				icon: Tickets,
-				permission: 'manage-ticket-types',
+				permission: 'tickets.read',
 			},
 			{
 				title: 'Orders',
 				href: order.index(),
 				icon: ShoppingCart,
-				permission: 'manage-orders',
+				permission: 'orders.read',
 			},
 		],
 	},
@@ -119,17 +114,19 @@ const rawNavGroups: NavGroup[] = [
 				title: 'Banners',
 				href: banner.index(),
 				icon: Image,
-				permission: 'manage-banners',
+				permission: 'settings.update',
 			},
 			{
 				title: 'Platform Fee',
 				href: platform_fee.index(),
 				icon: Settings,
+				permission: 'settings.update',
 			},
 			{
 				title: 'Activity Logs',
 				href: '/activity-logs',
 				icon: Activity,
+				permission: 'activity_logs.read',
 			},
 		],
 	},
@@ -138,14 +135,6 @@ const rawNavGroups: NavGroup[] = [
 const filteredNavGroups = computed(() => {
 	return rawNavGroups.map(group => {
 		const filteredItems = group.items.filter(item => {
-			// Special case for Platform Fee & Activity Logs if permissions missing
-			if (item.title === 'Platform Fee') {
-				return hasRole('super_admin');
-			}
-			if (item.title === 'Activity Logs') {
-				return hasRole('super_admin');
-			}
-
 			return hasPermission(item.permission);
 		});
 

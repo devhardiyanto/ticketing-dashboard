@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
@@ -48,7 +48,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'manage-ticket-types',
             'view-order',
             'manage-orders',
-            'manage-order-details'
+            'manage-order-details',
         ]);
 
         // 3. Simple User / Staff (Example)

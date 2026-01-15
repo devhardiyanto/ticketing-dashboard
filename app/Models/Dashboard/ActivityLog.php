@@ -2,12 +2,10 @@
 
 namespace App\Models\Dashboard;
 
+use App\Models\Core\Organization;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
-use App\Models\Core\Organization;
-use App\Models\Dashboard\User;
 
 class ActivityLog extends Model
 {

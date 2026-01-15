@@ -3,10 +3,10 @@
 namespace Database\Factories\Dashboard;
 
 use App\Models\Core\Organization;
-use App\Models\Dashboard\Role;
 use App\Models\Dashboard\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Dashboard\User>
@@ -38,15 +38,21 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= 'password',
             'phone_number' => fake()->phoneNumber(),
-            'role_id' => null, // Will be set by states
             'organization_id' => null, // Will be set by states
             'status' => 'active',
             'last_login_at' => fake()->dateTimeBetween('-1 month', 'now'),
             'remember_token' => Str::random(10),
-            //   'two_factor_secret' => null,
-            //   'two_factor_recovery_codes' => null,
-            //   'two_factor_confirmed_at' => null,
         ];
+    }
+
+    /**
+     * Configure the model factory to assign role after creation.
+     */
+    public function configure(): static
+    {
+        return $this->afterCreating(function (User $user) {
+            // Role assignment happens via states, not here
+        });
     }
 
     /**
@@ -54,12 +60,10 @@ class UserFactory extends Factory
      */
     public function superAdmin(): static
     {
-        return $this->state(function (array $attributes) {
-            $role = Role::where('name', 'super_admin')->first();
-            return [
-                'role_id' => $role?->id,
-                'organization_id' => null, // Super admin doesn't belong to any org
-            ];
+        return $this->state(fn (array $attributes) => [
+            'organization_id' => null, // Super admin doesn't belong to any org
+        ])->afterCreating(function (User $user) {
+            $user->assignRole('super_admin');
         });
     }
 
@@ -68,12 +72,10 @@ class UserFactory extends Factory
      */
     public function platformStaff(): static
     {
-        return $this->state(function (array $attributes) {
-            $role = Role::where('name', 'platform_staff')->first();
-            return [
-                'role_id' => $role?->id,
-                'organization_id' => null, // Platform staff doesn't belong to any org
-            ];
+        return $this->state(fn (array $attributes) => [
+            'organization_id' => null, // Platform staff doesn't belong to any org
+        ])->afterCreating(function (User $user) {
+            $user->assignRole('platform_staff');
         });
     }
 
@@ -82,17 +84,14 @@ class UserFactory extends Factory
      */
     public function orgAdmin(?Organization $organization = null): static
     {
-        return $this->state(function (array $attributes) use ($organization) {
-            $role = Role::where('name', 'org_admin')->first();
+        if (! $organization) {
+            throw new \InvalidArgumentException('Organization is required for org_admin users');
+        }
 
-            if (!$organization) {
-                throw new \InvalidArgumentException('Organization is required for org_admin users');
-            }
-
-            return [
-                'role_id' => $role?->id,
-                'organization_id' => $organization->id,
-            ];
+        return $this->state(fn (array $attributes) => [
+            'organization_id' => $organization->id,
+        ])->afterCreating(function (User $user) {
+            $user->assignRole('org_admin');
         });
     }
 
@@ -101,17 +100,14 @@ class UserFactory extends Factory
      */
     public function orgStaff(?Organization $organization = null): static
     {
-        return $this->state(function (array $attributes) use ($organization) {
-            $role = Role::where('name', 'org_staff')->first();
+        if (! $organization) {
+            throw new \InvalidArgumentException('Organization is required for org_staff users');
+        }
 
-            if (!$organization) {
-                throw new \InvalidArgumentException('Organization is required for org_staff users');
-            }
-
-            return [
-                'role_id' => $role?->id,
-                'organization_id' => $organization->id,
-            ];
+        return $this->state(fn (array $attributes) => [
+            'organization_id' => $organization->id,
+        ])->afterCreating(function (User $user) {
+            $user->assignRole('org_staff');
         });
     }
 
@@ -120,19 +116,19 @@ class UserFactory extends Factory
      */
     public function forOrganization(Organization $organization): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'organization_id' => $organization->id,
         ]);
     }
 
     /**
-     * Indicate that the user has a specific role.
+     * Indicate that the user has a specific role by name.
      */
-    public function withRole(Role $role): static
+    public function withRole(string $roleName): static
     {
-        return $this->state(fn(array $attributes) => [
-            'role_id' => $role->id,
-        ]);
+        return $this->afterCreating(function (User $user) use ($roleName) {
+            $user->assignRole($roleName);
+        });
     }
 
     /**
@@ -140,7 +136,7 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
     }
@@ -150,7 +146,7 @@ class UserFactory extends Factory
      */
     public function withTwoFactor(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'two_factor_secret' => Str::random(32),
             'two_factor_recovery_codes' => json_encode([
                 Str::random(10),
@@ -166,7 +162,7 @@ class UserFactory extends Factory
      */
     public function inactive(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'status' => 'inactive',
         ]);
     }
@@ -176,7 +172,7 @@ class UserFactory extends Factory
      */
     public function suspended(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'status' => 'suspended',
         ]);
     }
@@ -186,7 +182,7 @@ class UserFactory extends Factory
      */
     public function neverLoggedIn(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'last_login_at' => null,
         ]);
     }

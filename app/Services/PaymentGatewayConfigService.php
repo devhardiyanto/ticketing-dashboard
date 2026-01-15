@@ -3,9 +3,9 @@
 namespace App\Services;
 
 use App\Models\Core\PaymentGateway;
+use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Encryption\Encrypter;
 
 /**
  * Payment Gateway Config Service
@@ -35,8 +35,7 @@ class PaymentGatewayConfigService
     /**
      * Get gateway by code (without decrypting config)
      *
-     * @param string $code Gateway code ('midtrans', 'xendit', 'nicepay')
-     * @return PaymentGateway|null
+     * @param  string  $code  Gateway code ('midtrans', 'xendit', 'nicepay')
      */
     public static function getByCode(string $code): ?PaymentGateway
     {
@@ -46,19 +45,20 @@ class PaymentGatewayConfigService
     /**
      * Get gateway config with decrypted credentials
      *
-     * @param string $code Gateway code
+     * @param  string  $code  Gateway code
      * @return array Gateway data with decrypted config
+     *
      * @throws \Exception if gateway not found or inactive
      */
     public static function getConfig(string $code): array
     {
         $gateway = self::getByCode($code);
 
-        if (!$gateway) {
+        if (! $gateway) {
             throw new \Exception("Payment gateway '{$code}' not found");
         }
 
-        if (!$gateway->is_active) {
+        if (! $gateway->is_active) {
             throw new \Exception("Payment gateway '{$code}' is not active");
         }
 
@@ -85,7 +85,7 @@ class PaymentGatewayConfigService
             ]);
 
             throw new \Exception(
-                "Failed to decrypt config for gateway '{$code}': " . $e->getMessage()
+                "Failed to decrypt config for gateway '{$code}': ".$e->getMessage()
             );
         }
 
@@ -107,9 +107,10 @@ class PaymentGatewayConfigService
     /**
      * Update gateway config (encrypts before saving)
      *
-     * @param string $code Gateway code
-     * @param array $config Gateway configuration array
+     * @param  string  $code  Gateway code
+     * @param  array  $config  Gateway configuration array
      * @return PaymentGateway Updated gateway
+     *
      * @throws \Exception if gateway not found
      *
      * @example
@@ -123,16 +124,16 @@ class PaymentGatewayConfigService
     {
         $gateway = self::getByCode($code);
 
-        if (!$gateway) {
+        if (! $gateway) {
             throw new \Exception("Payment gateway '{$code}' not found");
         }
 
         // Validate config
         $validation = self::validateConfig($code, $config);
 
-        if (!$validation['valid']) {
+        if (! $validation['valid']) {
             throw new \Exception(
-                "Invalid config for gateway '{$code}'. Missing fields: " .
+                "Invalid config for gateway '{$code}'. Missing fields: ".
                 implode(', ', $validation['missing'])
             );
         }
@@ -153,15 +154,15 @@ class PaymentGatewayConfigService
     /**
      * Set gateway active/inactive status
      *
-     * @param string $code Gateway code
-     * @param bool $isActive Active status
+     * @param  string  $code  Gateway code
+     * @param  bool  $isActive  Active status
      * @return PaymentGateway Updated gateway
      */
     public static function setActiveStatus(string $code, bool $isActive): PaymentGateway
     {
         $gateway = self::getByCode($code);
 
-        if (!$gateway) {
+        if (! $gateway) {
             throw new \Exception("Payment gateway '{$code}' not found");
         }
 
@@ -169,7 +170,7 @@ class PaymentGatewayConfigService
         $gateway->updated_at = now();
         $gateway->save();
 
-        Log::info("Set payment gateway '{$code}' active status to: " . ($isActive ? 'true' : 'false'));
+        Log::info("Set payment gateway '{$code}' active status to: ".($isActive ? 'true' : 'false'));
 
         return $gateway;
     }
@@ -177,15 +178,15 @@ class PaymentGatewayConfigService
     /**
      * Set gateway sandbox mode
      *
-     * @param string $code Gateway code
-     * @param bool $isSandbox Sandbox mode status
+     * @param  string  $code  Gateway code
+     * @param  bool  $isSandbox  Sandbox mode status
      * @return PaymentGateway Updated gateway
      */
     public static function setSandboxMode(string $code, bool $isSandbox): PaymentGateway
     {
         $gateway = self::getByCode($code);
 
-        if (!$gateway) {
+        if (! $gateway) {
             throw new \Exception("Payment gateway '{$code}' not found");
         }
 
@@ -193,7 +194,7 @@ class PaymentGatewayConfigService
         $gateway->updated_at = now();
         $gateway->save();
 
-        Log::info("Set payment gateway '{$code}' sandbox mode to: " . ($isSandbox ? 'true' : 'false'));
+        Log::info("Set payment gateway '{$code}' sandbox mode to: ".($isSandbox ? 'true' : 'false'));
 
         return $gateway;
     }
@@ -201,8 +202,8 @@ class PaymentGatewayConfigService
     /**
      * Validate gateway config (check if all required fields are present)
      *
-     * @param string $code Gateway code
-     * @param array $config Config to validate
+     * @param  string  $code  Gateway code
+     * @param  array  $config  Config to validate
      * @return array Validation result ['valid' => bool, 'missing' => array]
      */
     public static function validateConfig(string $code, array $config): array
@@ -231,8 +232,8 @@ class PaymentGatewayConfigService
     /**
      * Get gateway base URL (production or sandbox)
      *
-     * @param string $code Gateway code
-     * @param bool $isSandbox Use sandbox URL
+     * @param  string  $code  Gateway code
+     * @param  bool  $isSandbox  Use sandbox URL
      * @return string Base API URL
      */
     public static function getBaseUrl(string $code, bool $isSandbox): string
@@ -252,7 +253,7 @@ class PaymentGatewayConfigService
             ],
         ];
 
-        if (!isset($urls[$code])) {
+        if (! isset($urls[$code])) {
             throw new \Exception("Unknown gateway code: {$code}");
         }
 
@@ -265,8 +266,8 @@ class PaymentGatewayConfigService
      * This method re-encrypts all gateway configs with a new APP_KEY
      * Should be run when rotating encryption keys
      *
-     * @param string $oldKey Old APP_KEY (base64 encoded)
-     * @param string $newKey New APP_KEY (base64 encoded)
+     * @param  string  $oldKey  Old APP_KEY (base64 encoded)
+     * @param  string  $newKey  New APP_KEY (base64 encoded)
      * @return int Number of gateways re-encrypted
      */
     public static function rotateEncryptionKey(string $oldKey, string $newKey): int
@@ -313,7 +314,7 @@ class PaymentGatewayConfigService
     /**
      * Test if gateway config can be decrypted successfully
      *
-     * @param string $code Gateway code
+     * @param  string  $code  Gateway code
      * @return array Test result ['success' => bool, 'message' => string]
      */
     public static function testDecryption(string $code): array
@@ -321,7 +322,7 @@ class PaymentGatewayConfigService
         try {
             $gateway = self::getByCode($code);
 
-            if (!$gateway) {
+            if (! $gateway) {
                 return [
                     'success' => false,
                     'message' => "Gateway '{$code}' not found",
@@ -354,7 +355,7 @@ class PaymentGatewayConfigService
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => 'Decryption failed: ' . $e->getMessage(),
+                'message' => 'Decryption failed: '.$e->getMessage(),
             ];
         }
     }
@@ -362,14 +363,14 @@ class PaymentGatewayConfigService
     /**
      * Get supported payment methods for a gateway
      *
-     * @param string $code Gateway code
+     * @param  string  $code  Gateway code
      * @return array List of supported payment methods
      */
     public static function getSupportedMethods(string $code): array
     {
         $gateway = self::getByCode($code);
 
-        if (!$gateway) {
+        if (! $gateway) {
             return [];
         }
 
@@ -379,8 +380,8 @@ class PaymentGatewayConfigService
     /**
      * Check if gateway supports a specific payment method
      *
-     * @param string $code Gateway code
-     * @param string $method Payment method
+     * @param  string  $code  Gateway code
+     * @param  string  $method  Payment method
      * @return bool True if supported
      */
     public static function supportsMethod(string $code, string $method): bool

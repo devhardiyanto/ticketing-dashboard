@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Services\AnalyticsService;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class AnalyticsController extends Controller
 {
@@ -20,14 +20,14 @@ class AnalyticsController extends Controller
     {
         $user = Auth::user();
         $availableEvents = $this->service->getAvailableEvents($user);
-        
-        // We will just pass available events. 
+
+        // We will just pass available events.
         // The frontend will determine the default selected ID and fetch data.
-        
+
         return Inertia::render('analytics/AnalyticsIndex', [
             'events' => $availableEvents,
             // 'currentEventId' can be passed if we want to persist state via URL, but simpler to let frontend handle defaults or simple query param
-            'currentEventId' => $request->input('event_id'), 
+            'currentEventId' => $request->input('event_id'),
         ]);
     }
 
@@ -42,7 +42,7 @@ class AnalyticsController extends Controller
 
         // Verify access
         $availableEvents = $this->service->getAvailableEvents($user);
-        if (!$availableEvents->contains('id', $eventId)) {
+        if (! $availableEvents->contains('id', $eventId)) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -62,13 +62,13 @@ class AnalyticsController extends Controller
 
         // Verify access
         $availableEvents = $this->service->getAvailableEvents($user);
-        if (!$availableEvents->contains('id', $eventId)) {
-             return response()->json(['error' => 'Unauthorized'], 403);
+        if (! $availableEvents->contains('id', $eventId)) {
+            return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         // Force refresh
         $data = $this->service->getAnalyticsData($eventId, true);
-        
+
         // Return fresh data directly so frontend doesn't need another call
         return response()->json($data);
     }

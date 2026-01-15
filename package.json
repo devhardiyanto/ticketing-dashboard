@@ -32,6 +32,7 @@
 	},
 	"dependencies": {
 		"@inertiajs/vue3": "^2.1.0",
+		"@tanstack/vue-query": "^5.92.6",
 		"@tanstack/vue-table": "^8.21.3",
 		"@unovis/ts": "^1.6.2",
 		"@unovis/vue": "^1.6.2",

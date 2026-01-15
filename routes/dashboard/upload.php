@@ -1,15 +1,15 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UploadController;
+use Illuminate\Support\Facades\Route;
 
-$name = "upload";
+$name = 'upload';
 Route::controller(UploadController::class)
-	->middleware(['auth', 'verified'])
-	->prefix($name)
-	->group(function () use ($name) {
-		Route::post('/', 'upload')->name("$name.store");
-		Route::delete('/', 'delete')->name("$name.destroy");
-		Route::post('/signed-url', 'getSignedUrl')->name("$name.signed-url");
-		Route::post('/signed-urls', 'getSignedUrls')->name("$name.signed-urls");
-	});
+    ->middleware(['auth', 'verified'])
+    ->prefix($name)
+    ->group(function () use ($name) {
+        Route::post('/', 'upload')->name("$name.store");
+        Route::delete('/', 'delete')->name("$name.destroy");
+        Route::post('/signed-url', 'generateSignedUrl')->name("$name.signed-url");
+        Route::post('/signed-urls', 'generateSignedUrls')->name("$name.signed-urls");
+    });

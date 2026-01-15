@@ -4,9 +4,9 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Core\Banner;
 use App\Repositories\Contracts\BannerRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class BannerRepository implements BannerRepositoryInterface
@@ -33,6 +33,7 @@ class BannerRepository implements BannerRepositoryInterface
         }
 
         $perPage = $params['limit'] ?? 10;
+
         return $query->orderBy('sequence')->orderBy('created_at', 'desc')->paginate($perPage);
     }
 
@@ -44,10 +45,11 @@ class BannerRepository implements BannerRepositoryInterface
     public function create(array $data): Model
     {
         // Auto-assign sequence to last + 1 if not provided
-        if (!isset($data['sequence'])) {
+        if (! isset($data['sequence'])) {
             $maxSequence = $this->model->max('sequence');
             $data['sequence'] = $maxSequence ? $maxSequence + 1 : 1;
         }
+
         return $this->model->create($data);
     }
 
@@ -57,6 +59,7 @@ class BannerRepository implements BannerRepositoryInterface
         if ($banner) {
             return $banner->update($data);
         }
+
         return false;
     }
 
@@ -66,6 +69,7 @@ class BannerRepository implements BannerRepositoryInterface
         if ($banner) {
             return $banner->delete();
         }
+
         return false;
     }
 
@@ -75,6 +79,7 @@ class BannerRepository implements BannerRepositoryInterface
             foreach ($ids as $index => $id) {
                 $this->model->where('id', $id)->update(['sequence' => $index + 1]);
             }
+
             return true;
         });
     }

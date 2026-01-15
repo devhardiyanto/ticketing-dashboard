@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Core\Organization;
 use App\Models\Dashboard\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -14,7 +13,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Step 1: Clean up existing data to allow re-seeding
         \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
         \App\Models\Dashboard\User::truncate();
         \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
@@ -23,10 +21,6 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             PermissionSeeder::class,
-            // Domain data (Orgs, Events, Tickets) is now handled by the Core Service seeder
-            // OrganizationSeeder::class,
-            // EventSeeder::class,
-            // TicketTypeSeeder::class,
         ]);
 
         // Step 3: Seed dashboard users with 4 types

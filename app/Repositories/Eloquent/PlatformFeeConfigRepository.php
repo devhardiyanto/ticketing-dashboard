@@ -32,6 +32,7 @@ class PlatformFeeConfigRepository implements PlatformFeeConfigRepositoryInterfac
 
         if ($config) {
             $config->update($data);
+
             return $config->fresh();
         }
 

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Cache;
 class AnalyticsService
 {
     protected $repository;
+
     protected const CACHE_TTL = 3600; // 1 hour
 
     public function __construct(AnalyticsRepositoryInterface $repository)
@@ -42,11 +43,11 @@ class AnalyticsService
         // If organization_id is present on user, filter by it.
 
         if (isset($user->organization_id) && $user->organization_id) {
-             $query->where('organization_id', $user->organization_id);
+            $query->where('organization_id', $user->organization_id);
         } else {
-             // If no org id, assuming internal/admin.
-             // If we want to be strict, we check roles.
-             // But if specific requirement said "Internal User... Organization User".
+            // If no org id, assuming internal/admin.
+            // If we want to be strict, we check roles.
+            // But if specific requirement said "Internal User... Organization User".
         }
 
         return $query->get();

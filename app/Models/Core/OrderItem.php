@@ -7,39 +7,43 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OrderItem extends Model
 {
-	protected $connection = 'core_pgsql';
-	protected $table = 'order_items';
-	protected $primaryKey = 'id';
-	protected $keyType = 'string';
-	public $incrementing = false;
+    protected $connection = 'core_pgsql';
 
-	protected $fillable = [
-		'order_id',
-		'ticket_type_id',
-		'quantity',
-		'price_per_ticket',
-		'subtotal',
-		'ticket_code',
-		'attendee_name',
-		'attendee_email',
-		'status',
-	];
+    protected $table = 'order_items';
 
-	protected $casts = [
-		'quantity' => 'integer',
-		'price_per_ticket' => 'decimal:2',
-		'subtotal' => 'decimal:2',
-		'created_at' => 'datetime',
-		'updated_at' => 'datetime',
-	];
+    protected $primaryKey = 'id';
 
-	public function order(): BelongsTo
-	{
-		return $this->belongsTo(Order::class, 'order_id');
-	}
+    protected $keyType = 'string';
 
-	public function ticketType(): BelongsTo
-	{
-		return $this->belongsTo(TicketType::class, 'ticket_type_id');
-	}
+    public $incrementing = false;
+
+    protected $fillable = [
+        'order_id',
+        'ticket_type_id',
+        'quantity',
+        'price_per_ticket',
+        'subtotal',
+        'ticket_code',
+        'attendee_name',
+        'attendee_email',
+        'status',
+    ];
+
+    protected $casts = [
+        'quantity' => 'integer',
+        'price_per_ticket' => 'decimal:2',
+        'subtotal' => 'decimal:2',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class, 'order_id');
+    }
+
+    public function ticketType(): BelongsTo
+    {
+        return $this->belongsTo(TicketType::class, 'ticket_type_id');
+    }
 }
