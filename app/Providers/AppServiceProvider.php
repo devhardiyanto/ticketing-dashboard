@@ -20,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\Contracts\OrderRepositoryInterface::class => \App\Repositories\Eloquent\OrderRepository::class,
             \App\Repositories\Contracts\UserRepositoryInterface::class => \App\Repositories\Eloquent\UserRepository::class,
             \App\Repositories\Contracts\AnalyticsRepositoryInterface::class => \App\Repositories\Eloquent\AnalyticsRepository::class,
+            \App\Repositories\Contracts\RoleRepositoryInterface::class => \App\Repositories\Eloquent\RoleRepository::class,
         ];
 
         foreach ($repositories as $interface => $implementation) {

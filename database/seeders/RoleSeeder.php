@@ -15,24 +15,28 @@ class RoleSeeder extends Seeder
         $roles = [
             [
                 'name' => 'super_admin',
+                'label' => 'Super Admin',
                 'guard_name' => 'web',
             ],
             [
                 'name' => 'platform_staff',
+                'label' => 'Platform Staff',
                 'guard_name' => 'web',
             ],
             [
                 'name' => 'org_admin',
+                'label' => 'Organization Admin',
                 'guard_name' => 'web',
             ],
             [
                 'name' => 'org_staff',
+                'label' => 'Organization Staff',
                 'guard_name' => 'web',
             ],
         ];
 
         foreach ($roles as $roleData) {
-            Role::firstOrCreate(
+            Role::updateOrCreate(
                 ['name' => $roleData['name'], 'guard_name' => $roleData['guard_name']],
                 $roleData
             );

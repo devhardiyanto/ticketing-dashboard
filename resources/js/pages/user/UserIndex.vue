@@ -8,43 +8,47 @@ import { BreadcrumbItem } from '@/types';
 import userRoute from '@/routes/user';
 import { useQueryClient } from '@tanstack/vue-query';
 import { Spinner } from '@/components/ui/spinner';
+import { usePage } from '@inertiajs/vue3';
+
+const page = usePage();
+const user = page.props.auth.user;
 
 const UserForm = defineAsyncComponent({
-  loader: () => import('./UserForm.vue'),
-  loadingComponent: Spinner,
+	loader: () => import('./UserForm.vue'),
+	loadingComponent: Spinner,
 });
 
 const props = defineProps<{
-  organizations: any[];
-  roles: any[];
-  availablePermissions: any[];
+	organizations: any[];
+	roles: any[];
+	availablePermissions: any[];
 }>();
 
 const queryClient = useQueryClient();
 
 const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: 'Users',
-    href: userRoute.index().url,
-  },
+	{
+		title: 'Users',
+		href: userRoute.index().url,
+	},
 ];
 
 const isDialogOpen = ref(false);
 const selectedItem = ref<User | null>(null);
 
 const openCreate = () => {
-  selectedItem.value = null;
-  isDialogOpen.value = true;
+	selectedItem.value = null;
+	isDialogOpen.value = true;
 };
 
 const openEdit = (item: User) => {
-  selectedItem.value = item;
-  isDialogOpen.value = true;
+	selectedItem.value = item;
+	isDialogOpen.value = true;
 };
 
 const onActionSuccess = () => {
-  queryClient.invalidateQueries({ queryKey: ['users'] });
-  isDialogOpen.value = false;
+	queryClient.invalidateQueries({ queryKey: ['users'] });
+	isDialogOpen.value = false;
 };
 
 const columns = useColumns({ hideOrganization: false, canDelete: true }, openEdit, onActionSuccess);
@@ -60,7 +64,7 @@ const columns = useColumns({ hideOrganization: false, canDelete: true }, openEdi
       :columns="columns"
       :on-create="openCreate"
       create-label="Add User"
-      :api-url="userRoute.data().url"
+      :api-url="userRoute.data({ query: { organization_id: user?.organization_id } }).url"
       :query-key="['users']"
     />
 
