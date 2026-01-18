@@ -110,6 +110,8 @@ class UserController extends Controller
 
 		if (!empty($data['permissions'])) {
 			$user->syncPermissions($data['permissions']);
+            // Force clear permission cache to ensure immediate effect
+            app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 		}
 
 		// Send email
@@ -171,6 +173,8 @@ class UserController extends Controller
 
 		if (array_key_exists('permissions', $data)) {
 			$user->syncPermissions($data['permissions']);
+            // Force clear permission cache to ensure immediate effect
+            app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 		}
 
 		return redirect()->back();

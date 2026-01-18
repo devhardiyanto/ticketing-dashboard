@@ -4,6 +4,7 @@ import { ArrowUpDown } from 'lucide-vue-next';
 import { h } from 'vue';
 import UserActions from './UserActions.vue';
 import UserStatusSwitch from './UserStatusSwitch.vue';
+import { formatRoleName } from '@/lib/utils-general';
 
 // Define User type interface temporarily or import
 export interface User {
@@ -11,9 +12,25 @@ export interface User {
 	name: string;
 	email: string;
 	organization?: { id: string; name: string };
-	role?: { id: number; display_name: string };
+	roles?: Roles[];
 	status: 'active' | 'inactive';
 }
+
+export interface Roles {
+	id: number
+	name: string
+	guard_name: string
+	created_at: string
+	updated_at: string
+	pivot: Pivot
+}
+
+export interface Pivot {
+	model_type: string
+	model_id: number
+	role_id: number
+}
+
 
 export const useColumns = (
 	options: { hideOrganization?: boolean; canDelete?: boolean; canEdit?: boolean } = {},
@@ -51,7 +68,7 @@ export const useColumns = (
 		{
 			accessorKey: 'role.display_name',
 			header: 'Role',
-			cell: ({ row }) => row.original.role?.display_name || '-',
+			cell: ({ row }) => formatRoleName(row.original.roles?.[0].name || '') || '-',
 		},
 		{
 			accessorKey: 'status',

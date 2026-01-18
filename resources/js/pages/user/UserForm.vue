@@ -32,6 +32,7 @@ import { useForm } from '@inertiajs/vue3';
 import { Loader2, Lock } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
+import { formatRoleName } from '@/lib/utils-general';
 
 const props = defineProps<{
 	initialData?: any | null;
@@ -61,17 +62,23 @@ const form = useForm({
 		props.initialData?.organization_id ||
 		props.lockedOrganizationId ||
 		'__none__',
-	role_id: props.initialData?.role_id || null,
+	role_id: props.initialData?.role_id || props.initialData?.roles?.[0]?.id || null,
 	phone_number: props.initialData?.phone_number || '',
 	status: props.initialData?.status || 'active',
 	permissions: props.initialData?.permissions?.map((p: any) => p.name) || [],
 });
 
+// Local ref to manage permissions state independently of Inertia form
+const selectedPermissions = ref<string[]>(
+	props.initialData?.permissions?.map((p: any) => p.name) || [],
+);
+
 const showOrgWarning = ref(false);
 
 const inheritedPermissions = computed(() => {
 	if (!form.role_id) return [];
-	const role = props.roles?.find((r) => r.id === form.role_id);
+	// Use loose equality (==) to handle string/number mismatch for role_id
+	const role = props.roles?.find((r) => r.id == form.role_id);
 	return role ? role.permissions : [];
 });
 
@@ -82,19 +89,19 @@ const isPermissionInherited = (permissionName: string) => {
 const isPermissionChecked = (permissionName: string) => {
 	return (
 		isPermissionInherited(permissionName) ||
-		form.permissions.includes(permissionName)
+		selectedPermissions.value.includes(permissionName)
 	);
 };
 
 const togglePermission = (permissionName: string, checked: boolean) => {
-	if (isPermissionInherited(permissionName)) return; // Cannot toggle inherited
+	if (isPermissionInherited(permissionName)) return;
 
 	if (checked) {
-		if (!form.permissions.includes(permissionName)) {
-			form.permissions.push(permissionName);
+		if (!selectedPermissions.value.includes(permissionName)) {
+			selectedPermissions.value.push(permissionName);
 		}
 	} else {
-		form.permissions = form.permissions.filter(
+		selectedPermissions.value = selectedPermissions.value.filter(
 			(p: string) => p !== permissionName,
 		);
 	}
@@ -112,6 +119,7 @@ const submit = () => {
 	}
 	executeSubmit();
 };
+
 
 const confirmCreate = () => {
 	showOrgWarning.value = false;
@@ -185,13 +193,6 @@ const formatPermissionLabel = (name: string) => {
 		.join(' ');
 };
 
-const formatRoleName = (name: string) => {
-	// super_admin -> Super Admin
-	return name
-		.split('_')
-		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-		.join(' ');
-};
 
 const shouldShowOrganization = computed(() => {
 	if (!form.role_id) return false;
@@ -204,6 +205,8 @@ const executeSubmit = () => {
 		...form.data(),
 		organization_id:
 			form.organization_id === '__none__' ? null : form.organization_id,
+		// Explicitly include permissions from local ref
+		permissions: [...selectedPermissions.value],
 	};
 
 	if (isEditMode.value) {
@@ -409,17 +412,9 @@ const executeSubmit = () => {
 							>
 								<Checkbox
 									:id="`perm-${permission.id}`"
-									:checked="isPermissionChecked(permission.name)
-										"
-									:disabled="isPermissionInherited(permission.name)
-										"
-									@update:checked="
-										(checked: boolean) =>
-											togglePermission(
-												permission.name,
-												checked,
-											)
-									"
+									:model-value="isPermissionChecked(permission.name)"
+									:disabled="isPermissionInherited(permission.name)"
+									@update:model-value="(checked: any) => togglePermission(permission.name, checked)"
 								/>
 								<Label
 									:for="`perm-${permission.id}`"
@@ -446,6 +441,7 @@ const executeSubmit = () => {
 						</div>
 					</div>
 				</div>
+
 				<p class="mt-4 text-xs text-muted-foreground">
 					Permissions inherit from the selected Role. Inherited
 					permissions cannot be manually unchecked.
