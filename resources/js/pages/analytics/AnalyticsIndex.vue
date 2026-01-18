@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import ContentLayout from '@/layouts/ContentLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
-import { Banknote, Loader2, RefreshCw, Ticket, Wallet } from 'lucide-vue-next';
-import { computed, onMounted, ref } from 'vue';
+import { Loader2, RefreshCw } from 'lucide-vue-next';
+import { computed, h, onMounted, ref } from 'vue';
 import { toast } from 'vue-sonner';
+import { createColumnHelper } from '@tanstack/vue-table';
 
 import Combobox from '@/components/common/Combobox.vue';
+import DataTable from '@/components/common/DataTable.vue';
 import SalesChart from '@/components/analytics/SalesChart.vue';
-import SummaryCard from '@/components/analytics/SummaryCard.vue';
-import TicketSalesTable from '@/components/analytics/TicketSalesTable.vue';
 import analyticsRoute from '@/routes/analytics';
 import { BreadcrumbItem } from '@/types';
 import { AnalyticsData, EventOption } from '@/types/analytics';
+import { formatCurrency } from '@/lib/utils-general';
 
 interface Props {
 	events: EventOption[];
@@ -95,6 +97,42 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
 		href: '/analytics',
 	},
 ]);
+
+// Define DataTable columns for ranking
+type RankingData = {
+	ticket_name: string;
+	total_sold: number;
+	total_revenue: number;
+};
+
+const columnHelper = createColumnHelper<RankingData>();
+
+const rankingColumns = [
+	columnHelper.display({
+		id: 'rank',
+		header: '#',
+		cell: ({ row, table }) => {
+			const pageIndex = table.getState().pagination.pageIndex;
+			const pageSize = table.getState().pagination.pageSize;
+			return pageIndex * pageSize + row.index + 1;
+		},
+		size: 50,
+	}),
+	columnHelper.accessor('ticket_name', {
+		header: 'Ticket Type',
+	}),
+	columnHelper.accessor('total_sold', {
+		header: () => h('div', { class: 'text-right' }, 'Sold'),
+		cell: ({ getValue }) => h('div', { class: 'text-right' }, String(getValue())),
+	}),
+	columnHelper.accessor('total_revenue', {
+		header: () => h('div', { class: 'text-right' }, 'Revenue'),
+		cell: ({ getValue }) => {
+			const formatted = formatCurrency(getValue());
+			return h('div', { class: 'text-right' }, formatted);
+		},
+	}),
+];
 </script>
 
 <template>
@@ -157,33 +195,31 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
 			</div>
 
 			<template v-else-if="analyticsData">
-				<div class="grid gap-4 md:grid-cols-3">
-					<SummaryCard
-						title="Total Sold Count"
-						:value="analyticsData.overview.total_sold"
-						:icon="Ticket"
+				<!-- Vertical Layout: Chart on top, Table below -->
+				<div class="flex flex-col gap-4">
+					<!-- Sales Chart with Platform Fee -->
+					<SalesChart
+						:data="analyticsData.chart"
+						:platform-fee="analyticsData.overview.total_platform_fee"
 					/>
-					<SummaryCard
-						title="Total Ticket Revenue"
-						:value="analyticsData.overview.total_revenue"
-						:icon="Wallet"
-						is-currency
-					/>
-					<SummaryCard
-						title="Total Platform Fee"
-						:value="analyticsData.overview.total_platform_fee"
-						:icon="Banknote"
-						is-currency
-					/>
-				</div>
 
-				<div class="grid gap-4 md:grid-cols-7">
-					<div class="col-span-4 h-full">
-						<SalesChart :data="analyticsData.chart" />
-					</div>
-					<div class="col-span-3 h-full">
-						<TicketSalesTable :data="analyticsData.ranking" />
-					</div>
+					<!-- Ticket Sales Table -->
+					<Card>
+						<CardHeader>
+							<CardTitle>Ticket Sales Ranking</CardTitle>
+							<CardDescription>
+								Performance ranking of ticket types by revenue and sales
+							</CardDescription>
+						</CardHeader>
+						<CardContent>
+							<DataTable
+								:columns="rankingColumns"
+								api-url="/analytics/ranking"
+								:query-key="['analytics-ranking', selectedEventId]"
+								:extra-params="{ event_id: selectedEventId }"
+							/>
+						</CardContent>
+					</Card>
 				</div>
 			</template>
 		</div>

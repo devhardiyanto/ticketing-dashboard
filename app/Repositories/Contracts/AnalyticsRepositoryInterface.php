@@ -15,6 +15,15 @@ interface AnalyticsRepositoryInterface
     public function getTicketSalesRanking(string $eventId): array;
 
     /**
+     * Get paginated ticket sales ranking with search and sort support.
+     *
+     * @param string $eventId
+     * @param array $filters ['search', 'sort', 'order', 'page', 'limit']
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function getTicketSalesRankingPaginated(string $eventId, array $filters);
+
+    /**
      * Get daily sales chart data.
      */
     public function getDailySalesChart(string $eventId): array;

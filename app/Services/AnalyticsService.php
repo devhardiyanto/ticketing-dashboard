@@ -52,4 +52,26 @@ class AnalyticsService
 			];
 		});
 	}
+
+	/**
+	 * Get paginated ticket sales ranking.
+	 *
+	 * @param string $eventId
+	 * @param array $filters
+	 * @return array
+	 */
+	public function getTicketSalesRankingPaginated(string $eventId, array $filters): array
+	{
+		$paginator = $this->repository->getTicketSalesRankingPaginated($eventId, $filters);
+
+		return [
+			'data' => $paginator->items(),
+			'current_page' => $paginator->currentPage(),
+			'per_page' => $paginator->perPage(),
+			'total' => $paginator->total(),
+			'last_page' => $paginator->lastPage(),
+			'from' => $paginator->firstItem(),
+			'to' => $paginator->lastItem(),
+		];
+	}
 }

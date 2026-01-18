@@ -11,9 +11,11 @@ import {
 import { Button } from '@/components/ui/button'
 import { ChartContainer, ChartTooltipContent, componentToString } from '@/components/ui/chart'
 import { DaySalesData } from '@/types/analytics';
+import { formatCurrency, formatNumber } from '@/lib/utils-general';
 
 interface Props {
 	data: DaySalesData[];
+	platformFee: number;
 }
 
 const props = defineProps<Props>();
@@ -46,17 +48,6 @@ const total = computed(() => ({
 	total_sold: chartData.value.reduce((acc, curr) => acc + Number(curr.total_sold), 0),
 }))
 
-const formatCurrency = (value: number) => {
-	return new Intl.NumberFormat('id-ID', {
-		style: 'currency',
-		currency: 'IDR',
-		maximumFractionDigits: 0,
-	}).format(value);
-}
-
-const formatNumber = (value: number) => {
-	return new Intl.NumberFormat('id-ID').format(value);
-}
 </script>
 
 <template>
@@ -70,7 +61,7 @@ const formatNumber = (value: number) => {
       </div>
       <div class="flex">
         <Button
-          v-for="chart in ['total_revenue', 'total_sold'] as const"
+          v-for="chart in ['total_sold', 'total_revenue'] as const"
           :key="chart"
           variant="ghost"
           :data-active="activeChart === chart"
@@ -89,6 +80,16 @@ const formatNumber = (value: number) => {
              </template>
           </span>
         </Button>
+
+        <!-- Platform Fee Display (Static) -->
+        <div class="flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 sm:border-l sm:border-t-0 sm:px-8 sm:py-6">
+          <span class="text-xs text-muted-foreground">
+            Platform Fee
+          </span>
+          <span class="text-lg font-bold leading-none text-muted-foreground sm:text-xl">
+            {{ formatCurrency(platformFee) }}
+          </span>
+        </div>
       </div>
     </CardHeader>
     <CardContent class="px-2 sm:p-6">

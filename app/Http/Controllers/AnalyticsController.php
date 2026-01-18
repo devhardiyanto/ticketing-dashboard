@@ -72,4 +72,37 @@ class AnalyticsController extends Controller
 		// Return fresh data directly so frontend doesn't need another call
 		return response()->json($data);
 	}
+
+	public function ranking(Request $request)
+	{
+		$validated = $request->validate([
+			'event_id' => 'required|string',
+			'page' => 'sometimes|integer|min:1',
+			'limit' => 'sometimes|integer|min:1|max:100',
+			'search' => 'nullable|string|max:255',
+			'sort' => 'sometimes|in:ticket_name,total_sold,total_revenue',
+			'order' => 'sometimes|in:asc,desc',
+		]);
+
+		$eventId = $validated['event_id'];
+		$user = Auth::user();
+
+		// Verify access
+		$availableEvents = $this->service->getAvailableEvents($user);
+		if (!$availableEvents->contains('id', $eventId)) {
+			return response()->json(['error' => 'Unauthorized'], 403);
+		}
+
+		$filters = [
+			'page' => $validated['page'] ?? 1,
+			'limit' => $validated['limit'] ?? 10,
+			'search' => $validated['search'] ?? null,
+			'sort' => $validated['sort'] ?? 'total_sold',
+			'order' => $validated['order'] ?? 'desc',
+		];
+
+		$data = $this->service->getTicketSalesRankingPaginated($eventId, $filters);
+
+		return response()->json($data);
+	}
 }
