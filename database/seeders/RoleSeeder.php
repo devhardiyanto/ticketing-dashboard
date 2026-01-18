@@ -42,6 +42,23 @@ class RoleSeeder extends Seeder
             );
         }
 
-        $this->command->info('Roles seeded successfully!');
+        if ($this->command) {
+            $this->command->info('Roles seeded successfully!');
+        } else {
+            echo "Roles seeded successfully!\n";
+        }
+    }
+
+    /**
+     * Clear seeded roles.
+     */
+    public function down(): void
+    {
+        Role::truncate();
+        if ($this->command) {
+            $this->command->info('Roles cleared successfully!');
+        } else {
+            echo "Roles cleared successfully!\n";
+        }
     }
 }

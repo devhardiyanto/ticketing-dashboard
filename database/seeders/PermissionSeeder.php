@@ -121,7 +121,11 @@ class PermissionSeeder extends Seeder
             }
         }
 
-        $this->command->info('Permissions created successfully with hierarchy!');
+        if ($this->command) {
+            $this->command->info('Permissions created successfully with hierarchy!');
+        } else {
+            echo "Permissions created successfully with hierarchy!\n";
+        }
 
         // Assign permissions to roles
         $this->assignPermissionsToRoles();
@@ -142,7 +146,9 @@ class PermissionSeeder extends Seeder
         if ($superAdmin) {
             $allPermissions = Permission::all();
             $superAdmin->syncPermissions($allPermissions);
-            $this->command->info('Super Admin permissions assigned!');
+            if ($this->command) {
+                $this->command->info('Super Admin permissions assigned!');
+            }
         }
 
         // Platform Staff: Read-mostly access to all organizations (operational support)
@@ -167,7 +173,9 @@ class PermissionSeeder extends Seeder
             // But usually validation is on specific permissions.
 
             $platformStaff->syncPermissions($platformStaffPermissions);
-            $this->command->info('Platform Staff permissions assigned!');
+            if ($this->command) {
+                $this->command->info('Platform Staff permissions assigned!');
+            }
         }
 
         // Organization Admin: All permissions except organizations management
@@ -177,7 +185,9 @@ class PermissionSeeder extends Seeder
                 ->pluck('name')
                 ->toArray();
             $orgAdmin->syncPermissions($orgAdminPermissions);
-            $this->command->info('Organization Admin permissions assigned!');
+            if ($this->command) {
+                $this->command->info('Organization Admin permissions assigned!');
+            }
         }
 
         // Organization Staff: Limited permissions
@@ -195,7 +205,29 @@ class PermissionSeeder extends Seeder
             ];
 
             $orgStaff->syncPermissions($orgStaffPermissions);
-            $this->command->info('Organization Staff permissions assigned!');
+            if ($this->command) {
+                $this->command->info('Organization Staff permissions assigned!');
+            }
+        }
+    }
+
+    /**
+     * Clear seeded permissions.
+     */
+    public function down(): void
+    {
+        // Clear pivot tables first
+        \Illuminate\Support\Facades\DB::table('model_has_permissions')->truncate();
+        \Illuminate\Support\Facades\DB::table('model_has_roles')->truncate();
+        \Illuminate\Support\Facades\DB::table('role_has_permissions')->truncate();
+
+        // Clear permissions
+        Permission::truncate();
+
+        if ($this->command) {
+            $this->command->info('Permissions cleared successfully!');
+        } else {
+            echo "Permissions cleared successfully!\n";
         }
     }
 }

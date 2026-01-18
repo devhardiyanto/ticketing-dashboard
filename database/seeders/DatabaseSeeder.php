@@ -37,8 +37,89 @@ class DatabaseSeeder extends Seeder
         $this->command->info('6. Org Staff (Festival Nusantara): staff@festivalnusantara.id / password');
     }
 
+    // ===== MODULAR SEEDING METHODS =====
+
     /**
-     * Seed dashboard users with 4 role types.
+     * Seed Auth module (roles + permissions + users).
+     */
+    public static function seedAuth(): void
+    {
+        echo "Seeding roles...\n";
+        (new RoleSeeder())->run();
+
+        echo "Seeding permissions...\n";
+        (new PermissionSeeder())->run();
+
+        echo "Seeding users...\n";
+        (new self())->seedUsers();
+
+        echo "\nAuth module seeded successfully!\n";
+    }
+
+    /**
+     * Clear Auth module (users + roles + permissions).
+     */
+    public static function clearAuth(): void
+    {
+        echo "Clearing users...\n";
+        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
+        \App\Models\Dashboard\User::truncate();
+        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
+
+        echo "Clearing permissions...\n";
+        \Illuminate\Support\Facades\DB::table('model_has_permissions')->truncate();
+        \Illuminate\Support\Facades\DB::table('model_has_roles')->truncate();
+        \Illuminate\Support\Facades\DB::table('role_has_permissions')->truncate();
+        \Spatie\Permission\Models\Permission::truncate();
+
+        echo "Clearing roles...\n";
+        \Spatie\Permission\Models\Role::truncate();
+
+        echo "\nAuth module cleared successfully!\n";
+    }
+
+    /**
+     * Seed Roles module only.
+     */
+    public static function seedRoles(): void
+    {
+        echo "Seeding roles...\n";
+        (new RoleSeeder())->run();
+        echo "\nRoles module seeded successfully!\n";
+    }
+
+    /**
+     * Clear Roles module only.
+     */
+    public static function clearRoles(): void
+    {
+        \Spatie\Permission\Models\Role::truncate();
+        echo "Roles cleared successfully!\n";
+    }
+
+    /**
+     * Seed Permissions module only.
+     */
+    public static function seedPermissions(): void
+    {
+        echo "Seeding permissions...\n";
+        (new PermissionSeeder())->run();
+        echo "\nPermissions module seeded successfully!\n";
+    }
+
+    /**
+     * Clear Permissions module only.
+     */
+    public static function clearPermissions(): void
+    {
+        \Illuminate\Support\Facades\DB::table('model_has_permissions')->truncate();
+        \Illuminate\Support\Facades\DB::table('role_has_permissions')->truncate();
+        \Spatie\Permission\Models\Permission::truncate();
+        echo "Permissions cleared successfully!\n";
+    }
+
+    /**
+     * Seed dashboard users with 4 types.
      */
     private function seedUsers(): void
     {
@@ -111,6 +192,10 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        $this->command->info('Dashboard users seeded: 1 Super Admin, 2 Platform Staff, 3 Org Admins, 5 Org Staff');
+        if ($this->command) {
+            $this->command->info('Dashboard users seeded: 1 Super Admin, 2 Platform Staff, 3 Org Admins, 5 Org Staff');
+        } else {
+            echo "Dashboard users seeded: 1 Super Admin, 2 Platform Staff, 3 Org Admins, 5 Org Staff\n";
+        }
     }
 }
