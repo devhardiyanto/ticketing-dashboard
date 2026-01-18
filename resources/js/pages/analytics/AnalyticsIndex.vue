@@ -182,24 +182,7 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
 						<SalesChart :data="analyticsData.chart" />
 					</div>
 					<div class="col-span-3 h-full">
-						<div
-							class="flex h-full flex-col rounded-xl border bg-card text-card-foreground shadow-sm"
-						>
-							<div
-								class="flex flex-row items-center justify-between space-y-0 p-6 pb-2"
-							>
-								<h3
-									class="leading-none font-semibold tracking-tight"
-								>
-									Ticket Ranking
-								</h3>
-							</div>
-							<div class="flex-1 p-6 pt-0">
-								<TicketSalesTable
-									:data="analyticsData.ranking"
-								/>
-							</div>
-						</div>
+						<TicketSalesTable :data="analyticsData.ranking" />
 					</div>
 				</div>
 			</template>

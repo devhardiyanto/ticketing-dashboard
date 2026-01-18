@@ -49,6 +49,13 @@ class OrderRepository implements OrderRepositoryInterface
             $query->whereDate('created_at', '<=', $params['date_to']);
         }
 
+        // Filter by event_id
+        if (isset($params['event_id']) && $params['event_id']) {
+            $query->whereHas('items.ticketType', function ($q) use ($params) {
+                $q->where('event_id', $params['event_id']);
+            });
+        }
+
         $perPage = $params['limit'] ?? 10;
 
         return $query->orderBy('created_at', 'desc')->paginate($perPage);

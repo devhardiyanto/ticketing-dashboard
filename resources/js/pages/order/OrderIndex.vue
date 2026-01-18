@@ -5,7 +5,15 @@ import { useColumns } from './columns';
 import type { BreadcrumbItem } from '@/types';
 import orderRoute from '@/routes/order';
 
+import Combobox from '@/components/common/Combobox.vue';
+import { ref } from 'vue';
+
+defineProps<{
+	events?: { id: string; name: string }[]
+}>();
+
 const columns = useColumns();
+const selectedEventId = ref<string | null>(null);
 
 const breadcrumbs: BreadcrumbItem[] = [
 	{
@@ -24,7 +32,19 @@ const breadcrumbs: BreadcrumbItem[] = [
     <DataTable
       :columns="columns"
       :api-url="orderRoute.data().url"
-      :query-key="['orders']"
-    />
+      :query-key="['orders', { event_id: selectedEventId }]"
+      :extra-params="{ event_id: selectedEventId }"
+    >
+        <template #filter>
+             <Combobox
+                v-if="events && events.length > 0"
+                :model-value="selectedEventId"
+                :items="events"
+                label="Filter by Event"
+                class="w-[200px]"
+                @update:model-value="(val) => selectedEventId = val"
+             />
+        </template>
+    </DataTable>
   </ContentLayout>
 </template>

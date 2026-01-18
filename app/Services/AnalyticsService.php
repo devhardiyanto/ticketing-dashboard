@@ -8,66 +8,48 @@ use Illuminate\Support\Facades\Cache;
 
 class AnalyticsService
 {
-    protected $repository;
+	protected $repository;
 
-    protected const CACHE_TTL = 3600; // 1 hour
+	protected const CACHE_TTL = 3600; // 1 hour
 
-    public function __construct(AnalyticsRepositoryInterface $repository)
-    {
-        $this->repository = $repository;
-    }
+	public function __construct(AnalyticsRepositoryInterface $repository)
+	{
+		$this->repository = $repository;
+	}
 
-    /**
-     * Get available events for the dropdown based on user role.
-     */
-    public function getAvailableEvents($user)
-    {
-        // Check if user is Internal (e.g., has 'super_admin' or specific permission)
-        // Assuming 'super_admin' role or 'view-dashboard' implies internal.
+	/**
+	 * Get available events for the dropdown based on user role.
+	 */
+	public function getAvailableEvents($user)
+	{
+		$query = Event::query()
+			->select('id', 'name')
+			->has('ticketTypes') // Only events with ticket types
+			->orderBy('created_at', 'desc');
 
-        $query = Event::query()
-            ->select('id', 'name')
-            ->has('ticketTypes') // Only events with ticket types
-            ->orderBy('created_at', 'desc');
 
-        // Logic adjusted: internal vs organization
-        // We assume User model has methods or attributes for this check.
-        // For simplicity and robustness given previous file content:
+		if (isset($user->organization_id) && $user->organization_id) {
+			$query->where('organization_id', $user->organization_id);
+		}
 
-        // If user is super admin or internal, return all.
-        // If user belongs to organization, filter by org.
+		return $query->get();
+	}
 
-        // Note: Check actual User model capability.
-        // Ideally: $user->hasRole('super_admin')
-        // We'll trust standard implementation or adjust if it fails.
-        // If organization_id is present on user, filter by it.
+	public function getAnalyticsData(string $eventId, bool $refresh = false): array
+	{
+		$cacheKey = "analytics:event:v2:{$eventId}";
 
-        if (isset($user->organization_id) && $user->organization_id) {
-            $query->where('organization_id', $user->organization_id);
-        } else {
-            // If no org id, assuming internal/admin.
-            // If we want to be strict, we check roles.
-            // But if specific requirement said "Internal User... Organization User".
-        }
+		if ($refresh) {
+			Cache::forget($cacheKey);
+		}
 
-        return $query->get();
-    }
-
-    public function getAnalyticsData(string $eventId, bool $refresh = false): array
-    {
-        $cacheKey = "analytics:event:{$eventId}";
-
-        if ($refresh) {
-            Cache::forget($cacheKey);
-        }
-
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($eventId) {
-            return [
-                'overview' => $this->repository->getSalesOverview($eventId),
-                'ranking' => $this->repository->getTicketSalesRanking($eventId),
-                'chart' => $this->repository->getDailySalesChart($eventId),
-                'last_updated' => now()->toIso8601String(),
-            ];
-        });
-    }
+		return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($eventId) {
+			return [
+				'overview' => $this->repository->getSalesOverview($eventId),
+				'ranking' => $this->repository->getTicketSalesRanking($eventId),
+				'chart' => $this->repository->getDailySalesChart($eventId),
+				'last_updated' => now()->toIso8601String(),
+			];
+		});
+	}
 }

@@ -2,19 +2,19 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/components/ui/select'
 import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table'
 import { FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
 import { debounce } from 'lodash'
@@ -24,10 +24,10 @@ import { useQuery, keepPreviousData } from '@tanstack/vue-query';
 import axios from 'axios';
 
 import {
-	Pagination,
-	PaginationContent,
-	PaginationNext,
-	PaginationPrevious,
+  Pagination,
+  PaginationContent,
+  PaginationNext,
+  PaginationPrevious,
 } from '@/components/ui/pagination';
 
 /*
@@ -36,15 +36,16 @@ import {
 |--------------------------------------------------------------------------
 */
 const props = defineProps<{
-	columns: any[] | null
+  columns: any[] | null
 
-	// Async Data Support (REQUIRED)
-	apiUrl: string
-	queryKey: any[]
+  // Async Data Support (REQUIRED)
+  apiUrl: string
+  queryKey: any[]
 
-	// Common
-	onCreate?: () => void
-	createLabel?: string
+  // Common
+  onCreate?: () => void
+  createLabel?: string
+  extraParams?: Record<string, any>
 }>()
 
 /*
@@ -69,44 +70,46 @@ const sortOrder = ref<'asc' | 'desc'>('desc')
 |--------------------------------------------------------------------------
 */
 const computedQueryKey = computed(() => {
-	return [
-		...props.queryKey,
-		{
-			page: pageIndex.value,
-			limit: pageSize.value,
-			search: search.value,
-			sort: sortColumn.value,
-			order: sortOrder.value,
-		}
-	];
+  return [
+    ...props.queryKey,
+    {
+      page: pageIndex.value,
+      limit: pageSize.value,
+      search: search.value,
+      sort: sortColumn.value,
+      order: sortOrder.value,
+      ...props.extraParams
+    }
+  ];
 });
 
 const {
-	data: queryData,
-	isLoading: isQueryLoading,
-	isFetching,
-	isError,
-	error,
-	refetch
+  data: queryData,
+  isLoading: isQueryLoading,
+  isFetching,
+  isError,
+  error,
+  refetch
 } = useQuery({
-	queryKey: computedQueryKey,
+  queryKey: computedQueryKey,
 
-	queryFn: async ({ signal }) => {
-		const res = await axios.get(props.apiUrl, {
-			params: {
-				page: pageIndex.value + 1, // API is 1-indexed
-				limit: pageSize.value,
-				search: search.value,
-				sort: sortColumn.value,
-				order: sortOrder.value,
-			},
-			signal
-		});
-		return res.data;
-	},
+  queryFn: async ({ signal }) => {
+    const res = await axios.get(props.apiUrl, {
+      params: {
+        page: pageIndex.value + 1, // API is 1-indexed
+        limit: pageSize.value,
+        search: search.value,
+        sort: sortColumn.value,
+        order: sortOrder.value,
+        ...props.extraParams
+      },
+      signal
+    });
+    return res.data;
+  },
 
-	placeholderData: keepPreviousData,
-	retry: 1,
+  placeholderData: keepPreviousData,
+  retry: 1,
 });
 
 /*
@@ -117,25 +120,25 @@ const {
 const tableData = computed(() => queryData.value?.data ?? []);
 
 const tablePagination = computed(() => {
-	if (!queryData.value) {
-		return {
-			current_page: 1,
-			per_page: pageSize.value,
-			total: 0,
-			last_page: 1,
-			from: 0,
-			to: 0
-		};
-	}
+  if (!queryData.value) {
+    return {
+      current_page: 1,
+      per_page: pageSize.value,
+      total: 0,
+      last_page: 1,
+      from: 0,
+      to: 0
+    };
+  }
 
-	return {
-		current_page: queryData.value.current_page,
-		per_page: queryData.value.per_page,
-		total: queryData.value.total,
-		last_page: queryData.value.last_page,
-		from: queryData.value.from,
-		to: queryData.value.to,
-	};
+  return {
+    current_page: queryData.value.current_page,
+    per_page: queryData.value.per_page,
+    total: queryData.value.total,
+    last_page: queryData.value.last_page,
+    from: queryData.value.from,
+    to: queryData.value.to,
+  };
 });
 
 const isLoading = computed(() => isQueryLoading.value && !queryData.value);
@@ -146,37 +149,37 @@ const isLoading = computed(() => isQueryLoading.value && !queryData.value);
 |--------------------------------------------------------------------------
 */
 const paginationState = computed(() => ({
-	pageIndex: pageIndex.value,
-	pageSize: pageSize.value,
+  pageIndex: pageIndex.value,
+  pageSize: pageSize.value,
 }))
 
 const table = useVueTable({
-	get data() {
-		return tableData.value
-	},
-	get columns() {
-		return props.columns ?? []
-	},
-	getCoreRowModel: getCoreRowModel(),
-	manualPagination: true,
-	manualFiltering: true,
-	get rowCount() {
-		return tablePagination.value?.total ?? 0
-	},
-	state: {
-		get pagination() {
-			return paginationState.value
-		},
-	},
-	onPaginationChange: (updaterOrValue) => {
-		const newPagination = typeof updaterOrValue === 'function'
-			? updaterOrValue(paginationState.value)
-			: updaterOrValue
+  get data() {
+    return tableData.value
+  },
+  get columns() {
+    return props.columns ?? []
+  },
+  getCoreRowModel: getCoreRowModel(),
+  manualPagination: true,
+  manualFiltering: true,
+  get rowCount() {
+    return tablePagination.value?.total ?? 0
+  },
+  state: {
+    get pagination() {
+      return paginationState.value
+    },
+  },
+  onPaginationChange: (updaterOrValue) => {
+    const newPagination = typeof updaterOrValue === 'function'
+      ? updaterOrValue(paginationState.value)
+      : updaterOrValue
 
-		pageIndex.value = newPagination.pageIndex;
-		pageSize.value = newPagination.pageSize;
-		limit.value = String(newPagination.pageSize);
-	},
+    pageIndex.value = newPagination.pageIndex;
+    pageSize.value = newPagination.pageSize;
+    limit.value = String(newPagination.pageSize);
+  },
 })
 
 /*
@@ -185,14 +188,14 @@ const table = useVueTable({
 |--------------------------------------------------------------------------
 */
 watch(limit, (newLimit) => {
-	const newSize = Number(newLimit);
-	pageSize.value = newSize;
-	pageIndex.value = 0;
+  const newSize = Number(newLimit);
+  pageSize.value = newSize;
+  pageIndex.value = 0;
 })
 
 watch(search, debounce(() => {
-	pageIndex.value = 0;
-	// Query auto-refetches via computed key
+  pageIndex.value = 0;
+  // Query auto-refetches via computed key
 }, 300))
 </script>
 
@@ -205,6 +208,7 @@ watch(search, debounce(() => {
           v-model="search"
           class="h-8 w-[150px] lg:w-[250px]"
         />
+		<slot name="filter" />
         <Loader2 v-if="isFetching && !isLoading" class="h-4 w-4 animate-spin text-muted-foreground" />
       </div>
       <div class="flex items-center space-x-2">

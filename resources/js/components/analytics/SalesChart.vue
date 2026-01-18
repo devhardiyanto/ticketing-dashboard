@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, createApp, h } from 'vue'
-import { VisAxis, VisGroupedBar, VisXYContainer } from '@unovis/vue'
+import { ref, computed } from 'vue'
+import { VisAxis, VisGroupedBar, VisXYContainer, VisCrosshair } from '@unovis/vue'
 import {
 	Card,
 	CardContent,
@@ -9,7 +9,7 @@ import {
 	CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ChartTooltip, ChartCrosshair } from '@/components/ui/chart'
+import { ChartContainer, ChartTooltipContent, componentToString } from '@/components/ui/chart'
 import { DaySalesData } from '@/types/analytics';
 
 interface Props {
@@ -17,15 +17,6 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-
-// Utility to render component to string for Unovis tooltip
-// We define it locally because it is missing from the chart library exports
-function componentToString(component: any, props: any) {
-	const mountNode = document.createElement('div');
-	const app = createApp({ render: () => h(component, props) });
-	app.mount(mountNode);
-	return mountNode.innerHTML;
-}
 
 // Map our data to the chart format
 const chartData = computed(() => props.data);
@@ -51,8 +42,8 @@ const chartConfig: ChartConfig = {
 const activeChart = ref<"total_revenue" | "total_sold">("total_revenue");
 
 const total = computed(() => ({
-	total_revenue: chartData.value.reduce((acc, curr) => acc + curr.total_revenue, 0),
-	total_sold: chartData.value.reduce((acc, curr) => acc + curr.total_sold, 0),
+	total_revenue: chartData.value.reduce((acc, curr) => acc + Number(curr.total_revenue), 0),
+	total_sold: chartData.value.reduce((acc, curr) => acc + Number(curr.total_sold), 0),
 }))
 
 const formatCurrency = (value: number) => {
@@ -69,7 +60,7 @@ const formatNumber = (value: number) => {
 </script>
 
 <template>
-  <Card class="h-full rounded-xl border bg-card text-card-foreground shadow-sm">
+  <Card class="py-4 sm:py-0">
     <CardHeader class="flex flex-col items-stretch border-b p-0! sm:flex-row">
       <div class="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
         <CardTitle>Sales Trend</CardTitle>
@@ -101,7 +92,7 @@ const formatNumber = (value: number) => {
       </div>
     </CardHeader>
     <CardContent class="px-2 sm:p-6">
-      <div class="aspect-auto h-[250px] w-full">
+      <ChartContainer :config="chartConfig" class="aspect-auto h-[250px] w-full">
         <VisXYContainer
           :data="chartData"
           :margin="{ left: 0, right: 0 }"
@@ -137,23 +128,17 @@ const formatNumber = (value: number) => {
 								return d;
 							}"
           />
-          
-          <ChartTooltip />
-					<ChartCrosshair
-            :template="(d: DaySalesData) => componentToString(ChartTooltip, {
-							title: new Date(d.date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' }),
-							data: [
-								{
-									name: chartConfig[activeChart].label,
-									color: chartConfig[activeChart].color,
-									value: (activeChart === 'total_revenue' ? formatCurrency : formatNumber)(d[activeChart] as number)
-								}
-							]
+
+          <VisCrosshair
+            :template="componentToString(chartConfig, ChartTooltipContent, {
+							labelFormatter(d) {
+								return new Date(d).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })
+							},
 						})"
-						color="#0000"
+            color="rgba(0,0,0,0)"
           />
         </VisXYContainer>
-      </div>
+      </ChartContainer>
     </CardContent>
   </Card>
 </template>

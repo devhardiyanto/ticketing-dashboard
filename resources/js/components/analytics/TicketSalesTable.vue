@@ -1,4 +1,13 @@
 <script setup lang="ts">
+
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from '@/components/ui/card'
+
 import {
 	Table,
 	TableBody,
@@ -28,7 +37,8 @@ const getRowClass = (index: number, total: number) => {
 	if (index < 2) {
 		return 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-900 dark:text-yellow-100 font-medium';
 	}
-	if (index >= total - 3 && total >= 5) { // Only show red if enough items
+	if (index >= total - 3 && total >= 5) {
+		// Only show red if enough items
 		return 'bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-100';
 	}
 	return '';
@@ -36,33 +46,48 @@ const getRowClass = (index: number, total: number) => {
 </script>
 
 <template>
-    <div class="rounded-md border">
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead class="w-[50px]">#</TableHead>
-                    <TableHead>Ticket Type</TableHead>
-                    <TableHead class="text-right">Sold</TableHead>
-                    <TableHead class="text-right">Revenue</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                <TableRow
-                    v-for="(item, index) in data"
-                    :key="item.ticket_name"
-                    :class="getRowClass(index, data.length)"
-                >
-                    <TableCell>{{ index + 1 }}</TableCell>
-                    <TableCell>{{ item.ticket_name }}</TableCell>
-                    <TableCell class="text-right">{{ item.total_sold }}</TableCell>
-                    <TableCell class="text-right">{{ formatCurrency(item.total_revenue) }}</TableCell>
-                </TableRow>
-                <TableRow v-if="data.length === 0">
-                    <TableCell colspan="4" class="text-center h-24 text-muted-foreground">
-                        No ticket sales data available.
-                    </TableCell>
-                </TableRow>
-            </TableBody>
-        </Table>
-    </div>
+	<Card>
+		<CardHeader>
+			<CardTitle>Ticket Sales</CardTitle>
+			<CardDescription>
+				Overview of ticket sales for the selected event.
+			</CardDescription>
+		</CardHeader>
+		<CardContent>
+			<Table>
+				<TableHeader>
+					<TableRow>
+						<TableHead class="w-[50px]">#</TableHead>
+						<TableHead>Ticket Type</TableHead>
+						<TableHead class="text-right">Sold</TableHead>
+						<TableHead class="text-right">Revenue</TableHead>
+					</TableRow>
+				</TableHeader>
+				<TableBody>
+					<TableRow
+						v-for="(item, index) in data"
+						:key="item.ticket_name"
+						:class="getRowClass(index, data.length)"
+					>
+						<TableCell>{{ index + 1 }}</TableCell>
+						<TableCell>{{ item.ticket_name }}</TableCell>
+						<TableCell class="text-right">{{
+							item.total_sold
+						}}</TableCell>
+						<TableCell class="text-right">{{
+							formatCurrency(item.total_revenue)
+						}}</TableCell>
+					</TableRow>
+					<TableRow v-if="data.length === 0">
+						<TableCell
+							colspan="4"
+							class="h-24 text-center text-muted-foreground"
+						>
+							No ticket sales data available.
+						</TableCell>
+					</TableRow>
+				</TableBody>
+			</Table>
+		</CardContent>
+	</Card>
 </template>

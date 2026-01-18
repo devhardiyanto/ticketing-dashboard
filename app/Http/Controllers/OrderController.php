@@ -9,20 +9,27 @@ use Inertia\Inertia;
 class OrderController extends Controller
 {
     protected $order_repo;
+    protected $analytics_service;
 
-    public function __construct(OrderRepositoryInterface $order_repo)
+    public function __construct(OrderRepositoryInterface $order_repo, \App\Services\AnalyticsService $analytics_service)
     {
         $this->order_repo = $order_repo;
+        $this->analytics_service = $analytics_service;
     }
 
     public function index(Request $request)
     {
-        return Inertia::render('order/OrderIndex', []);
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $availableEvents = $this->analytics_service->getAvailableEvents($user);
+
+        return Inertia::render('order/OrderIndex', [
+             'events' => $availableEvents,
+        ]);
     }
 
     public function data(Request $request)
     {
-        $params = $request->only(['search', 'limit', 'page', 'status', 'date_from', 'date_to', 'sort', 'order']);
+        $params = $request->only(['search', 'limit', 'page', 'status', 'date_from', 'date_to', 'sort', 'order', 'event_id']);
 
         $orders = $this->order_repo->getAll($params);
 
