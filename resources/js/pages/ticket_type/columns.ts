@@ -8,8 +8,10 @@ import TicketTypeActions from './TicketTypeActions.vue';
 
 export const useColumns = (
 	openEdit?: (ticketType: TicketType) => void,
-	onSuccess?: () => void
+	onSuccess?: () => void,
+	options: { canEdit?: boolean; canDelete?: boolean } = {}
 ) => {
+	const { canEdit = true, canDelete = true } = options;
 	const page = usePage();
 	const user = page.props.auth.user;
 
@@ -104,6 +106,8 @@ export const useColumns = (
 				const ticket_type = row.original;
 				return h(TicketTypeActions, {
 					ticket_type,
+					canEdit,
+					canDelete,
 					onEdit: () => openEdit?.(ticket_type),
 					onSuccess,
 				});

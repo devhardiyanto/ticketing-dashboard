@@ -42,7 +42,13 @@ const onActionSuccess = () => {
 	isDialogOpen.value = false;
 };
 
-const columns = useColumns(openEdit, onActionSuccess);
+import { usePermission } from '@/composables/usePermission';
+const { can } = usePermission();
+
+const columns = useColumns(openEdit, onActionSuccess, {
+	canEdit: can('events.update'),
+	canDelete: can('events.delete')
+});
 
 
 
@@ -83,7 +89,7 @@ const titleEvent = () => {
 
     <DataTable
       :columns="columns"
-      :on-create="openCreate"
+      :on-create="can('events.create') ? openCreate : undefined"
       create-label="Add Event"
       :api-url="event.data({ query: { parent_id: parent_event?.id } }).url"
       :query-key="['events', parent_event?.id]"

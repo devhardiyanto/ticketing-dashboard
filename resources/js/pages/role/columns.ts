@@ -6,8 +6,10 @@ import { h } from 'vue';
 import RoleActions from './RoleActions.vue';
 
 export const useColumns = (
-  onEdit?: (role: Role) => void
+  onEdit?: (role: Role) => void,
+  options: { canEdit?: boolean } = {}
 ) => {
+  const { canEdit = true } = options;
   const columns: ColumnDef<Role>[] = [
     {
       accessorKey: 'name',
@@ -44,6 +46,7 @@ export const useColumns = (
         const role = row.original;
         return h(RoleActions, {
           role,
+          canEdit,
           onEdit: (r: Role) => onEdit?.(r),
         });
       },

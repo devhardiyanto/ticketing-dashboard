@@ -37,6 +37,9 @@ const columns: ColumnDef<any>[] = [
 		}
 	}
 ];
+
+import { usePermission } from '@/composables/usePermission';
+const { can } = usePermission();
 </script>
 
 <template>

@@ -9,17 +9,22 @@ import Combobox from '@/components/common/Combobox.vue';
 import { ref } from 'vue';
 
 defineProps<{
-	events?: { id: string; name: string }[]
+  events?: { id: string; name: string }[]
 }>();
 
-const columns = useColumns();
+import { usePermission } from '@/composables/usePermission';
+const { can } = usePermission();
+
+const columns = useColumns({
+  canView: can('orders.read'),
+});
 const selectedEventId = ref<string | null>(null);
 
 const breadcrumbs: BreadcrumbItem[] = [
-	{
-		title: 'Orders',
-		href: orderRoute.index().url,
-	},
+  {
+    title: 'Orders',
+    href: orderRoute.index().url,
+  },
 ];
 </script>
 

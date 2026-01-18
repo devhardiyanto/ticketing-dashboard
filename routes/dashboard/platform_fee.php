@@ -8,6 +8,6 @@ Route::controller(PlatformFeeConfigController::class)
     ->middleware(['auth', 'verified'])
     ->prefix('platform-fee')
     ->group(function () use ($name) {
-        Route::get('/', 'index')->name("$name.index");
-        Route::put('/', 'update')->name("$name.update");
+        Route::get('/', 'index')->name("$name.index")->middleware('can:settings.read');
+        Route::put('/', 'update')->name("$name.update")->middleware('can:settings.update');
     });

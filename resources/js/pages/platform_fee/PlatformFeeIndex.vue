@@ -66,6 +66,9 @@ const handleSubmit = () => {
 const breadcrumbs = computed(() => [
 	{ title: 'Platform Fee', href: platformFeeRoute.index().url }
 ]);
+
+import { usePermission } from '@/composables/usePermission';
+const { can } = usePermission();
 </script>
 
 <template>
@@ -165,7 +168,7 @@ const breadcrumbs = computed(() => [
 						</div>
 
 						<!-- Submit Button -->
-						<div class="flex justify-end">
+						<div class="flex justify-end" v-if="can('settings.update')">
 							<Button type="submit" :disabled="form.processing">
 								{{ form.processing ? 'Saving...' : 'Save Configuration' }}
 							</Button>

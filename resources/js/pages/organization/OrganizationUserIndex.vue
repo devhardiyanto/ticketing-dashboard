@@ -11,55 +11,62 @@ import organization from '@/routes/organization';
 import { useQueryClient } from '@tanstack/vue-query';
 
 const props = defineProps<{
-	organizations: any[];
-	roles: any[];
-	organization_model?: any; // The selected org context
-	availablePermissions: any[];
+  organizations: any[];
+  roles: any[];
+  organization_model?: any; // The selected org context
+  availablePermissions: any[];
 }>();
 
 const queryClient = useQueryClient();
 const orgId = computed(() => props.organization_model?.id);
 
 const breadcrumbs: BreadcrumbItem[] = [
-	{
-		title: 'Organization Users',
-		href: organization.user.index().url,
-	},
+  {
+    title: 'Organization Users',
+    href: organization.user.index().url,
+  },
 ];
 
 const isDialogOpen = ref(false);
 const selectedItem = ref<User | null>(null);
 
 const openCreate = () => {
-	selectedItem.value = null;
-	isDialogOpen.value = true;
+  selectedItem.value = null;
+  isDialogOpen.value = true;
 };
 
 const openEdit = (item: User) => {
-	selectedItem.value = item;
-	isDialogOpen.value = true;
+  selectedItem.value = item;
+  isDialogOpen.value = true;
 };
 
 const onActionSuccess = () => {
-	queryClient.invalidateQueries({ queryKey: ['org_users', orgId.value] });
-	isDialogOpen.value = false;
+  queryClient.invalidateQueries({ queryKey: ['org_users', orgId.value] });
+  isDialogOpen.value = false;
 };
 
+import { usePermission } from '@/composables/usePermission';
+const { can } = usePermission();
+
 // Configure columns: Hide Organization column, Disable Delete
-const columns = useColumns({ hideOrganization: true, canDelete: false }, openEdit, onActionSuccess);
+const columns = useColumns({
+  hideOrganization: true,
+  canDelete: can('organizations.delete'),
+  canEdit: can('organizations.update')
+}, openEdit, onActionSuccess);
 
 // Combobox items
 const orgItems = computed(() => props.organizations.map(org => ({
-	id: org.id,
-	label: org.name,
-	name: org.name,
-	url: `/organization-users?organization_id=${org.id}`
+  id: org.id,
+  label: org.name,
+  name: org.name,
+  url: `/organization-users?organization_id=${org.id}`
 })));
 
 // Compute API URL with organization_id filter
 const apiUrl = computed(() => {
-	if (!orgId.value) return '';
-	return organization.user.data({ query: { organization_id: orgId.value } }).url;
+  if (!orgId.value) return '';
+  return organization.user.data({ query: { organization_id: orgId.value } }).url;
 });
 
 </script>
@@ -83,7 +90,7 @@ const apiUrl = computed(() => {
     <DataTable
       v-if="organization_model && apiUrl"
       :columns="columns"
-      :on-create="openCreate"
+      :on-create="can('organizations.create') ? openCreate : undefined"
       :create-label="`Add User to ${organization_model.name}`"
       :api-url="apiUrl"
       :query-key="['org_users', orgId]"

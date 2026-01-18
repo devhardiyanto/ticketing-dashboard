@@ -48,7 +48,10 @@ const statusColors: Record<string, string> = {
 	refunded: 'bg-purple-100 text-purple-800',
 };
 
-export const useColumns = () => {
+export const useColumns = (
+	options: { canView?: boolean } = {}
+) => {
+	const { canView = true } = options;
 	const columns: ColumnDef<Order>[] = [
 		{
 			accessorKey: 'order_code',
@@ -128,7 +131,7 @@ export const useColumns = () => {
 			enableHiding: false,
 			cell: ({ row }) => {
 				const order = row.original;
-				return h(OrderActions, { order });
+				return h(OrderActions, { order, canView });
 			},
 		},
 	];

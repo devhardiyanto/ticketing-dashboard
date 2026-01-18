@@ -16,11 +16,11 @@ export interface User {
 }
 
 export const useColumns = (
-	options: { hideOrganization?: boolean; canDelete?: boolean } = {},
+	options: { hideOrganization?: boolean; canDelete?: boolean; canEdit?: boolean } = {},
 	openEdit?: (user: User) => void,
 	onSuccess?: () => void
 ) => {
-	const { hideOrganization = false, canDelete = true } = options;
+	const { hideOrganization = false, canDelete = true, canEdit = true } = options;
 
 	const columns: ColumnDef<User>[] = [
 		{
@@ -62,6 +62,7 @@ export const useColumns = (
 					userId: user.id,
 					status: user.status,
 					onSuccess,
+					disabled: !canEdit
 				});
 			},
 		},
@@ -73,6 +74,7 @@ export const useColumns = (
 				return h(UserActions, {
 					user,
 					canDelete,
+					canEdit,
 					onEdit: () => openEdit?.(user),
 					onSuccess,
 				});

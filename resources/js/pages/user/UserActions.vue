@@ -16,6 +16,7 @@ const props = defineProps<{
   user: any;
   onEdit?: (user: any) => void;
   canDelete?: boolean;
+  canEdit?: boolean;
 }>();
 
 const form = useForm({});
@@ -43,9 +44,9 @@ const handleDelete = () => {
         <MoreHorizontal class="h-4 w-4" />
       </Button>
     </DropdownMenuTrigger>
-    <DropdownMenuContent align="end">
+  <DropdownMenuContent align="end">
       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-      <DropdownMenuItem @click="onEdit?.(user)">
+      <DropdownMenuItem v-if="canEdit" @click="onEdit?.(user)">
         <Pencil class="mr-2 h-4 w-4" />
         Edit
       </DropdownMenuItem>

@@ -9,8 +9,10 @@ import ImagePreview from '@/components/common/ImagePreview.vue';
 
 export const useColumns = (
 	onEdit?: (event: Event) => void,
-	onSuccess?: () => void
+	onSuccess?: () => void,
+	options: { canEdit?: boolean; canDelete?: boolean } = {}
 ) => {
+	const { canEdit = true, canDelete = true } = options;
 	const page = usePage();
 	const user = page.props.auth.user;
 
@@ -71,6 +73,8 @@ export const useColumns = (
 				const event = row.original;
 				return h(EventActions, {
 					event,
+					canEdit,
+					canDelete,
 					onEdit: (e: Event) => onEdit?.(e),
 					onSuccess: () => onSuccess?.(),
 				});

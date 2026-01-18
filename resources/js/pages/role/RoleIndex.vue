@@ -32,8 +32,13 @@ const onActionSuccess = () => {
 	queryClient.invalidateQueries({ queryKey: ['roles'] });
 };
 
+import { usePermission } from '@/composables/usePermission';
+const { can } = usePermission();
+
 // Use the columns definition we created earlier
-const columns = useColumns(openEdit);
+const columns = useColumns(openEdit, {
+	canEdit: can('roles.update'),
+});
 
 const breadcrumbs = [
 	{

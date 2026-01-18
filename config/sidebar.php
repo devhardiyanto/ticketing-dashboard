@@ -82,7 +82,7 @@ return [
 				],
 				[
 					'title' => 'Activity Logs',
-					'url' => 'activity_log.index', // Assuming named route activity_log.index
+					'url' => 'activity-logs.index',
 					'icon' => 'Activity',
 					'permission' => 'activity_logs.read',
 				]

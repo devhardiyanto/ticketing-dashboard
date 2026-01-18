@@ -13,6 +13,7 @@ import orderRoute from '@/routes/order';
 
 const props = defineProps<{
   order: Order;
+  canView?: boolean;
 }>();
 
 const viewDetail = () => {
@@ -30,7 +31,7 @@ const viewDetail = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem class="hover:cursor-pointer" @click="viewDetail">
+        <DropdownMenuItem class="hover:cursor-pointer" v-if="canView" @click="viewDetail">
           <Eye class="mr-2 h-4 w-4" />
           View Details
         </DropdownMenuItem>

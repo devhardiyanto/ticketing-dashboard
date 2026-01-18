@@ -14,44 +14,52 @@ const page = usePage();
 const user = page.props.auth.user;
 
 const UserForm = defineAsyncComponent({
-	loader: () => import('./UserForm.vue'),
-	loadingComponent: Spinner,
+  loader: () => import('./UserForm.vue'),
+  loadingComponent: Spinner,
 });
 
 const props = defineProps<{
-	organizations: any[];
-	roles: any[];
-	availablePermissions: any[];
+  organizations: any[];
+  roles: any[];
+  availablePermissions: any[];
 }>();
 
 const queryClient = useQueryClient();
 
 const breadcrumbs: BreadcrumbItem[] = [
-	{
-		title: 'Users',
-		href: userRoute.index().url,
-	},
+  {
+    title: 'Users',
+    href: userRoute.index().url,
+  },
 ];
 
 const isDialogOpen = ref(false);
 const selectedItem = ref<User | null>(null);
 
 const openCreate = () => {
-	selectedItem.value = null;
-	isDialogOpen.value = true;
+  selectedItem.value = null;
+  isDialogOpen.value = true;
 };
 
 const openEdit = (item: User) => {
-	selectedItem.value = item;
-	isDialogOpen.value = true;
+  selectedItem.value = item;
+  isDialogOpen.value = true;
 };
 
 const onActionSuccess = () => {
-	queryClient.invalidateQueries({ queryKey: ['users'] });
-	isDialogOpen.value = false;
+  queryClient.invalidateQueries({ queryKey: ['users'] });
+  isDialogOpen.value = false;
 };
 
-const columns = useColumns({ hideOrganization: false, canDelete: true }, openEdit, onActionSuccess);
+import { usePermission } from '@/composables/usePermission';
+
+const { can } = usePermission();
+
+const columns = useColumns({
+  hideOrganization: false,
+  canDelete: can('dashboard_users.delete'),
+  canEdit: can('dashboard_users.update')
+}, openEdit, onActionSuccess);
 </script>
 
 <template>
@@ -62,7 +70,7 @@ const columns = useColumns({ hideOrganization: false, canDelete: true }, openEdi
 
     <DataTable
       :columns="columns"
-      :on-create="openCreate"
+      :on-create="can('dashboard_users.create') ? openCreate : undefined"
       create-label="Add User"
       :api-url="userRoute.data({ query: { organization_id: user?.organization_id } }).url"
       :query-key="['users']"

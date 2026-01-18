@@ -6,12 +6,13 @@ import { Pencil } from 'lucide-vue-next';
 defineProps<{
     role: Role;
     onEdit: (role: Role) => void;
+    canEdit?: boolean;
 }>();
 </script>
 
 <template>
     <div class="flex items-center gap-2">
-        <Button variant="ghost" size="icon" @click="onEdit(role)">
+        <Button v-if="canEdit" variant="ghost" size="icon" @click="onEdit(role)">
             <Pencil class="h-4 w-4" />
             <span class="sr-only">Edit Legacy Role</span>
         </Button>

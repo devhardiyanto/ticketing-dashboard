@@ -26,6 +26,8 @@ import { toast } from 'vue-sonner'
 
 const props = defineProps<{
 	event: Event;
+	canEdit?: boolean;
+	canDelete?: boolean;
 }>();
 
 const emit = defineEmits(['edit', 'success']);
@@ -66,7 +68,7 @@ const handleDelete = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem class="hover:cursor-pointer" @click="$emit('edit', event)">
+        <DropdownMenuItem class="hover:cursor-pointer" v-if="canEdit" @click="$emit('edit', event)">
           <Pencil class="mr-2 h-4 w-4" />
           Edit
         </DropdownMenuItem>
@@ -80,13 +82,13 @@ const handleDelete = () => {
 						Manage Child Events
 					</Link>
         </DropdownMenuItem>
-        <DropdownMenuItem as-child class="hover:cursor-pointer" v-if="!event.is_parent">
+        <DropdownMenuItem as-child class="hover:cursor-pointer" v-if="!event.is_parent && canEdit">
 					<Link :href="`/ticket_type?event_id=${event.id}`">
 						<Ticket class="mr-2 h-4 w-4" />
 						Ticket Settings
 					</Link>
         </DropdownMenuItem>
-        <DropdownMenuItem @click="isDeleteOpen = true" class="hover:cursor-pointer text-red-600 focus:text-red-600">
+        <DropdownMenuItem v-if="canDelete" @click="isDeleteOpen = true" class="hover:cursor-pointer text-red-600 focus:text-red-600">
           <Trash class="mr-2 h-4 w-4" />
           Delete
         </DropdownMenuItem>

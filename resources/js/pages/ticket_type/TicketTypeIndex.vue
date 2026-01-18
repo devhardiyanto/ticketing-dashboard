@@ -63,7 +63,13 @@ const onActionSuccess = () => {
 	isDialogOpen.value = false;
 };
 
-const columns = useColumns(openEdit, onActionSuccess);
+import { usePermission } from '@/composables/usePermission';
+const { can } = usePermission();
+
+const columns = useColumns(openEdit, onActionSuccess, {
+	canEdit: can('tickets.update'),
+	canDelete: can('tickets.delete')
+});
 
 // Compute API URL with event_id filter
 const apiUrl = computed(() => {
@@ -91,7 +97,7 @@ const apiUrl = computed(() => {
 		<DataTable
 			v-if="event_model && apiUrl"
       :columns="columns"
-      :on-create="openCreate"
+      :on-create="can('tickets.create') ? openCreate : undefined"
 	    create-label="Add Ticket Type"
       :api-url="apiUrl"
       :query-key="['ticket_types', event_id]"
