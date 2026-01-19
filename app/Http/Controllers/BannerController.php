@@ -46,10 +46,12 @@ class BannerController extends Controller
     public function data(Request $request)
     {
         $params = $request->only(['search', 'limit', 'page', 'sort', 'order']);
-        $banners = $this->banner_repo->getAll($params);
+        $columns = ['id', 'title', 'image', 'status', 'event_id', 'sequence', 'created_at'];
+
+        $banners = $this->banner_repo->getAll($params, $columns);
 
         // Generate signed URLs
-        $banners->getCollection()->transform(function ($banner) {
+        $banners->through(function ($banner) {
             if ($banner->image) {
                 $banner->image_signed_url = $this->getSignedUrl($banner->image);
             }
@@ -58,6 +60,21 @@ class BannerController extends Controller
         });
 
         return response()->json($banners);
+    }
+
+    public function show(string $id)
+    {
+        $banner = $this->banner_repo->find($id);
+
+        if (!$banner) {
+            abort(404, 'Banner not found');
+        }
+
+        if ($banner->image) {
+            $banner->image_signed_url = $this->getSignedUrl($banner->image);
+        }
+
+        return response()->json($banner);
     }
 
     public function reorderList()

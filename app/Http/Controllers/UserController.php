@@ -88,9 +88,26 @@ class UserController extends Controller
 		$params = $request->only(['search', 'limit', 'page', 'organization_id', 'role_id', 'status', 'sort', 'order']);
 		$params['exclude_id'] = auth()->id();
 
-		$users = $this->user_repo->getAll($params);
+		// Optimized columns for DataTable
+		$columns = ['id', 'name', 'email', 'status', 'created_at', 'organization_id'];
+
+		$users = $this->user_repo->getAll($params, $columns);
 
 		return response()->json($users);
+	}
+
+	public function show(string $id)
+	{
+		$user = $this->user_repo->find($id);
+
+		if (!$user) {
+			abort(404, 'User not found');
+		}
+
+		// Load necessary relationships for the form
+		$user->load(['roles', 'permissions', 'organization']);
+
+		return response()->json($user);
 	}
 
 	public function store(Request $request)
@@ -120,8 +137,8 @@ class UserController extends Controller
 
 		if (!empty($data['permissions'])) {
 			$user->syncPermissions($data['permissions']);
-            // Force clear permission cache to ensure immediate effect
-            app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+			// Force clear permission cache to ensure immediate effect
+			app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 		}
 
 		// Send email
@@ -183,8 +200,8 @@ class UserController extends Controller
 
 		if (array_key_exists('permissions', $data)) {
 			$user->syncPermissions($data['permissions']);
-            // Force clear permission cache to ensure immediate effect
-            app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+			// Force clear permission cache to ensure immediate effect
+			app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 		}
 
 		return redirect()->back();

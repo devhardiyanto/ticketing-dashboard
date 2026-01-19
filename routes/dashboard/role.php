@@ -10,5 +10,6 @@ Route::controller(RoleController::class)
     ->group(function () use ($name) {
         Route::get('/data', 'data')->name("$name.data");
         Route::get('/', 'index')->name("$name.index");
+        Route::get('/{id}/show', 'show')->name("$name.show");
         Route::put('{id}', 'update')->name("$name.update");
     });

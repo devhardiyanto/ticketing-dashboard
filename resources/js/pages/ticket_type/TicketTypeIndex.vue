@@ -20,6 +20,8 @@ import { BreadcrumbItem } from '@/types';
 import event from '@/routes/event';
 import ticket_type from '@/routes/ticket_type';
 import { useQueryClient } from '@tanstack/vue-query';
+import axios from 'axios';
+import { toast } from 'vue-sonner';
 
 const props = defineProps<{
 	events: Event[];
@@ -47,15 +49,25 @@ const eventItems = computed(() => props.events.map(evt => ({
 
 const isDialogOpen = ref(false);
 const selectedItem = ref<TicketType | null>(null);
+const isLoadingEdit = ref(false);
 
 const openCreate = () => {
 	selectedItem.value = null;
 	isDialogOpen.value = true;
 };
 
-const openEdit = (item: TicketType) => {
-	selectedItem.value = item;
-	isDialogOpen.value = true;
+const openEdit = async (item: TicketType) => {
+	try {
+        isLoadingEdit.value = true;
+        const response = await axios.get(ticket_type.show(item.id).url);
+        selectedItem.value = response.data;
+        isDialogOpen.value = true;
+    } catch (error) {
+        toast.error('Failed to load ticket type data');
+        console.error(error);
+    } finally {
+        isLoadingEdit.value = false;
+    }
 };
 
 const onActionSuccess = () => {

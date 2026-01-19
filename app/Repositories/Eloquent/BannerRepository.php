@@ -23,9 +23,9 @@ class BannerRepository implements BannerRepositoryInterface
         return $this->model->orderBy('sequence')->orderBy('created_at', 'desc')->get();
     }
 
-    public function getAll(array $params = []): LengthAwarePaginator
+    public function getAll(array $params = [], array $columns = ['*']): LengthAwarePaginator
     {
-        $query = $this->model->with('event')->newQuery();
+        $query = $this->model->with('event')->select($columns)->newQuery();
 
         if (isset($params['search']) && $params['search']) {
             $search = $params['search'];

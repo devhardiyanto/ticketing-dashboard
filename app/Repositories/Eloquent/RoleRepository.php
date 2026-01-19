@@ -14,10 +14,10 @@ class RoleRepository implements RoleRepositoryInterface
 		return Role::withCount('users')->get();
 	}
 
-	public function getInternalRolesPaginated(int $perPage = 10)
-	{
-		return Role::withCount('users')->paginate($perPage);
-	}
+    public function getInternalRolesPaginated(int $perPage = 10, array $columns = ['*'])
+    {
+        return Role::select($columns)->withCount('users')->paginate($perPage);
+    }
 
 	public function findById(int $id): ?Role
 	{

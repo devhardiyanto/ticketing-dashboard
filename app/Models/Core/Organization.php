@@ -2,11 +2,14 @@
 
 namespace App\Models\Core;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Organization extends Model
 {
+    use HasUuids;
+
     /**
      * The connection name for the model.
      *

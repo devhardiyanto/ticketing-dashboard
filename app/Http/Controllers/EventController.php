@@ -40,15 +40,33 @@ class EventController extends Controller
 	public function data(Request $request)
 	{
 		$params = $request->only(['search', 'limit', 'page', 'parent_id', 'sort', 'order']);
-		$organization_id = auth()->user()->only('organization_id');
-		if($organization_id) {
-			$params['organization_id'] = $organization_id;
-		}
+		$params['organization_id'] = auth()->user()->organization_id ?? null;
 
-		$events = $this->event_repo->getAll($params);
+		$columns = ['id', 'name', 'start_date', 'location', 'timezone', 'organization_id', 'image_url', 'created_at'];
+
+		$events = $this->event_repo->getAll($params, $columns);
 		$this->transformEvents($events);
 
 		return response()->json($events);
+	}
+
+	public function show(string $id)
+	{
+		$event = $this->event_repo->find($id);
+
+		if (!$event) {
+			abort(404, 'Event not found');
+		}
+
+		// Transform single event if needed (e.g. signed URLs)
+		if ($event->image_url) {
+			$event->image_signed_url = $this->getSignedUrl($event->image_url);
+		}
+		if ($event->venue_map_url) {
+			$event->venue_map_signed_url = $this->getSignedUrl($event->venue_map_url);
+		}
+
+		return response()->json($event);
 	}
 
 	private function transformEvents($events)

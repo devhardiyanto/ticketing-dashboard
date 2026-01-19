@@ -15,7 +15,7 @@ interface RoleRepositoryInterface
     /**
      * Get paginated internal roles.
      */
-    public function getInternalRolesPaginated(int $perPage = 10);
+    public function getInternalRolesPaginated(int $perPage = 10, array $columns = ['*']);
 
     /**
      * Find a role by ID.

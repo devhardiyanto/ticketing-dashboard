@@ -22,9 +22,9 @@ class OrderRepository implements OrderRepositoryInterface
         return $this->model->all();
     }
 
-    public function getAll(array $params = []): LengthAwarePaginator
+    public function getAll(array $params = [], array $columns = ['*']): LengthAwarePaginator
     {
-        $query = $this->model->with(['items.ticketType.event'])->newQuery();
+        $query = $this->model->with(['items.ticketType.event'])->select($columns)->newQuery();
 
         // Search by order code or guest email
         if (isset($params['search']) && $params['search']) {

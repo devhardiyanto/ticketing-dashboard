@@ -31,7 +31,9 @@ class OrderController extends Controller
     {
         $params = $request->only(['search', 'limit', 'page', 'status', 'date_from', 'date_to', 'sort', 'order', 'event_id']);
 
-        $orders = $this->order_repo->getAll($params);
+        $columns = ['id', 'order_code', 'guest_name', 'guest_email', 'total_amount', 'status', 'created_at'];
+
+        $orders = $this->order_repo->getAll($params, $columns);
 
         // Transform orders to include event name
         $orders->through(function ($order) {

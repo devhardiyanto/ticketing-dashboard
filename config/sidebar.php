@@ -23,10 +23,10 @@ return [
 			'group' => 'User Management',
 			'items' => [
 				[
-					'title' => 'Users',
+					'title' => 'Users', // Global user list
 					'url' => 'user.index',
 					'icon' => 'Users',
-					'permission' => 'dashboard_users.read',
+					'permission' => 'users.read',
 				],
 				[
 					'title' => 'Roles',
@@ -34,10 +34,21 @@ return [
 					'icon' => 'Shield',
 					'permission' => 'roles.read',
 				],
+			],
+		],
+		[
+			'group' => 'Organization Management',
+			'items' => [
 				[
-					'title' => 'Organization',
-					'url' => 'organization.user.index',
+					'title' => 'Organizations', // CRUD for Organizations
+					'url' => 'organization.index',
 					'icon' => 'Building2',
+					'permission' => 'organizations.read',
+				],
+				[
+					'title' => 'User Assignment', // Assign users to specific orgs
+					'url' => 'organization.user.index',
+					'icon' => 'UserPlus',
 					'permission' => 'organizations.read',
 				],
 			],

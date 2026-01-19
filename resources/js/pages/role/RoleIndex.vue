@@ -8,6 +8,8 @@ import type { CandidateUser, Role } from '@/types/dashboard';
 import { useQueryClient } from '@tanstack/vue-query';
 import { defineAsyncComponent, h, ref } from 'vue';
 import { useColumns } from './columns';
+import axios from 'axios';
+import { toast } from 'vue-sonner';
 
 const RoleForm = defineAsyncComponent({
 	loader: () => import('./RoleForm.vue'),
@@ -21,10 +23,20 @@ defineProps<{
 const queryClient = useQueryClient();
 const isDialogOpen = ref(false);
 const selectedRole = ref<Role | null>(null);
+const isLoadingEdit = ref(false);
 
-const openEdit = (role: Role) => {
-	selectedRole.value = role;
-	isDialogOpen.value = true;
+const openEdit = async (role: Role) => {
+	try {
+        isLoadingEdit.value = true;
+        const response = await axios.get(roleRoute.show(role.id).url);
+        selectedRole.value = response.data;
+        isDialogOpen.value = true;
+    } catch (error) {
+        toast.error('Failed to load role data');
+        console.error(error);
+    } finally {
+        isLoadingEdit.value = false;
+    }
 };
 
 const onActionSuccess = () => {

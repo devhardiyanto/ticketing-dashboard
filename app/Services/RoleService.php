@@ -24,9 +24,14 @@ class RoleService
         return $this->roleRepository->getInternalRoles();
     }
 
-    public function getInternalRolesPaginated(int $perPage = 10)
+    public function getInternalRolesPaginated(int $perPage = 10, array $columns = ['*'])
     {
-        return $this->roleRepository->getInternalRolesPaginated($perPage);
+        return $this->roleRepository->getInternalRolesPaginated($perPage, $columns);
+    }
+
+    public function getRole(int $id): ?Role
+    {
+        return $this->roleRepository->findById($id);
     }
 
     /**

@@ -10,12 +10,12 @@ return [
     | Used by AutoCheckPermission middleware to determine which permission to check.
     |
     | Key: Route Prefix (e.g. 'user' from 'user.index')
-    | Value: Permission Prefix (e.g. 'dashboard_users' for 'dashboard_users.read')
+    | Value: Permission Prefix (e.g. 'users' for 'users.read')
     |
     */
 
     'resources' => [
-        'user' => 'dashboard_users',
+        'user' => 'users',
         'role' => 'roles',
         'event' => 'events',
         'ticket_type' => 'tickets',

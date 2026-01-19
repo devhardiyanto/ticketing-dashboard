@@ -22,21 +22,18 @@ class OrganizationRepository implements OrganizationRepositoryInterface
         return $this->model->all();
     }
 
-    public function getAll(array $params = []): LengthAwarePaginator
+    public function getAll(array $params = [], array $columns = ['*']): LengthAwarePaginator
     {
-        $query = $this->model->newQuery();
+        $query = $this->model->newQuery()->select($columns);
 
         if (isset($params['search']) && $params['search']) {
             $search = $params['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'ilike', "%{$search}%")
-                    ->orWhere('description', 'ilike', "%{$search}%")
-                    ->orWhere('location', 'ilike', "%{$search}%");
+                    ->orWhere('email', 'ilike', "%{$search}%")
+                    ->orWhere('address', 'ilike', "%{$search}%");
             });
         }
-
-        // Add other filters here if needed
-        // if (isset($params['filter_field'])) { ... }
 
         $perPage = $params['limit'] ?? 10;
 
@@ -55,9 +52,9 @@ class OrganizationRepository implements OrganizationRepositoryInterface
 
     public function update(int|string $id, array $data): bool
     {
-        $event = $this->find($id);
-        if ($event) {
-            return $event->update($data);
+        $organization = $this->find($id);
+        if ($organization) {
+            return $organization->update($data);
         }
 
         return false;
@@ -65,9 +62,9 @@ class OrganizationRepository implements OrganizationRepositoryInterface
 
     public function delete(int|string $id): bool
     {
-        $event = $this->find($id);
-        if ($event) {
-            return $event->delete();
+        $organization = $this->find($id);
+        if ($organization) {
+            return $organization->delete();
         }
 
         return false;

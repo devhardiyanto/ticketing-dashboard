@@ -74,9 +74,22 @@ class TicketTypeController extends Controller
             ]);
         }
 
-        $ticket_types = $this->ticket_type_repo->getByEventId($params['event_id'], $params);
+        $columns = ['id', 'name', 'start_sale_date', 'end_sale_date', 'quantity_available', 'quantity', 'price', 'category', 'is_hidden', 'sort_order', 'event_id', 'created_at'];
+
+        $ticket_types = $this->ticket_type_repo->getByEventId($params['event_id'], $params, $columns);
 
         return response()->json($ticket_types);
+    }
+
+    public function show(string $id)
+    {
+        $ticket_type = $this->ticket_type_repo->find($id);
+
+        if (! $ticket_type) {
+            abort(404, 'Ticket Type not found');
+        }
+
+        return response()->json($ticket_type);
     }
 
     /**

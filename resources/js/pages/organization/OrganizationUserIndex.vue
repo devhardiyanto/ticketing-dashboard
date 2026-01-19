@@ -5,10 +5,16 @@ import ContentLayout from '@/layouts/ContentLayout.vue';
 import { useColumns, type User } from '@/pages/user/columns'; // Reuse columns
 import UserForm from '@/pages/user/UserForm.vue'; // Reuse form
 import Combobox from '@/components/common/Combobox.vue';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { BreadcrumbItem } from '@/types';
 import organization from '@/routes/organization';
+
 import { useQueryClient } from '@tanstack/vue-query';
+import { usePermission } from '@/composables/usePermission';
+import { usePage, router } from '@inertiajs/vue3';
+
+const page = usePage();
+const user = page.props.auth.user;
 
 const props = defineProps<{
 	organizations: any[];
@@ -44,8 +50,6 @@ const onActionSuccess = () => {
 	queryClient.invalidateQueries({ queryKey: ['org_users', orgId.value] });
 	isDialogOpen.value = false;
 };
-
-import { usePermission } from '@/composables/usePermission';
 const { can } = usePermission();
 
 // Configure columns: Hide Organization column, Disable Delete
@@ -69,6 +73,12 @@ const apiUrl = computed(() => {
 	return organization.user.data({ query: { organization_id: orgId.value } }).url;
 });
 
+onMounted(() => {
+	if (user.organization_id && (!orgId.value || orgId.value != user.organization_id)) {
+		router.get('/organization-users?organization_id=' + user.organization_id);
+	}
+})
+
 </script>
 
 <template>
@@ -78,7 +88,7 @@ const apiUrl = computed(() => {
       <h3 v-if="organization_model" class="text-lg font-normal">Users for Organization <b>{{ organization_model.name }}</b></h3>
     </div>
 
-    <div class="mb-4">
+    <div class="mb-4" v-if="!user.organization_id">
       <Combobox
         label="Organization"
         auto-navigate

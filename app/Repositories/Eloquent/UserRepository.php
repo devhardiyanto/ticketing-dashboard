@@ -13,9 +13,9 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         parent::__construct($model);
     }
 
-    public function getAll(array $params = []): LengthAwarePaginator
+    public function getAll(array $params = [], array $columns = ['*']): LengthAwarePaginator
     {
-        $query = $this->model->with(['organization', 'roles', 'permissions'])->newQuery();
+        $query = $this->model->with(['organization', 'roles'])->select($columns)->newQuery();
 
         if (isset($params['search']) && $params['search']) {
             $search = $params['search'];

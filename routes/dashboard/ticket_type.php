@@ -10,6 +10,7 @@ Route::controller(TicketType::class)
     ->group(function () use ($name) {
         Route::get('/data', 'data')->name("$name.data")->middleware('can:tickets.read');
         Route::get('/', 'index')->name("$name.index")->middleware('can:tickets.read');
+        Route::get('/{id}/show', 'show')->name("$name.show")->middleware('can:tickets.read');
         Route::post('/', 'store')->name("$name.store")->middleware('can:tickets.create');
         Route::put('/{id}', 'update')->name("$name.update")->middleware('can:tickets.update');
         Route::delete('/{id}', 'destroy')->name("$name.destroy")->middleware('can:tickets.delete');

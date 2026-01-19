@@ -18,8 +18,23 @@ class RoleController extends Controller
 
 	public function data(Request $request)
 	{
-		return $this->roleService->getInternalRolesPaginated($request->get('limit', 10));
+        // Spatie Roles table usually has: id, name, guard_name, created_at, updated_at
+        $columns = ['id', 'name', 'guard_name', 'created_at'];
+		return $this->roleService->getInternalRolesPaginated($request->get('limit', 10), $columns);
 	}
+
+    public function show(int $id)
+    {
+        $role = $this->roleService->getRole($id);
+
+        if (!$role) {
+            abort(404, 'Role not found');
+        }
+
+        $role->load('users');
+
+        return response()->json($role);
+    }
 
 	public function index()
 	{

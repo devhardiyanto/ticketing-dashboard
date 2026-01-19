@@ -11,6 +11,7 @@ Route::controller(BannerController::class)
         Route::get('/data', 'data')->name("$name.data");
         Route::get('/reorder-list', 'reorderList')->name("$name.reorder-list");
         Route::get('/', 'index')->name("$name.index");
+        Route::get('/{id}/show', 'show')->name("$name.show");
         Route::post('/', 'store')->name("$name.store");
         Route::put('{id}', 'update')->name("$name.update");
         Route::delete('{id}', 'destroy')->name("$name.destroy");

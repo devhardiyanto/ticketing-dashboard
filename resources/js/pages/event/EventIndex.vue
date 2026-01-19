@@ -15,6 +15,8 @@ import type { Event, Organization } from '@/types/dashboard';
 import event from '@/routes/event';
 import { BreadcrumbItem } from '@/types';
 import { useQueryClient } from '@tanstack/vue-query';
+import axios from 'axios';
+import { toast } from 'vue-sonner';
 
 
 const props = defineProps<{
@@ -26,15 +28,25 @@ const queryClient = useQueryClient();
 
 const isDialogOpen = ref(false);
 const selectedItem = ref<Event | null>(null);
+const isLoadingEdit = ref(false);
 
 const openCreate = () => {
 	selectedItem.value = null;
 	isDialogOpen.value = true;
 };
 
-const openEdit = (item: Event) => {
-	selectedItem.value = item;
-	isDialogOpen.value = true;
+const openEdit = async (item: Event) => {
+	try {
+        isLoadingEdit.value = true;
+        const response = await axios.get(event.show(item.id).url);
+        selectedItem.value = response.data;
+        isDialogOpen.value = true;
+    } catch (error) {
+        toast.error('Failed to load event data');
+        console.error(error);
+    } finally {
+        isLoadingEdit.value = false;
+    }
 };
 
 const onActionSuccess = () => {

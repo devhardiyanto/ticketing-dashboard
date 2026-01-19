@@ -18,9 +18,31 @@ class TicketTypeRepository extends BaseRepository implements TicketTypeRepositor
         return $this->model->paginate($params['per_page'] ?? 10);
     }
 
-    public function getByEventId(string $event_id, array $params = []): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    public function getByEventId(string $event_id, array $params = [], array $columns = ['*']): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        return $this->model->where('event_id', $event_id)->paginate($params['per_page'] ?? 10);
+        $query = $this->model->where('event_id', $event_id)->select($columns);
+
+        if (isset($params['search']) && $params['search']) {
+            $search = $params['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'ilike', "%{$search}%")
+                  ->orWhere('description', 'ilike', "%{$search}%")
+                  ->orWhere('category', 'ilike', "%{$search}%");
+            });
+        }
+
+        // Sorting
+        $sortColumn = $params['sort'] ?? 'sort_order';
+        $sortOrder = $params['order'] ?? 'asc';
+        $allowedSorts = ['name', 'price', 'quantity', 'start_sale_date', 'end_sale_date', 'status', 'created_at', 'sort_order'];
+
+        if (in_array($sortColumn, $allowedSorts)) {
+            $query->orderBy($sortColumn, $sortOrder === 'asc' ? 'asc' : 'desc');
+        } else {
+            $query->orderBy('sort_order', 'asc');
+        }
+
+        return $query->paginate($params['limit'] ?? 10);
     }
 
     public function all(): \Illuminate\Database\Eloquent\Collection

@@ -32,9 +32,20 @@ const selectedItem = ref<Banner | null>(null);
 const localBanners = ref<Banner[]>([]);
 const isLoadingReorder = ref(false);
 
-const openEdit = (item: Banner) => {
-	selectedItem.value = item;
-	isDialogOpen.value = true;
+const isLoadingEdit = ref(false);
+
+const openEdit = async (item: Banner) => {
+	try {
+        isLoadingEdit.value = true;
+        const response = await axios.get(bannerRoute.show(item.id).url);
+        selectedItem.value = response.data;
+        isDialogOpen.value = true;
+    } catch (error) {
+        toast.error('Failed to load banner data');
+        console.error(error);
+    } finally {
+        isLoadingEdit.value = false;
+    }
 };
 
 const onActionSuccess = () => {

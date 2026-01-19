@@ -22,9 +22,9 @@ class EventRepository implements EventRepositoryInterface
 		return $this->model->all();
 	}
 
-	public function getAll(array $params = []): LengthAwarePaginator
+	public function getAll(array $params = [], array $columns = ['*']): LengthAwarePaginator
 	{
-		$query = $this->model->with(['organization', 'childEvents'])->newQuery();
+		$query = $this->model->with(['organization', 'childEvents'])->select($columns)->newQuery();
 
 		if (isset($params['search']) && $params['search']) {
 			$search = $params['search'];
@@ -53,6 +53,9 @@ class EventRepository implements EventRepositoryInterface
 		$allowedSorts = ['name', 'slug', 'start_date', 'end_date', 'status', 'created_at', 'location'];
 
 		if (in_array($sortColumn, $allowedSorts)) {
+			// If sorting by a column NOT in the select list, it might fail in some DB engines (like Postgres DISTINCT),
+			// but standard Eloquent usually handles it unless using distinct.
+			// However for specific columns selection, we should ensure sort column is available or just let DB handle.
 			$query->orderBy($sortColumn, $sortOrder === 'asc' ? 'asc' : 'desc');
 		} else {
 			$query->orderBy('created_at', 'desc');
