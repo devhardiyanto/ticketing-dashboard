@@ -14,41 +14,41 @@ const page = usePage();
 const user = page.props.auth.user;
 
 const UserForm = defineAsyncComponent({
-  loader: () => import('./UserForm.vue'),
-  loadingComponent: Spinner,
+	loader: () => import('./UserForm.vue'),
+	loadingComponent: Spinner,
 });
 
 const props = defineProps<{
-  organizations: any[];
-  roles: any[];
-  availablePermissions: any[];
+	organizations: any[];
+	roles: any[];
+	availablePermissions: any;
 }>();
 
 const queryClient = useQueryClient();
 
 const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: 'Users',
-    href: userRoute.index().url,
-  },
+	{
+		title: 'Users',
+		href: userRoute.index().url,
+	},
 ];
 
 const isDialogOpen = ref(false);
 const selectedItem = ref<User | null>(null);
 
 const openCreate = () => {
-  selectedItem.value = null;
-  isDialogOpen.value = true;
+	selectedItem.value = null;
+	isDialogOpen.value = true;
 };
 
 const openEdit = (item: User) => {
-  selectedItem.value = item;
-  isDialogOpen.value = true;
+	selectedItem.value = item;
+	isDialogOpen.value = true;
 };
 
 const onActionSuccess = () => {
-  queryClient.invalidateQueries({ queryKey: ['users'] });
-  isDialogOpen.value = false;
+	queryClient.invalidateQueries({ queryKey: ['users'] });
+	isDialogOpen.value = false;
 };
 
 import { usePermission } from '@/composables/usePermission';
@@ -56,9 +56,9 @@ import { usePermission } from '@/composables/usePermission';
 const { can } = usePermission();
 
 const columns = useColumns({
-  hideOrganization: false,
-  canDelete: can('dashboard_users.delete'),
-  canEdit: can('dashboard_users.update')
+	hideOrganization: false,
+	canDelete: can('dashboard_users.delete'),
+	canEdit: can('dashboard_users.update')
 }, openEdit, onActionSuccess);
 </script>
 

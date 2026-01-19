@@ -50,7 +50,8 @@
 		"vue": "^3.5.13",
 		"vue-currency-input": "^3.2.2",
 		"vue-sonner": "^2.0.9",
-		"vuedraggable": "^4.1.0"
+		"vuedraggable": "^4.1.0",
+		"zod": "^4.3.5"
 	},
 	"optionalDependencies": {
 		"@rollup/rollup-linux-x64-gnu": "4.9.5",

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ROLES } from '@/types/roles';
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -33,6 +34,7 @@ import { Loader2, Lock } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { formatRoleName } from '@/lib/utils-general';
+import { z } from 'zod';
 
 const props = defineProps<{
 	initialData?: any | null;
@@ -43,14 +45,27 @@ const props = defineProps<{
 		display_name: string;
 		permissions: string[];
 	}[];
-	availablePermissions?: { id: number; name: string }[];
+	// Updated type: Object grouped by string keys
+	availablePermissions?: Record<string, { id: number; name: string; label: string }[]>;
 
 	isLockedOrganization?: boolean;
 	lockedOrganizationId?: string;
 	lockedOrganizationName?: string;
+	currentRole?: string;
 }>();
 
 const emit = defineEmits(['success']);
+
+const userSchema = z.object({
+	name: z.string().min(1, 'Name is required'),
+	email: z.string().email('Invalid email address'),
+	role_id: z.coerce
+		.number()
+		.min(1, 'Role is required'),
+	organization_id: z.string().nullable().optional(),
+	phone_number: z.string().optional(),
+	status: z.string(),
+});
 
 const isEditMode = computed(() => !!props.initialData);
 
@@ -61,14 +76,13 @@ const form = useForm({
 	organization_id:
 		props.initialData?.organization_id ||
 		props.lockedOrganizationId ||
-		'__none__',
+		null,
 	role_id: props.initialData?.role_id || props.initialData?.roles?.[0]?.id || null,
 	phone_number: props.initialData?.phone_number || '',
 	status: props.initialData?.status || 'active',
 	permissions: props.initialData?.permissions?.map((p: any) => p.name) || [],
 });
 
-// Local ref to manage permissions state independently of Inertia form
 const selectedPermissions = ref<string[]>(
 	props.initialData?.permissions?.map((p: any) => p.name) || [],
 );
@@ -107,104 +121,43 @@ const togglePermission = (permissionName: string, checked: boolean) => {
 	}
 };
 
-const submit = () => {
-	if (
-		!isEditMode.value &&
-		form.organization_id &&
-		form.organization_id !== '__none__' &&
-		!props.isLockedOrganization
-	) {
-		showOrgWarning.value = true;
-		return;
-	}
-	executeSubmit();
-};
-
-
-const confirmCreate = () => {
-	showOrgWarning.value = false;
-	executeSubmit();
-};
-
-const groupedPermissions = computed(() => {
+const filteredPermissions = computed(() => {
 	if (!props.availablePermissions) return {};
 
-	const groups: Record<string, typeof props.availablePermissions> = {};
+	const groups = props.availablePermissions;
+	const filtered: Record<string, { id: number; name: string; label: string }[]> = {};
 
-	// Get selected role to check if it is 'organization'
-	const selectedRole = props.roles?.find(r => r.id === form.role_id);
-	const isOrganizationRole = selectedRole?.name === 'organization';
+	// Creator Restrictions (Logged in user restrictions)
+	const isOrgAdminCreator = props.currentRole === ROLES.ORG_ADMIN;
 
-	props.availablePermissions.forEach(permission => {
-		let group = 'System'; // Default group
+	Object.keys(groups).forEach((groupName) => {
+		const permissions = groups[groupName];
 
-		if (permission.name.includes('event')) group = 'Event';
-		else if (permission.name.includes('ticket')) group = 'Ticket';
-		else if (permission.name.includes('order')) group = 'Order';
-		else if (permission.name.includes('user')) group = 'User';
-		else if (permission.name.includes('banner')) group = 'Content';
-		else if (permission.name.includes('dashboard')) group = 'System';
-
-		// Filter permissions if role is 'organization'
-		if (isOrganizationRole) {
-			// Exclude System and User Management
-			if (group === 'System' || group === 'User') return;
-
-			// Limit Order Management to read & export only
-			if (group === 'Order') {
-				if (!['orders.read', 'orders.export'].includes(permission.name)) return;
+		// 1. Filter based on CREATOR (Who is logged in) - STRICT RESTRICTION
+		if (isOrgAdminCreator) {
+			// Org Admin can ONLY see Event, Ticket, Order
+			if (!['Event Management', 'Ticket Management', 'Order Management'].includes(groupName)) {
+				return;
 			}
 		}
 
-		if (!groups[group]) {
-			groups[group] = [];
-		}
-		groups[group].push(permission);
+		filtered[groupName] = permissions;
 	});
 
-	// Sort keys for consistent ordering
-	const orderedKeys = [
-		'Event',
-		'Ticket',
-		'Order',
-		'User',
-		'Content',
-		'System',
-	];
-	const sortedGroups: Record<string, typeof props.availablePermissions> = {};
-
-	orderedKeys.forEach((key) => {
-		if (groups[key]) sortedGroups[key] = groups[key];
-	});
-
-	// Add any remaining keys
-	Object.keys(groups).forEach((key) => {
-		if (!orderedKeys.includes(key)) sortedGroups[key] = groups[key];
-	});
-
-	return sortedGroups;
+	return filtered;
 });
-
-const formatPermissionLabel = (name: string) => {
-	// manage-users -> Manage Users
-	return name
-		.split('-')
-		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-		.join(' ');
-};
-
 
 const shouldShowOrganization = computed(() => {
 	if (!form.role_id) return false;
 	const role = props.roles?.find((r) => r.id === form.role_id);
-	return role?.name === 'organization';
+	// Check for standard org roles
+	return role?.name === ROLES.ORG_ADMIN || role?.name === ROLES.ORG_STAFF;
 });
 
 const executeSubmit = () => {
 	const submitData = {
 		...form.data(),
-		organization_id:
-			form.organization_id === '__none__' ? null : form.organization_id,
+		organization_id: form.organization_id,
 		// Explicitly include permissions from local ref
 		permissions: [...selectedPermissions.value],
 	};
@@ -230,6 +183,51 @@ const executeSubmit = () => {
 		});
 	}
 };
+
+const confirmCreate = () => {
+	showOrgWarning.value = false;
+	executeSubmit();
+};
+
+const submit = () => {
+	// 1. Client-side Validation using Zod
+	const result = userSchema.safeParse(form.data());
+
+	if (!result.success) {
+		result.error.issues.forEach((issue) => {
+			form.setError(issue.path[0] as any, issue.message);
+		});
+		toast.error('Please fix form errors.');
+		return;
+	}
+
+	// 2. Custom Verification: Organization Required for Org Roles
+	const role = props.roles?.find((r) => r.id === form.role_id);
+	if (
+		role &&
+		(role.name === ROLES.ORG_ADMIN || role.name === ROLES.ORG_STAFF)
+	) {
+		if (!form.organization_id || form.organization_id === '__none__') {
+			form.setError(
+				'organization_id',
+				'Organization is required for this role.',
+			);
+			toast.error('Organization is required.');
+			return;
+		}
+	}
+
+	if (
+		!isEditMode.value &&
+		form.organization_id &&
+		form.organization_id !== '__none__' &&
+		!props.isLockedOrganization
+	) {
+		showOrgWarning.value = true;
+		return;
+	}
+	executeSubmit();
+};
 </script>
 
 <template>
@@ -243,7 +241,7 @@ const executeSubmit = () => {
 			<TabsContent value="profile" class="space-y-4 pt-4">
 				<!-- Name -->
 				<Field name="name" :invalid="!!form.errors.name">
-					<FieldLabel>Name</FieldLabel>
+					<FieldLabel>Name <span class="text-destructive">*</span></FieldLabel>
 					<FieldContent>
 						<Input v-model="form.name" placeholder="John Doe" />
 					</FieldContent>
@@ -252,7 +250,7 @@ const executeSubmit = () => {
 
 				<!-- Email -->
 				<Field name="email" :invalid="!!form.errors.email">
-					<FieldLabel>Email</FieldLabel>
+					<FieldLabel>Email <span class="text-destructive">*</span></FieldLabel>
 					<FieldContent>
 						<Input
 							v-model="form.email"
@@ -282,7 +280,7 @@ const executeSubmit = () => {
 
 				<!-- Role -->
 				<Field name="role_id" :invalid="!!form.errors.role_id">
-					<FieldLabel>Role</FieldLabel>
+					<FieldLabel>Role <span class="text-destructive">*</span></FieldLabel>
 					<FieldContent>
 						<Select v-model="form.role_id">
 							<SelectTrigger>
@@ -309,7 +307,7 @@ const executeSubmit = () => {
 					:invalid="!!form.errors.organization_id"
 				>
 					<FieldLabel class="flex items-center gap-2">
-						Organization
+						Organization <span class="text-destructive">*</span>
 						<Lock
 							v-if="isEditMode || isLockedOrganization"
 							class="h-3 w-3 text-muted-foreground"
@@ -326,9 +324,6 @@ const executeSubmit = () => {
 								/>
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="__none__"
-									>None (System Admin)</SelectItem
-								>
 								<SelectItem
 									v-for="org in organizations"
 									:key="org.id"
@@ -387,22 +382,23 @@ const executeSubmit = () => {
 				<div
 					v-if="
 						!availablePermissions ||
-						availablePermissions.length === 0
+						Object.keys(availablePermissions).length === 0
 					"
 					class="text-sm text-muted-foreground"
 				>
 					No permissions available.
 				</div>
+                <!-- ... -->
 				<div v-else class="space-y-6">
 					<div
-						v-for="(group, groupName) in groupedPermissions"
+						v-for="(group, groupName) in filteredPermissions"
 						:key="groupName"
 						class="rounded-lg border bg-card p-4"
 					>
 						<h4
 							class="mb-3 text-sm font-medium text-foreground capitalize"
 						>
-							{{ groupName }} Management
+							{{ groupName }}
 						</h4>
 						<div class="grid grid-cols-1 gap-3 md:grid-cols-2">
 							<div
@@ -426,7 +422,7 @@ const executeSubmit = () => {
 											),
 									}"
 								>
-									{{ formatPermissionLabel(permission.name) }}
+									{{ permission.label }}
 									<span
 										v-if="
 											isPermissionInherited(

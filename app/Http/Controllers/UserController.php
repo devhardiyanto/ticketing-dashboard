@@ -31,29 +31,37 @@ class UserController extends Controller
 		$params = $request->only(['organization_id']);
 
 		$organizations = $this->org_repo->all()->map(function ($org) {
-			return [
-				'id' => $org->id,
-				'name' => $org->name,
-			];
+			return ['id' => $org->id, 'name' => $org->name];
 		});
 
-		$roles = Role::with('permissions')->get()->map(function ($role) {
+		$roles = Role::with(['permissions:id,name'])->select(['id', 'name', 'guard_name'])->get()->map(function ($role) {
 			return [
 				'id' => $role->id,
-				'display_name' => $role->display_name ?? $role->name,
+				'display_name' => $role->guard_name,
 				'name' => $role->name,
 				'permissions' => $role->permissions->pluck('name'),
 			];
 		});
 
-		$available_permissions = Permission::all()->map(function ($p) {
-			return ['id' => $p->id, 'name' => $p->name];
+		$permissions = Permission::select(['id', 'name', 'label', 'parent_id'])
+			->get();
+
+		$available_permissions = $permissions->whereNull('parent_id')->mapWithKeys(function ($parent) use ($permissions) {
+			return [
+				$parent->label => $permissions->where('parent_id', $parent->id)->values()->map(function ($p) {
+					return ['id' => $p->id, 'name' => $p->name, 'label' => $p->label];
+				})
+			];
 		});
 
 		$organization_model = null;
 		if (isset($params['organization_id'])) {
 			$organization_model = $this->org_repo->find($params['organization_id']);
 		}
+
+		$current_user = auth()->user();
+		// Eager load roles to avoid N+1 if not loaded, though auth()->user() usually has it cached or loaded
+		$current_role = $current_user->roles->first()?->name;
 
 		$routeName = $request->route()->getName();
 
@@ -63,6 +71,7 @@ class UserController extends Controller
 				'roles' => $roles,
 				'availablePermissions' => $available_permissions,
 				'organization_model' => $organization_model,
+				'currentRole' => $current_role,
 			]);
 		}
 
@@ -70,6 +79,7 @@ class UserController extends Controller
 			'organizations' => $organizations,
 			'roles' => $roles,
 			'availablePermissions' => $available_permissions,
+			'currentRole' => $current_role,
 		]);
 	}
 
