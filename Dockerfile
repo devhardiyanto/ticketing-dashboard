@@ -70,7 +70,7 @@ COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
 # Expose HTTP port
-EXPOSE 80
+EXPOSE 8080
 
 # Start both PHP-FPM and Nginx
 CMD ["/start.sh"]
