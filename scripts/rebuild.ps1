@@ -11,10 +11,12 @@ docker build -t dashboard:latest .
 if ($LASTEXITCODE -eq 0) {
     Write-Host "Starting container..." -ForegroundColor Yellow
     docker run -d `
-        --name dashboard-container `
-        -p 8080:80 `
-        --env-file .env `
-        dashboard:latest
+			--name dashboard-container `
+			--network server `
+			--label com.docker.compose.project=ticketing `
+			--label com.docker.compose.service=dashboard `
+			-p 8080:80 `
+			dashboard:latest
     Write-Host "Done! Dashboard running at http://localhost:8080" -ForegroundColor Green
 } else {
     Write-Host "Build failed!" -ForegroundColor Red
