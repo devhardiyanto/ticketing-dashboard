@@ -45,7 +45,7 @@ class HandleInertiaRequests extends Middleware
 			'auth' => [
 				'user' => $request->user() ? array_merge($request->user()->load('organization')->toArray(), [
 					'permissions' => $request->user()->getAllPermissions()->pluck('name'),
-					'roles' => $request->user()->getRoleNames(),
+					'roles' => $request->user()->roles()->get()->toArray(),
 				]) : null,
 			],
 			'sidebar_menu' => $this->getSidebarMenu($request),

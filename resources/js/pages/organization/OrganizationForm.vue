@@ -135,7 +135,7 @@ const submit = () => {
 
 <template>
 	<form @submit.prevent="submit" class="space-y-6">
-		<div class="grid grid-cols-1">
+		<div class="grid grid-cols-2 gap-4">
 			<Field name="name" :invalid="!!form.errors.name">
 				<FieldLabel
 					>Name
@@ -196,7 +196,7 @@ const submit = () => {
 				<FieldError>{{ form.errors.phone_number }}</FieldError>
 			</Field>
 
-			<Field name="tax_id" :invalid="!!form.errors.tax_id">
+			<Field class="col-span-2" name="tax_id" :invalid="!!form.errors.tax_id">
 				<FieldLabel>Tax ID</FieldLabel>
 				<FieldContent>
 					<Input
@@ -208,6 +208,7 @@ const submit = () => {
 			</Field>
 
 			<Field
+				class="col-span-2"
 				name="status"
 				:invalid="!!form.errors.status"
 				v-if="isEditing"
@@ -231,7 +232,7 @@ const submit = () => {
 				<FieldError>{{ form.errors.status }}</FieldError>
 			</Field>
 
-			<Field name="address" :invalid="!!form.errors.address">
+			<Field class="col-span-2" name="address" :invalid="!!form.errors.address">
 				<FieldLabel>Address</FieldLabel>
 				<FieldContent>
 					<Textarea

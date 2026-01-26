@@ -14,93 +14,7 @@ class PermissionSeeder extends Seeder
 	public function run(): void
 	{
 		// Define permissions structure with Groups (Parents)
-		$permissionGroups = [
-			[
-				'name' => 'events.manage',
-				'label' => 'Event Management',
-				'children' => [
-					['name' => 'events.create', 'label' => 'Create Events'],
-					['name' => 'events.read', 'label' => 'View Events'],
-					['name' => 'events.update', 'label' => 'Edit Events'],
-					['name' => 'events.delete', 'label' => 'Delete Events'],
-					['name' => 'events.publish', 'label' => 'Publish Events'],
-				]
-			],
-			[
-				'name' => 'tickets.manage',
-				'label' => 'Ticket Management',
-				'children' => [
-					['name' => 'tickets.create', 'label' => 'Create Tickets'],
-					['name' => 'tickets.read', 'label' => 'View Tickets'],
-					['name' => 'tickets.update', 'label' => 'Edit Tickets'],
-					['name' => 'tickets.delete', 'label' => 'Delete Tickets'],
-				]
-			],
-			[
-				'name' => 'orders.manage',
-				'label' => 'Order Management',
-				'children' => [
-					['name' => 'orders.read', 'label' => 'View Orders'],
-					['name' => 'orders.update', 'label' => 'Process Orders'],
-					['name' => 'orders.export', 'label' => 'Export Orders'],
-				]
-			],
-			[
-				'name' => 'organizations.manage', // This is mostly for Super Admin
-				'label' => 'Organization Management',
-				'children' => [
-					['name' => 'organizations.create', 'label' => 'Create Organizations'],
-					['name' => 'organizations.read', 'label' => 'View Organizations'],
-					['name' => 'organizations.update', 'label' => 'Edit Organizations'],
-					['name' => 'organizations.delete', 'label' => 'Delete Organizations'],
-					// 'organizations.manage' was duplicate in previous seeder, consolidated here as parent
-				]
-			],
-			[
-				'name' => 'users.manage',
-				'label' => 'User Management',
-				'children' => [
-					['name' => 'users.create', 'label' => 'Create Users'],
-					['name' => 'users.read', 'label' => 'View Users'],
-					['name' => 'users.update', 'label' => 'Edit Users'],
-					['name' => 'users.delete', 'label' => 'Delete Users'],
-				]
-			],
-			[
-				'name' => 'roles.manage',
-				'label' => 'Role & Permission Management',
-				'children' => [
-					['name' => 'roles.create', 'label' => 'Create Roles'],
-					['name' => 'roles.read', 'label' => 'View Roles'],
-					['name' => 'roles.update', 'label' => 'Edit Roles'],
-					['name' => 'roles.delete', 'label' => 'Delete Roles'],
-				]
-			],
-			[
-				'name' => 'activity_logs.manage',
-				'label' => 'Activity Logs',
-				'children' => [
-					['name' => 'activity_logs.read', 'label' => 'View Logs'],
-					['name' => 'activity_logs.export', 'label' => 'Export Logs'],
-				]
-			],
-			[
-				'name' => 'reports.manage',
-				'label' => 'Reports & Analytics',
-				'children' => [
-					['name' => 'reports.read', 'label' => 'View Reports'],
-					['name' => 'reports.export', 'label' => 'Export Reports'],
-				]
-			],
-			[
-				'name' => 'settings.manage',
-				'label' => 'Settings',
-				'children' => [
-					['name' => 'settings.read', 'label' => 'View Settings'],
-					['name' => 'settings.update', 'label' => 'Edit Settings'],
-				]
-			],
-		];
+		$permissionGroups = config('permission_list.list');
 
 		foreach ($permissionGroups as $group) {
 			// Create Parent Permission
@@ -159,6 +73,7 @@ class PermissionSeeder extends Seeder
 				'orders.read',
 				'orders.update',
 				'orders.export',
+				'organizations.view_any', // Allow viewing list
 				'organizations.read',
 				'users.read',
 				'roles.read',
@@ -169,22 +84,42 @@ class PermissionSeeder extends Seeder
 				'settings.read',
 			];
 
-			// Also give them access to Parent menus so sidebar works if it checks parent
-			// But usually validation is on specific permissions.
-
 			$platformStaff->syncPermissions($platformStaffPermissions);
 			if ($this->command) {
 				$this->command->info('Platform Staff permissions assigned!');
 			}
 		}
 
-		// Organization Admin: All permissions except organizations management
+		// Organization Admin: Manage own Users, View Own Org
 		if ($orgAdmin) {
-			$orgAdminPermissions = Permission::where('name', 'not like', 'users.%')
-				->where('name', 'not like', 'roles.%')
-				->pluck('name')
-				->toArray();
+			$orgAdminPermissions = [
+				'events.create',
+				'events.read',
+				'events.update',
+				'events.delete',
+				'events.publish',
+				'tickets.create',
+				'tickets.read',
+				'tickets.update',
+				'tickets.delete',
+				'orders.read',
+				'orders.update',
+				'orders.export',
+				// 'organizations.update', // Edit own details
+				'organizations.read', // View own details
+				'organizations.users.manage',
+				'organizations.users.create',
+				'organizations.users.update',
+				'organizations.users.delete',
+				'reports.read',
+				'reports.export',
+				'settings.read',
+				'settings.update'
+			];
 			$orgAdmin->syncPermissions($orgAdminPermissions);
+			if ($this->command) {
+				$this->command->info('Organization Admin permissions assigned!');
+			}
 		}
 
 		// Organization Staff: Limited permissions
@@ -196,7 +131,7 @@ class PermissionSeeder extends Seeder
 				'tickets.update',
 				'orders.read',
 				'orders.update',
-				'users.read',
+				'users.read', // View users list (maybe)
 				'reports.read',
 				'settings.read',
 			];

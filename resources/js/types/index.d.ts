@@ -43,7 +43,7 @@ export interface User {
 	organization_id: any
 	status: string
 	permissions: string[]
-	roles: string[]
+	roles: Roles[]
 	email_verified_at: string
 	last_login_at: string
 	created_at: string
@@ -51,7 +51,19 @@ export interface User {
 	deleted_at: any
 }
 
+export interface Roles {
+	id: number
+	name: string
+	guard_name: string
+	created_at: string
+	updated_at: string
+	pivot: Pivot
+}
 
-
+export interface Pivot {
+	model_type: string
+	model_id: number
+	role_id: number
+}
 
 export type BreadcrumbItemType = BreadcrumbItem;

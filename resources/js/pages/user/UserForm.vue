@@ -31,7 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import userRoute from '@/routes/user';
 import { useForm } from '@inertiajs/vue3';
 import { Loader2, Lock } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import { formatRoleName } from '@/lib/utils-general';
 import { z } from 'zod';
@@ -88,6 +88,17 @@ const selectedPermissions = ref<string[]>(
 );
 
 const showOrgWarning = ref(false);
+
+// Auto-select role if only one is available
+watch(
+	() => props.roles,
+	(newRoles) => {
+		if (newRoles && newRoles.length === 1 && !form.role_id) {
+			form.role_id = newRoles[0].id;
+		}
+	},
+	{ immediate: true }
+);
 
 const inheritedPermissions = computed(() => {
 	if (!form.role_id) return [];
@@ -282,7 +293,12 @@ const submit = () => {
 				<Field name="role_id" :invalid="!!form.errors.role_id">
 					<FieldLabel>Role <span class="text-destructive">*</span></FieldLabel>
 					<FieldContent>
-						<Select v-model="form.role_id">
+						<!-- If only one role is available, auto-select and show read-only -->
+						<div v-if="roles && roles.length === 1">
+							<Input readonly :model-value="formatRoleName(roles[0].name)" />
+							<!-- Hidden input to ensure logic flows if needed, though form.role_id is set -->
+						</div>
+						<Select v-else v-model="form.role_id">
 							<SelectTrigger>
 								<SelectValue placeholder="Select Role" />
 							</SelectTrigger>

@@ -43,13 +43,13 @@ return [
 					'title' => 'Organizations', // CRUD for Organizations
 					'url' => 'organization.index',
 					'icon' => 'Building2',
-					'permission' => 'organizations.read',
+					'permission' => 'organizations.view_any',
 				],
 				[
 					'title' => 'User Assignment', // Assign users to specific orgs
 					'url' => 'organization.user.index',
 					'icon' => 'UserPlus',
-					'permission' => 'organizations.read',
+					'permission' => 'organizations.users.manage',
 				],
 			],
 		],

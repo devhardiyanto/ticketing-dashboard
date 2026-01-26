@@ -21,7 +21,7 @@ Route::controller(Organization::class)
 			->middleware(['auth', 'verified'])
 			->prefix('users')
 			->group(function () use ($name) {
-				Route::get('/data', 'data')->name("$name.data");
-				Route::get('/', 'index')->name("$name.index");
+				Route::get('/data', 'data')->name("$name.data")->middleware('can:organizations.users.manage');
+				Route::get('/', 'index')->name("$name.index")->middleware('can:organizations.users.manage');
 			});
 	});

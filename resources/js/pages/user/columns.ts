@@ -5,6 +5,7 @@ import { h } from 'vue';
 import UserActions from './UserActions.vue';
 import UserStatusSwitch from './UserStatusSwitch.vue';
 import { formatRoleName } from '@/lib/utils-general';
+import { Roles } from '@/types';
 
 // Define User type interface temporarily or import
 export interface User {
@@ -14,21 +15,6 @@ export interface User {
 	organization?: { id: string; name: string };
 	roles?: Roles[];
 	status: 'active' | 'inactive';
-}
-
-export interface Roles {
-	id: number
-	name: string
-	guard_name: string
-	created_at: string
-	updated_at: string
-	pivot: Pivot
-}
-
-export interface Pivot {
-	model_type: string
-	model_id: number
-	role_id: number
 }
 
 
