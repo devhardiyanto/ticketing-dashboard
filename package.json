@@ -4,7 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"build:local": "vite build",
-		"build": "mkdir -p bin && curl -L https://dl.static-php.dev -o bin/php.tar.gz && tar -xzf bin/php.tar.gz -C bin && chmod +x bin/php && export PATH=\"$PWD/bin:$PATH\" && php artisan wayfinder:generate --with-form && vite build",
+		"build": "mkdir -p bin && curl -L -o bin/php https://dl.static-php.dev/static-php-cli/common/php-8.2-cli-linux-x64 && chmod +x bin/php && export PATH=\"$PWD/bin:$PATH\" && php artisan wayfinder:generate --with-form && vite build",
 		"build:ssr": "vite build && vite build --ssr",
 		"dev": "vite",
 		"format": "prettier --write resources/",
