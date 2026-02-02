@@ -11,12 +11,17 @@ import { edit } from '@/routes/profile';
 import type { User } from '@/types';
 import { Link, router } from '@inertiajs/vue3';
 import { LogOut, Settings } from 'lucide-vue-next';
+import { useAuthCache } from '@/composables/useAuthCache';
 
 interface Props {
     user: User;
 }
 
+const { clearCache } = useAuthCache();
+
 const handleLogout = () => {
+    // Clear auth cache from localStorage before logout
+    clearCache();
     router.flushAll();
 };
 

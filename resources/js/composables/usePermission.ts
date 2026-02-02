@@ -1,16 +1,22 @@
 import { usePage } from '@inertiajs/vue3';
+import { useAuthCache } from './useAuthCache';
 
 export function usePermission() {
   const page = usePage();
+  const { getPermissions, hasCache, isExpired } = useAuthCache();
 
   const hasPermission = (name: string) => {
+    // Try cache first (if valid)
+    if (hasCache() && !isExpired()) {
+      const cachedPermissions = getPermissions();
+      if (cachedPermissions.length > 0) {
+        return cachedPermissions.includes(name);
+      }
+    }
+
+    // Fallback to Inertia props
     const user = page.props.auth.user as any;
     if (!user || !user.permissions) return false;
-
-    // Super Admin usually has all permissions, but based on Seeder,
-    // they are assigned explicitly.
-    // If there's a wildcard or super admin role check needed, handle here.
-    // For now, checking the permissions array is sufficient as Seeder syncs all.
 
     return user.permissions.includes(name);
   };
@@ -22,3 +28,4 @@ export function usePermission() {
     can
   };
 }
+

@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
+import { useAuthCache } from '@/composables/useAuthCache';
 import {
 	BookOpen,
 	Building2,
@@ -32,6 +33,7 @@ import AppLogo from './AppLogo.vue';
 import { computed } from 'vue';
 
 const page = usePage();
+const { getSidebarMenu, hasCache, isExpired } = useAuthCache();
 
 // Map string icon names from backend to Vue Components
 const iconMap: Record<string, any> = {
@@ -51,9 +53,22 @@ const iconMap: Record<string, any> = {
 };
 
 // Transform backend menu structure
-// Note: Backend now provides 'href' resolved URL.
+// Uses cache if valid, fallback to Inertia props
 const menuGroups = computed(() => {
-	const rawMenu = page.props.sidebar_menu as Array<{ group: string, items: Array<any> }> || [];
+	let rawMenu: Array<{ group: string, items: Array<any> }> = [];
+
+	// Try cache first
+	if (hasCache() && !isExpired()) {
+		const cachedMenu = getSidebarMenu();
+		if (cachedMenu.length > 0) {
+			rawMenu = cachedMenu;
+		}
+	}
+
+	// Fallback to Inertia props
+	if (rawMenu.length === 0) {
+		rawMenu = page.props.sidebar_menu as Array<{ group: string, items: Array<any> }> || [];
+	}
 
 	return rawMenu.map(group => ({
 		label: group.group,

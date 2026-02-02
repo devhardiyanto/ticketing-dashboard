@@ -105,6 +105,13 @@ class EventController extends Controller
 			'venue_map_url' => 'nullable|image|max:5120',
 			'terms' => 'nullable|string',
 		]);
+		dd($validated);
+		if ($validated->fails()) {
+			return response()->json([
+				'status' => 'error',
+				'message' => $validated->errors()->first(),
+			]);
+		}
 
 		if ($request->hasFile('image_url')) {
 			// Upload to S3/MinIO and store path only
