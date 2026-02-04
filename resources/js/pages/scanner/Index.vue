@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScanQrCode, Keyboard, Volume2, VolumeX } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 
@@ -47,6 +48,7 @@ const manualInput = ref('');
 const showManualInput = ref(false);
 const soundEnabled = ref(true);
 const scanFeedback = ref<'idle' | 'success' | 'error'>('idle');
+const scanMode = ref<'checkin' | 'checkout' | 'redeem'>('checkin');
 const recentScans = ref<RealtimeScanEvent[]>([]);
 const realtimeConnected = ref(false);
 
@@ -129,6 +131,7 @@ const validateTicket = async (payload: string) => {
 			body: JSON.stringify({
 				qrPayload: payload,
 				eventId: props.eventId, // Include eventId for broadcasting
+				mode: scanMode.value,
 			}),
 		});
 
@@ -251,6 +254,16 @@ onUnmounted(() => {
 					<Volume2 v-if="soundEnabled" class="h-5 w-5" />
 					<VolumeX v-else class="h-5 w-5" />
 				</Button>
+			</div>
+
+			<div class="flex justify-center pb-2">
+				<Tabs v-model="scanMode" class="w-full max-w-md">
+					<TabsList class="grid w-full grid-cols-3">
+						<TabsTrigger value="checkin">Check-In</TabsTrigger>
+						<TabsTrigger value="checkout">Check-Out</TabsTrigger>
+						<TabsTrigger value="redeem">Redeem</TabsTrigger>
+					</TabsList>
+				</Tabs>
 			</div>
 
 			<div class="grid gap-4 lg:grid-cols-2">
