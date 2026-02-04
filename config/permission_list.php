@@ -84,6 +84,15 @@ return [
 			]
 		],
 		[
+			'name' => 'scanner.manage',
+			'label' => 'Scanner & Attendance',
+			'children' => [
+				['name' => 'scanner.access', 'label' => 'Access Scanner'],
+				['name' => 'scanner.history.read', 'label' => 'View Scan History'],
+				['name' => 'attendance.read', 'label' => 'View Attendance'],
+			]
+		],
+		[
 			'name' => 'settings.manage',
 			'label' => 'Settings',
 			'children' => [

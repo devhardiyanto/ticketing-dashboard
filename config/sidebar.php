@@ -76,6 +76,47 @@ return [
 				],
 			],
 		],
+
+		[
+			'group' => 'Onground',
+			'items' => [
+				[
+					'title' => 'Attendees',
+					'url' => 'attendees.index',
+					'icon' => 'UserCheck',
+					'permission' => 'events.read',
+				],
+				[
+					'title' => 'OTS Sales',
+					'url' => 'onground.sales.index',
+					'icon' => 'Store',
+					'permission' => 'orders.create',
+				],
+			],
+		],
+		[
+			'group' => 'Scanner & Attendance',
+			'items' => [
+				[
+					'title' => 'Scanner',
+					'url' => 'scanner.index',
+					'icon' => 'ScanQrCode',
+					'permission' => 'scanner.access',
+				],
+				[
+					'title' => 'Scan History',
+					'url' => 'scanner.history',
+					'icon' => 'History',
+					'permission' => 'scanner.history.read',
+				],
+				[
+					'title' => 'Attendance',
+					'url' => 'scanner.attendance',
+					'icon' => 'UsersRound',
+					'permission' => 'attendance.read',
+				],
+			],
+		],
 		[
 			'group' => 'Content & Settings',
 			'items' => [

@@ -28,6 +28,9 @@ import {
 	ChartArea,
 	Calendar,
 	FileText,
+	ScanQrCode,
+	History,
+	UsersRound,
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { computed } from 'vue';
@@ -49,7 +52,10 @@ const iconMap: Record<string, any> = {
 	'Building2': Building2,
 	'Image': Image,
 	'Activity': Activity,
-	'ChartArea': ChartArea
+	'ChartArea': ChartArea,
+	'ScanQrCode': ScanQrCode,
+	'History': History,
+	'UsersRound': UsersRound,
 };
 
 // Transform backend menu structure
