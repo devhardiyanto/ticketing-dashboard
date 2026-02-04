@@ -32,12 +32,21 @@ class ScannerController extends Controller
       'qrPayload' => 'required|string',
       'scanLocation' => 'nullable|string|max:255',
       'eventId' => 'nullable|string', // For broadcasting to specific event channel
+      'mode' => 'nullable|string|in:checkin,checkout,redeem',
     ]);
+
+    $modeMap = [
+      'checkin' => 'check-in',
+      'checkout' => 'check-out',
+      'redeem' => 'redeem',
+    ];
+    $activityType = $modeMap[$validated['mode'] ?? 'checkin'] ?? 'check-in';
 
     try {
       $response = Http::post("{$this->coreApiUrl}/api/scanner/validate", [
         'qrPayload' => $validated['qrPayload'],
         'scanLocation' => $validated['scanLocation'] ?? null,
+        'activityType' => $activityType,
       ]);
 
       $responseData = $response->json();

@@ -17,6 +17,7 @@ interface ScanLog {
 	status: 'success' | 'duplicate' | 'invalid';
 	scannedAt: string;
 	scanLocation?: string;
+	activityType?: 'check-in' | 'check-out' | 'redeem';
 }
 
 interface Props {
@@ -47,6 +48,19 @@ const getStatusBadge = (status: string) => {
 			return { variant: 'outline' as const, label: status };
 	}
 };
+
+const getActivityBadge = (type?: string) => {
+	switch (type) {
+		case 'check-in':
+			return { variant: 'default' as const, label: 'Check-In' };
+		case 'check-out':
+			return { variant: 'secondary' as const, label: 'Check-Out' };
+		case 'redeem':
+			return { variant: 'outline' as const, label: 'Redeem' };
+		default:
+			return { variant: 'outline' as const, label: type || 'Check-In' };
+	}
+};
 </script>
 
 <template>
@@ -55,6 +69,7 @@ const getStatusBadge = (status: string) => {
 			<TableHeader>
 				<TableRow>
 					<TableHead>Ticket Code</TableHead>
+					<TableHead>Activity</TableHead>
 					<TableHead>Attendee</TableHead>
 					<TableHead>Ticket Type</TableHead>
 					<TableHead>Status</TableHead>
@@ -82,6 +97,11 @@ const getStatusBadge = (status: string) => {
 				<!-- Data rows -->
 				<TableRow v-else v-for="log in data" :key="log.id">
 					<TableCell class="font-mono text-sm">{{ log.ticketCode }}</TableCell>
+					<TableCell>
+						<Badge :variant="getActivityBadge(log.activityType).variant">
+							{{ getActivityBadge(log.activityType).label }}
+						</Badge>
+					</TableCell>
 					<TableCell>{{ log.attendeeName }}</TableCell>
 					<TableCell>{{ log.ticketType }}</TableCell>
 					<TableCell>

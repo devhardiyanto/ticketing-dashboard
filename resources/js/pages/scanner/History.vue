@@ -24,6 +24,7 @@ interface ScanLog {
 	status: 'success' | 'duplicate' | 'invalid';
 	scannedAt: string;
 	scanLocation?: string;
+	activityType?: 'check-in' | 'check-out' | 'redeem';
 }
 
 interface Event {
