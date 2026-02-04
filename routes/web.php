@@ -25,3 +25,5 @@ require __DIR__ . '/dashboard/system.php';
 require __DIR__ . '/dashboard/analytics.php';
 require __DIR__ . '/dashboard/role.php';
 require __DIR__ . '/dashboard/auth_cache.php';
+require __DIR__ . '/dashboard/scanner.php';
+require __DIR__ . '/dashboard/onground.php';
