@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Field,
-  FieldContent,
-  FieldError,
-  FieldLabel,
+	Field,
+	FieldContent,
+	FieldError,
+	FieldLabel,
 } from '@/components/ui/field';
 import { useForm } from '@inertiajs/vue3';
 import { store, update } from "@/actions/App/Http/Controllers/TicketTypeController";
@@ -14,63 +14,63 @@ import { defineAsyncComponent } from 'vue';
 import { Spinner } from '@/components/ui/spinner';
 
 const DateTimeRangePicker = defineAsyncComponent({
-  loader: () => import('@/components/common/DateTimeRangePicker.vue'),
-  loadingComponent: Spinner,
+	loader: () => import('@/components/common/DateTimeRangePicker.vue'),
+	loadingComponent: Spinner,
 });
 const QuillEditor = defineAsyncComponent({
-  loader: () => import('@/components/common/QuillEditor.vue'),
-  loadingComponent: Spinner,
+	loader: () => import('@/components/common/QuillEditor.vue'),
+	loadingComponent: Spinner,
 });
 const CurrencyInput = defineAsyncComponent({
-  loader: () => import('@/components/common/CurrencyInput.vue'),
-  loadingComponent: Spinner,
+	loader: () => import('@/components/common/CurrencyInput.vue'),
+	loadingComponent: Spinner,
 });
 const NumberInput = defineAsyncComponent({
-  loader: () => import('@/components/common/NumberInput.vue'),
-  loadingComponent: Spinner,
+	loader: () => import('@/components/common/NumberInput.vue'),
+	loadingComponent: Spinner,
 });
 import type { TicketType } from '@/types/dashboard';
 import { toast } from 'vue-sonner';
 
 const props = defineProps<{
-  initialData?: TicketType | null;
-  eventId: string | undefined;
+	initialData?: TicketType | null;
+	eventId: string | undefined;
 }>();
 
 const emit = defineEmits(['success']);
 
 const form = useForm({
-  event_id: props.eventId,
-  name: props.initialData?.name || '',
-  category: props.initialData?.category || '',
-  type: props.initialData?.type || 'PAID',
-  description: props.initialData?.description || '',
-  price: props.initialData?.price || 0,
-  quantity: props.initialData?.quantity || 0,
-  stock_adjustment: '',
-  start_sale_date: props.initialData?.start_sale_date || '',
-  end_sale_date: props.initialData?.end_sale_date || '',
-  is_hidden: props.initialData?.is_hidden || false,
-  inventory_status: props.initialData?.inventory_status ?? 0,
-  sort_order: props.initialData?.sort_order || 0,
+	event_id: props.eventId,
+	name: props.initialData?.name || '',
+	category: props.initialData?.category || '',
+	type: props.initialData?.type || 'PAID',
+	description: props.initialData?.description || '',
+	price: props.initialData?.price || 0,
+	quantity: props.initialData?.quantity || 0,
+	stock_adjustment: '',
+	start_sale_date: props.initialData?.start_sale_date || '',
+	end_sale_date: props.initialData?.end_sale_date || '',
+	is_hidden: props.initialData?.is_hidden || false,
+	inventory_status: props.initialData?.inventory_status ?? 0,
+	sort_order: props.initialData?.sort_order || 0,
 });
 
 const submit = () => {
-  if (props.initialData) {
-    form.submit(update(props.initialData.id), {
-      onSuccess: () => {
-        emit('success');
-        toast.success('Ticket type updated successfully');
-      },
-    })
-  } else {
-    form.submit(store(), {
-      onSuccess: () => {
-        emit('success');
-        toast.success('Ticket type created successfully');
-      },
-    })
-  }
+	if (props.initialData) {
+		form.submit(update(props.initialData.id), {
+			onSuccess: () => {
+				emit('success');
+				toast.success('Ticket type updated successfully');
+			},
+		})
+	} else {
+		form.submit(store(), {
+			onSuccess: () => {
+				emit('success');
+				toast.success('Ticket type created successfully');
+			},
+		})
+	}
 };
 </script>
 
@@ -132,7 +132,7 @@ const submit = () => {
             </div>
           </label>
 
-            <label
+          <label
             class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all hover:bg-neutral-50"
             :class="{ 'border-primary-500 bg-primary-50 ring-1 ring-primary-500': form.type === 'DONATION' }"
           >
@@ -142,12 +142,23 @@ const submit = () => {
               <div class="text-xs text-neutral-500">Harga nominal sukarela</div>
             </div>
           </label>
+
+          <label
+            class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all hover:bg-neutral-50"
+            :class="{ 'border-primary-500 bg-primary-50 ring-1 ring-primary-500': form.type === 'INVITE' }"
+          >
+            <input type="radio" v-model="form.type" value="INVITE" @change="form.price = 0" class="w-4 h-4 accent-primary-600">
+            <div>
+              <div class="font-medium text-sm">Invite / Khusus</div>
+              <div class="text-xs text-neutral-500">Gratis & Hidden (via Link)</div>
+            </div>
+          </label>
         </div>
       </div>
 
       <div class="space-y-2">
         <div class="grid grid-cols-2 gap-4">
-           <Field name="price" :invalid="!!form.errors.price" v-if="form.type !== 'FREE'">
+           <Field name="price" :invalid="!!form.errors.price" v-if="form.type !== 'FREE' && form.type !== 'INVITE'">
             <FieldLabel>{{ form.type === 'DONATION' ? 'Minimum Donation' : 'Price' }} <span class="text-red-500">*</span></FieldLabel>
             <FieldContent>
               <CurrencyInput v-model="form.price" />
