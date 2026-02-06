@@ -34,6 +34,7 @@ import {
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { computed } from 'vue';
+import SimpleScrollArea from '@/components/ui/simple-scroll-area/SimpleScrollArea.vue';
 
 const page = usePage();
 const { getSidebarMenu, hasCache, isExpired } = useAuthCache();
@@ -104,8 +105,10 @@ const footerNavItems: NavItem[] = [];
 			</SidebarMenu>
 		</SidebarHeader>
 
-		<SidebarContent>
-			<NavMain :groups="menuGroups" />
+		<SidebarContent class="overflow-hidden">
+			<SimpleScrollArea>
+				<NavMain :groups="menuGroups" />
+			</SimpleScrollArea>
 		</SidebarContent>
 
 		<SidebarFooter>
