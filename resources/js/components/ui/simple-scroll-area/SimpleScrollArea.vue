@@ -4,12 +4,12 @@ import SimpleBar from 'simplebar-vue';
 import 'simplebar-vue/dist/simplebar.min.css';
 
 interface Props {
-  class?: string;
-  options?: any;
+	class?: string;
+	options?: any;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  options: () => ({}),
+	options: () => ({}),
 });
 </script>
 
@@ -22,14 +22,14 @@ const props = withDefaults(defineProps<Props>(), {
 <style>
 /* Custom styling to match shadcn/ui aesthetic (optional) */
 .simplebar-scrollbar::before {
-  @apply bg-muted-foreground/50;
+	background-color: rgba(0, 0, 0, 0.377);
 }
 
 .simplebar-track.simplebar-vertical {
-  width: 10px;
+	width: 10px;
 }
 
 .simplebar-scrollbar.simplebar-visible:before {
-  opacity: 1;
+	opacity: 1;
 }
 </style>
