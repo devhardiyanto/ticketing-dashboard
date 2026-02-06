@@ -107,7 +107,6 @@ class EventController extends Controller
 		]);
 
 
-
 		if ($request->hasFile('image_url')) {
 			// Upload to S3/MinIO and store path only
 			$file = $request->file('image_url');
