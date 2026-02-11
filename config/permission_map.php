@@ -18,7 +18,7 @@ return [
         'user' => 'users',
         'role' => 'roles',
         'event' => 'events',
-        'ticket_type' => 'tickets',
+        'items' => 'tickets',
         'order' => 'orders',
         'organization' => 'organizations',
         'activity_log' => 'activity_logs',

@@ -14,7 +14,7 @@ Route::get('dashboard', function () {
 require __DIR__ . '/settings.php';
 
 require __DIR__ . '/dashboard/event.php';
-require __DIR__ . '/dashboard/ticket_type.php';
+require __DIR__ . '/dashboard/item.php';
 require __DIR__ . '/dashboard/upload.php';
 require __DIR__ . '/dashboard/banner.php';
 require __DIR__ . '/dashboard/platform_fee.php';

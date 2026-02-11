@@ -2,13 +2,13 @@
 
 namespace App\Repositories\Eloquent;
 
-use App\Models\Core\TicketType;
-use App\Repositories\Contracts\TicketTypeRepositoryInterface;
+use App\Models\Core\Item;
+use App\Repositories\Contracts\ItemRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 
-class TicketTypeRepository extends BaseRepository implements TicketTypeRepositoryInterface
+class ItemRepository extends BaseRepository implements ItemRepositoryInterface
 {
-    public function __construct(TicketType $model)
+    public function __construct(Item $model)
     {
         parent::__construct($model);
     }
@@ -25,16 +25,16 @@ class TicketTypeRepository extends BaseRepository implements TicketTypeRepositor
         if (isset($params['search']) && $params['search']) {
             $search = $params['search'];
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'ilike', "%{$search}%")
-                  ->orWhere('description', 'ilike', "%{$search}%")
-                  ->orWhere('category', 'ilike', "%{$search}%");
+                $q->where('title', 'ilike', "%{$search}%")
+                    ->orWhere('description', 'ilike', "%{$search}%")
+                    ->orWhere('category', 'ilike', "%{$search}%");
             });
         }
 
         // Sorting
         $sortColumn = $params['sort'] ?? 'sort_order';
         $sortOrder = $params['order'] ?? 'asc';
-        $allowedSorts = ['name', 'price', 'quantity', 'start_sale_date', 'end_sale_date', 'status', 'created_at', 'sort_order'];
+        $allowedSorts = ['title', 'price', 'quantity', 'start_sale_date', 'end_sale_date', 'status', 'gimmick_status', 'created_at', 'sort_order'];
 
         if (in_array($sortColumn, $allowedSorts)) {
             $query->orderBy($sortColumn, $sortOrder === 'asc' ? 'asc' : 'desc');
@@ -50,21 +50,21 @@ class TicketTypeRepository extends BaseRepository implements TicketTypeRepositor
         return $this->model->all();
     }
 
-    public function find(int|string $id): ?TicketType
+    public function find(int|string $id): ?Item
     {
         return $this->model->find($id);
     }
 
-    public function create(array $data): TicketType
+    public function create(array $data): Item
     {
         return $this->model->create($data);
     }
 
     public function update(int|string $id, array $data): bool
     {
-        $ticket_type = $this->find($id);
-        if ($ticket_type) {
-            return $ticket_type->update($data);
+        $item = $this->find($id);
+        if ($item) {
+            return $item->update($data);
         }
 
         return false;
@@ -72,9 +72,9 @@ class TicketTypeRepository extends BaseRepository implements TicketTypeRepositor
 
     public function delete(int|string $id): bool
     {
-        $ticket_type = $this->find($id);
-        if ($ticket_type) {
-            return $ticket_type->delete();
+        $item = $this->find($id);
+        if ($item) {
+            return $item->delete();
         }
 
         return false;
@@ -83,13 +83,13 @@ class TicketTypeRepository extends BaseRepository implements TicketTypeRepositor
     public function adjustStock($id, $amount)
     {
         return DB::transaction(function () use ($id, $amount) {
-            $ticket = TicketType::lockForUpdate()->find($id);
+            $item = Item::lockForUpdate()->find($id);
 
-            if ($amount < 0 && ($ticket->quantity_available + $amount < 0)) {
+            if ($amount < 0 && ($item->quantity_available + $amount < 0)) {
                 throw new \Exception('Not enough stock');
             }
 
-            return TicketType::where('id', $id)->update([
+            return Item::where('id', $id)->update([
                 'quantity' => DB::raw("quantity + $amount"),
                 'quantity_available' => DB::raw("quantity_available + $amount"),
             ]);

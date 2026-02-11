@@ -65,8 +65,8 @@ class Order extends Model
      */
     public function getEventAttribute()
     {
-        $item = $this->items()->with('ticketType.event')->first();
+        $item = $this->items()->with('item.event')->first();
 
-        return $item?->ticketType?->event;
+        return $item?->item?->event;
     }
 }

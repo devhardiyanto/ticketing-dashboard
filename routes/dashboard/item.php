@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\TicketTypeController as TicketType;
+use App\Http\Controllers\ItemController as Item;
 use Illuminate\Support\Facades\Route;
 
-$name = 'ticket_type';
-Route::controller(TicketType::class)
+$name = 'items';
+Route::controller(Item::class)
     ->middleware(['auth', 'verified'])
     ->prefix($name)
     ->group(function () use ($name) {

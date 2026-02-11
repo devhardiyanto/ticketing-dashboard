@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { MoreHorizontal, Pencil, Trash, Eye } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
-import type { TicketType } from '@/types/dashboard';
+import type { Item } from '@/types/dashboard';
 import BaseDialog from '@/components/common/BaseDialog.vue';
 import {
   AlertDialog,
@@ -21,11 +21,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { destroy } from '@/actions/App/Http/Controllers/TicketTypeController';
+import { destroy } from '@/actions/App/Http/Controllers/ItemController';
 import { toast } from 'vue-sonner';
 
 const props = defineProps<{
-  ticket_type: TicketType;
+  item: Item;
   canEdit?: boolean;
   canDelete?: boolean;
 }>();
@@ -36,11 +36,11 @@ const isViewOpen = ref(false);
 const isDeleteOpen = ref(false);
 
 const form = useForm({
-  id: props.ticket_type.id,
+  id: props.item.id,
 });
 
 const handleDelete = () => {
-  form.submit(destroy(props.ticket_type.id), {
+  form.submit(destroy(props.item.id), {
     preserveScroll: true,
     onSuccess: () => {
       emit('success');
@@ -61,7 +61,7 @@ const handleDelete = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem class="hover:cursor-pointer" v-if="canEdit" @click="$emit('edit', ticket_type)">
+        <DropdownMenuItem class="hover:cursor-pointer" v-if="canEdit" @click="$emit('edit', item)">
           <Pencil class="mr-2 h-4 w-4" />
           Edit
         </DropdownMenuItem>
@@ -78,15 +78,15 @@ const handleDelete = () => {
   </div>
 
   <!-- View Dialog -->
-  <BaseDialog v-model:open="isViewOpen" title="TicketType Details">
+  <BaseDialog v-model:open="isViewOpen" title="Item Details">
     <div class="grid gap-4 py-4">
       <div class="grid grid-cols-4 items-center gap-4">
-        <span class="font-bold">Name:</span>
-        <span class="col-span-3">{{ ticket_type.name }}</span>
+        <span class="font-bold">Title:</span>
+        <span class="col-span-3">{{ item.title }}</span>
       </div>
       <div class="grid grid-cols-4 items-center gap-4">
         <span class="font-bold">Description:</span>
-        <span class="col-span-3">{{ ticket_type.description || '-' }}</span>
+        <span class="col-span-3">{{ item.description || '-' }}</span>
       </div>
     </div>
   </BaseDialog>
@@ -97,8 +97,8 @@ const handleDelete = () => {
       <AlertDialogHeader>
         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
         <AlertDialogDescription>
-          This action cannot be undone. This will permanently delete the ticket_type
-          <strong>{{ ticket_type.name }}</strong> and remove it from our servers.
+          This action cannot be undone. This will permanently delete the item
+          <strong>{{ item.title }}</strong> and remove it from our servers.
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>

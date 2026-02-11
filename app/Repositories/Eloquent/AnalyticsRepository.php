@@ -13,8 +13,8 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
     {
         $query = Order::query()
             ->join('order_items', 'orders.id', '=', 'order_items.order_id')
-            ->join('ticket_types', 'order_items.ticket_type_id', '=', 'ticket_types.id')
-            ->where('ticket_types.event_id', $eventId)
+            ->join('items', 'order_items.item_id', '=', 'items.id')
+            ->where('items.event_id', $eventId)
             ->where('orders.status', 'paid');
 
         $totalSold = $query->sum('order_items.quantity');
@@ -24,8 +24,8 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
             ->whereIn('id', function ($q) use ($eventId) {
                 $q->select('order_id')
                     ->from('order_items')
-                    ->join('ticket_types', 'order_items.ticket_type_id', '=', 'ticket_types.id')
-                    ->where('ticket_types.event_id', $eventId);
+                    ->join('items', 'order_items.item_id', '=', 'items.id')
+                    ->where('items.event_id', $eventId);
             })
             ->where('status', 'paid')
             ->sum('platform_fee_amount');
@@ -41,15 +41,15 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
     {
         return OrderItem::query()
             ->select(
-                'ticket_types.name as ticket_name',
+                'items.title as ticket_name',
                 DB::raw('SUM(order_items.quantity) as total_sold'),
                 DB::raw('SUM(order_items.subtotal) as total_revenue')
             )
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->join('ticket_types', 'order_items.ticket_type_id', '=', 'ticket_types.id')
-            ->where('ticket_types.event_id', $eventId)
+            ->join('items', 'order_items.item_id', '=', 'items.id')
+            ->where('items.event_id', $eventId)
             ->where('orders.status', 'paid')
-            ->groupBy('ticket_types.name')
+            ->groupBy('items.title')
             ->orderByDesc('total_sold')
             ->get()
             ->toArray();
@@ -59,19 +59,19 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
     {
         $query = OrderItem::query()
             ->select(
-                'ticket_types.name as ticket_name',
+                'items.title as ticket_name',
                 DB::raw('SUM(order_items.quantity) as total_sold'),
                 DB::raw('SUM(order_items.subtotal) as total_revenue')
             )
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->join('ticket_types', 'order_items.ticket_type_id', '=', 'ticket_types.id')
-            ->where('ticket_types.event_id', $eventId)
+            ->join('items', 'order_items.item_id', '=', 'items.id')
+            ->where('items.event_id', $eventId)
             ->where('orders.status', 'paid')
-            ->groupBy('ticket_types.name');
+            ->groupBy('items.title');
 
         // Search support
         if (!empty($filters['search'])) {
-            $query->where('ticket_types.name', 'like', '%' . $filters['search'] . '%');
+            $query->where('items.title', 'like', '%' . $filters['search'] . '%');
         }
 
         // Sort support
@@ -98,8 +98,8 @@ class AnalyticsRepository implements AnalyticsRepositoryInterface
                 DB::raw('SUM(order_items.subtotal) as total_revenue')
             )
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->join('ticket_types', 'order_items.ticket_type_id', '=', 'ticket_types.id')
-            ->where('ticket_types.event_id', $eventId)
+            ->join('items', 'order_items.item_id', '=', 'items.id')
+            ->where('items.event_id', $eventId)
             ->where('orders.status', 'paid')
             ->groupBy(DB::raw('DATE(orders.created_at)'))
             ->orderBy('date', 'asc')

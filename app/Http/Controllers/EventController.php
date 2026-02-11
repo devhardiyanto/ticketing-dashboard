@@ -106,12 +106,12 @@ class EventController extends Controller
 			'terms' => 'nullable|string',
 		]);
 
-		if ($validated->fails()) {
-			return response()->json([
-				'status' => 'error',
-				'message' => $validated->errors()->first(),
-			]);
-		}
+		// if ($validated->fails()) {
+		// 	return response()->json([
+		// 		'status' => 'error',
+		// 		'message' => $validated->errors()->first(),
+		// 	]);
+		// }
 
 		if ($request->hasFile('image_url')) {
 			// Upload to S3/MinIO and store path only

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-class TicketType extends Model
+class Item extends Model
 {
     use LogsActivity;
 
@@ -18,7 +18,7 @@ class TicketType extends Model
 
     protected $connection = 'core_pgsql';
 
-    protected $table = 'ticket_types';
+    protected $table = 'items';
 
     protected $primaryKey = 'id';
 
@@ -28,7 +28,7 @@ class TicketType extends Model
 
     protected $fillable = [
         'event_id',
-        'name',
+        'title',
         'category',
         'description',
         'price',
@@ -38,8 +38,13 @@ class TicketType extends Model
         'start_sale_date',
         'end_sale_date',
         'status',
+        'gimmick_status',
         'is_hidden',
         'sort_order',
+        'is_invitation',
+        'is_form_field',
+        'item_type',
+        'parent_item_id',
     ];
 
     protected $casts = [
@@ -47,7 +52,10 @@ class TicketType extends Model
         'start_sale_date' => 'datetime',
         'end_sale_date' => 'datetime',
         'is_hidden' => 'boolean',
+        'is_invitation' => 'boolean',
+        'is_form_field' => 'boolean',
         'sort_order' => 'integer',
+        'gimmick_status' => 'integer',
     ];
 
     public function event(): BelongsTo

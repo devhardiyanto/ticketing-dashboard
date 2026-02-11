@@ -15,12 +15,12 @@ return [
 		],
 		[
 			'name' => 'tickets.manage',
-			'label' => 'Ticket Management',
+			'label' => 'Item Management',
 			'children' => [
-				['name' => 'tickets.create', 'label' => 'Create Tickets'],
-				['name' => 'tickets.read', 'label' => 'View Tickets'],
-				['name' => 'tickets.update', 'label' => 'Edit Tickets'],
-				['name' => 'tickets.delete', 'label' => 'Delete Tickets'],
+				['name' => 'tickets.create', 'label' => 'Create Items'],
+				['name' => 'tickets.read', 'label' => 'View Items'],
+				['name' => 'tickets.update', 'label' => 'Edit Items'],
+				['name' => 'tickets.delete', 'label' => 'Delete Items'],
 			]
 		],
 		[

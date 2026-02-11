@@ -1,13 +1,13 @@
 import { Button } from '@/components/ui/button';
-import type { TicketType } from '@/types/dashboard';
+import type { Item } from '@/types/dashboard';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { ArrowUpDown } from 'lucide-vue-next';
 import { usePage } from '@inertiajs/vue3';
 import { h } from 'vue';
-import TicketTypeActions from './TicketTypeActions.vue';
+import TicketTypeActions from './Actions.vue';
 
 export const useColumns = (
-	openEdit?: (ticketType: TicketType) => void,
+	openEdit?: (item: Item) => void,
 	onSuccess?: () => void,
 	options: { canEdit?: boolean; canDelete?: boolean } = {}
 ) => {
@@ -15,9 +15,9 @@ export const useColumns = (
 	const page = usePage();
 	const user = page.props.auth.user;
 
-	const columns: ColumnDef<TicketType>[] = [
+	const columns: ColumnDef<Item>[] = [
 		{
-			accessorKey: 'name',
+			accessorKey: 'title',
 			header: ({ column }) => {
 				return h(
 					Button,
@@ -26,7 +26,7 @@ export const useColumns = (
 						onClick: () =>
 							column.toggleSorting(column.getIsSorted() === 'asc'),
 					},
-					() => ['Name', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
+					() => ['Title', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })],
 				);
 			},
 		},
@@ -103,12 +103,12 @@ export const useColumns = (
 			enableSorting: false,
 			enableHiding: false,
 			cell: ({ row }) => {
-				const ticket_type = row.original;
+				const item = row.original;
 				return h(TicketTypeActions, {
-					ticket_type,
+					item,
 					canEdit,
 					canDelete,
-					onEdit: () => openEdit?.(ticket_type),
+					onEdit: () => openEdit?.(item),
 					onSuccess,
 				});
 			},
