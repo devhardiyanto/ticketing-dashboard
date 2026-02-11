@@ -13,6 +13,7 @@ export interface Order {
 	platform_fee_amount: number;
 	status: string;
 	payment_method: string | null;
+	payment_option: string | null;
 	event_name: string | null;
 	event_id: string | null;
 	created_at: string;
@@ -23,7 +24,7 @@ export interface Order {
 
 export interface OrderItem {
 	id: string;
-	ticket_type_id: string;
+	item_id: string;
 	quantity: number;
 	price_per_ticket: number;
 	subtotal: number;
@@ -31,8 +32,8 @@ export interface OrderItem {
 	attendee_name: string | null;
 	attendee_email: string | null;
 	status: string;
-	ticket_type?: {
-		name: string;
+	item?: {
+		title: string;
 		event?: {
 			name: string;
 		};
