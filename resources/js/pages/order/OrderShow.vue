@@ -7,47 +7,47 @@ import type { BreadcrumbItem } from '@/types';
 import orderRoutes from '@/routes/order';
 
 const props = defineProps<{
-	order: Order & { items: OrderItem[] };
+  order: Order & { items: OrderItem[] };
 }>();
 
 const statusColors: Record<string, string> = {
-	reserved: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-	pending_payment: 'bg-orange-100 text-orange-800 border-orange-300',
-	paid: 'bg-green-100 text-green-800 border-green-300',
-	cancelled: 'bg-red-100 text-red-800 border-red-300',
-	expired: 'bg-gray-100 text-gray-800 border-gray-300',
-	refunded: 'bg-purple-100 text-purple-800 border-purple-300',
+  reserved: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+  pending_payment: 'bg-orange-100 text-orange-800 border-orange-300',
+  paid: 'bg-green-100 text-green-800 border-green-300',
+  cancelled: 'bg-red-100 text-red-800 border-red-300',
+  expired: 'bg-gray-100 text-gray-800 border-gray-300',
+  refunded: 'bg-purple-100 text-purple-800 border-purple-300',
 };
 
 const formatCurrency = (amount: number | string) => {
-	const value = typeof amount === 'string' ? parseFloat(amount) : amount;
-	return new Intl.NumberFormat('id-ID', {
-		style: 'currency',
-		currency: 'IDR',
-		minimumFractionDigits: 0,
-	}).format(value);
+  const value = typeof amount === 'string' ? parseFloat(amount) : amount;
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+  }).format(value);
 };
 
 const formatDate = (dateStr: string | null) => {
-	if (!dateStr) return '-';
-	return new Date(dateStr).toLocaleDateString('id-ID', {
-		day: '2-digit',
-		month: 'long',
-		year: 'numeric',
-		hour: '2-digit',
-		minute: '2-digit',
-	});
+  if (!dateStr) return '-';
+  return new Date(dateStr).toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
-	{
-		title: 'Orders',
-		href: orderRoutes.index().url,
-	},
-	{
-		title: props.order.order_code,
-		href: orderRoutes.show(props.order.id).url,
-	},
+  {
+    title: 'Orders',
+    href: orderRoutes.index().url,
+  },
+  {
+    title: props.order.order_code,
+    href: orderRoutes.show(props.order.id).url,
+  },
 ];
 </script>
 
@@ -96,7 +96,9 @@ const breadcrumbs: BreadcrumbItem[] = [
               </div>
               <div>
                 <label class="text-sm font-medium text-gray-500">Payment Method</label>
-                <p class="text-sm capitalize">{{ props.order.payment_method || '-' }}</p>
+                <p class="text-sm capitalize">
+                  {{ props.order.payment_method ? (props.order.payment_option ? `${props.order.payment_method.replace('_', ' ')} - ${props.order.payment_option}` : props.order.payment_method.replace('_', ' ')) : '-' }}
+                </p>
               </div>
             </div>
           </div>
@@ -139,7 +141,7 @@ const breadcrumbs: BreadcrumbItem[] = [
               </thead>
               <tbody>
                 <tr v-for="item in props.order.items" :key="item.id" class="border-b hover:bg-gray-50">
-                  <td class="py-3 px-2">{{ item.ticket_type?.name || 'N/A' }}</td>
+                  <td class="py-3 px-2">{{ item.item?.title || 'N/A' }}</td>
                   <td class="py-3 px-2 text-center">{{ item.quantity }}</td>
                   <td class="py-3 px-2 text-right">{{ formatCurrency(item.price_per_ticket) }}</td>
                   <td class="py-3 px-2 text-right font-medium">{{ formatCurrency(item.subtotal) }}</td>
