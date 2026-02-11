@@ -103,7 +103,6 @@ const updateQuantity = (index: number, delta: number) => {
 };
 
 
-
 const subtotal = computed(() => {
 	return cart.value.reduce((sum, cartItem) => sum + (cartItem.item.price * cartItem.quantity), 0);
 });
