@@ -18,84 +18,84 @@ const page = usePage();
 const user = page.props.auth.user; // Assert as any to access roles
 
 const props = defineProps<{
-	organizations: any[];
-	roles: any[];
-	organization_model?: any; // The selected org context
-	availablePermissions: any;
+  organizations: any[];
+  roles: any[];
+  organization_model?: any; // The selected org context
+  availablePermissions: any;
 }>();
 
 const queryClient = useQueryClient();
 const orgId = computed(() => props.organization_model?.id);
 
 const breadcrumbs: BreadcrumbItem[] = [
-	{
-		title: 'Organization Users',
-		href: organization.user.index().url,
-	},
+  {
+    title: 'Organization Users',
+    href: organization.user.index().url,
+  },
 ];
 
 const isDialogOpen = ref(false);
 const selectedItem = ref<User | null>(null);
 
 const openCreate = () => {
-	selectedItem.value = null;
-	isDialogOpen.value = true;
+  selectedItem.value = null;
+  isDialogOpen.value = true;
 };
 
 const openEdit = (item: User) => {
-	selectedItem.value = item;
-	isDialogOpen.value = true;
+  selectedItem.value = item;
+  isDialogOpen.value = true;
 };
 
 const onActionSuccess = () => {
-	queryClient.invalidateQueries({ queryKey: ['org_users', orgId.value] });
-	isDialogOpen.value = false;
+  queryClient.invalidateQueries({ queryKey: ['org_users', orgId.value] });
+  isDialogOpen.value = false;
 };
 const { can } = usePermission();
 
 // Configure columns: Hide Organization column, Disable Delete
 const columns = useColumns({
-	hideOrganization: true,
-	canDelete: can('organizations.delete'),
-	canEdit: can('organizations.update')
+  hideOrganization: true,
+  canDelete: can('organizations.delete'),
+  canEdit: can('organizations.update')
 }, openEdit, onActionSuccess);
 
 // Combobox items
 const orgItems = computed(() => props.organizations.map(org => ({
-	id: org.id,
-	label: org.name,
-	name: org.name,
-	url: `/organization/users?organization_id=${org.id}`
+  id: org.id,
+  label: org.name,
+  name: org.name,
+  url: `/organization/users?organization_id=${org.id}`
 })));
 
 // Compute API URL with organization_id filter
 const apiUrl = computed(() => {
-	if (!orgId.value) return '';
-	return organization.user.data({ query: { organization_id: orgId.value } }).url;
+  if (!orgId.value) return '';
+  return organization.user.data({ query: { organization_id: orgId.value } }).url;
 });
 
 // Filter Roles Logic
 const filteredRoles = computed(() => {
-	const userRoles = user.roles?.map((r: any) => r.name) || [];
+  const userRoles = user.roles?.map((r: any) => r.name) || [];
 
-	// If current user is Org Admin, they can only create Org Staff
-	if (userRoles.includes(ROLES.ORG_ADMIN)) {
-		return props.roles.filter(r => r.name === ROLES.ORG_STAFF);
-	}
+  // If current user is Org Admin, they can only create Org Staff
+  if (userRoles.includes(ROLES.ORG_ADMIN)) {
+    return props.roles.filter(r => r.name === ROLES.ORG_STAFF);
+  }
 
-	// If Super Admin / Platform Staff, can create Org Admin or Org Staff
-	// Filter out Super Admin and Platform Staff from the list
-	return props.roles.filter(r =>
-		r.name !== ROLES.SUPER_ADMIN &&
-		r.name !== ROLES.PLATFORM_STAFF
-	);
+  // If Super Admin / Platform Staff, can create Org Admin or Org Staff
+  // Filter out Super Admin and Platform Staff from the list
+  return props.roles.filter(r =>
+    r.name !== ROLES.SUPER_ADMIN &&
+    r.name !== ROLES.PLATFORM_STAFF
+  );
 });
 
 onMounted(() => {
-	console.log(user.roles[0])
-	if (user.organization_id && (!orgId.value || orgId.value != user.organization_id)) {
-		router.get('/organization/users?organization_id=' + user.organization_id);
-	}
+
+  if (user.organization_id && (!orgId.value || orgId.value != user.organization_id)) {
+    router.get('/organization/users?organization_id=' + user.organization_id);
+  }
 })
 
 </script>
