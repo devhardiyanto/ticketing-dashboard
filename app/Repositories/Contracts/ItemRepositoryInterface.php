@@ -2,7 +2,7 @@
 
 namespace App\Repositories\Contracts;
 
-interface TicketTypeRepositoryInterface extends BaseRepositoryInterface
+interface ItemRepositoryInterface extends BaseRepositoryInterface
 {
     public function getAll(array $params = []): \Illuminate\Contracts\Pagination\LengthAwarePaginator;
 

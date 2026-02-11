@@ -3,23 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Repositories\Contracts\EventRepositoryInterface;
-use App\Repositories\Contracts\TicketTypeRepositoryInterface;
+use App\Repositories\Contracts\ItemRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class TicketTypeController extends Controller
+class ItemController extends Controller
 {
     protected $event_repo;
 
-    protected $ticket_type_repo;
+    protected $item_repo;
 
     public function __construct(
         EventRepositoryInterface $event_repo,
-        TicketTypeRepositoryInterface $ticket_type_repo
+        ItemRepositoryInterface $item_repo
     ) {
         $this->event_repo = $event_repo;
-        $this->ticket_type_repo = $ticket_type_repo;
+        $this->item_repo = $item_repo;
     }
 
     /**
@@ -27,12 +27,12 @@ class TicketTypeController extends Controller
      */
     public function index(Request $request)
     {
-        // Get only events that can have ticket types:
+        // Get only events that can have items:
         // 1. Standalone events (not a parent)
         // 2. Child events (have a parent)
         $events = $this->event_repo->all()->filter(function ($event) {
-            // Exclude parent events (they have children, ticket types go on children)
-            return ! $event->is_parent;
+            // Exclude parent events (they have children, items go on children)
+            return !$event->is_parent;
         })->values();
 
         $params = $request->only(['event_id']);
@@ -40,29 +40,29 @@ class TicketTypeController extends Controller
         $event = null;
         if (isset($params['event_id']) && $params['event_id']) {
             $event = $this->event_repo->find($params['event_id']);
-            if (! $event) {
+            if (!$event) {
                 abort(404, 'Event not found');
             }
-            // Validate that this event can have ticket types
+            // Validate that this event can have items
             if ($event->is_parent) {
-                abort(403, 'Parent events cannot have ticket types. Please select a child event.');
+                abort(403, 'Parent events cannot have items. Please select a child event.');
             }
         }
 
-        return Inertia::render('ticket_type/TicketTypeIndex', [
+        return Inertia::render('item/Index', [
             'events' => $events,
             'event_model' => $event,
         ]);
     }
 
     /**
-     * Get ticket types data for client-side DataTable
+     * Get items data for client-side DataTable
      */
     public function data(Request $request)
     {
         $params = $request->only(['event_id', 'search', 'limit', 'page', 'sort', 'order']);
 
-        if (! isset($params['event_id']) || ! $params['event_id']) {
+        if (!isset($params['event_id']) || !$params['event_id']) {
             return response()->json([
                 'data' => [],
                 'total' => 0,
@@ -74,22 +74,22 @@ class TicketTypeController extends Controller
             ]);
         }
 
-        $columns = ['id', 'name', 'start_sale_date', 'end_sale_date', 'quantity_available', 'quantity', 'price', 'category', 'is_hidden', 'sort_order', 'event_id', 'created_at'];
+        $columns = ['id', 'title', 'start_sale_date', 'end_sale_date', 'quantity_available', 'quantity', 'price', 'category', 'is_hidden', 'sort_order', 'event_id', 'created_at', 'status', 'gimmick_status', 'item_type'];
 
-        $ticket_types = $this->ticket_type_repo->getByEventId($params['event_id'], $params, $columns);
+        $items = $this->item_repo->getByEventId($params['event_id'], $params, $columns);
 
-        return response()->json($ticket_types);
+        return response()->json($items);
     }
 
     public function show(string $id)
     {
-        $ticket_type = $this->ticket_type_repo->find($id);
+        $item = $this->item_repo->find($id);
 
-        if (! $ticket_type) {
-            abort(404, 'Ticket Type not found');
+        if (!$item) {
+            abort(404, 'Item not found');
         }
 
-        return response()->json($ticket_type);
+        return response()->json($item);
     }
 
     /**
@@ -99,7 +99,7 @@ class TicketTypeController extends Controller
     {
         $data = $request->validate([
             'event_id' => 'required|string|exists:core_pgsql.events,id',
-            'name' => 'required|string|max:255',
+            'title' => 'required|string|max:255',
             'category' => 'nullable|string|max:100',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
@@ -107,28 +107,31 @@ class TicketTypeController extends Controller
             'start_sale_date' => 'nullable|date',
             'end_sale_date' => 'nullable|date|after_or_equal:start_sale_date',
             'is_hidden' => 'nullable|boolean',
-            'inventory_status' => 'nullable|integer|in:0,1,2',
+            'gimmick_status' => 'nullable|integer|in:0,1,2',
             'sort_order' => 'nullable|integer|min:0',
+            'is_invitation' => 'nullable|boolean',
+            'is_form_field' => 'nullable|boolean',
+            'item_type' => 'nullable|string|in:TICKET,PACKAGE,ADDON,MERCHANDISE',
         ]);
 
-        // Validate that this event can have ticket types (not a parent event)
+        // Validate that this event can have items (not a parent event)
         $event = $this->event_repo->find($data['event_id']);
         if ($event && $event->is_parent) {
-            abort(403, 'Parent events cannot have ticket types. Please select a child event.');
+            abort(403, 'Parent events cannot have items. Please select a child event.');
         }
 
-        if (! empty($data['start_sale_date'])) {
+        if (!empty($data['start_sale_date'])) {
             $data['start_sale_date'] = Carbon::parse($data['start_sale_date'])->format('Y-m-d H:i:s');
         }
-        if (! empty($data['end_sale_date'])) {
+        if (!empty($data['end_sale_date'])) {
             $data['end_sale_date'] = Carbon::parse($data['end_sale_date'])->format('Y-m-d H:i:s');
         }
 
         $data['quantity_available'] = $data['quantity'];
 
-        $this->ticket_type_repo->create($data);
+        $this->item_repo->create($data);
 
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Item created successfully.');
     }
 
     /**
@@ -137,7 +140,7 @@ class TicketTypeController extends Controller
     public function update(Request $request, string $id)
     {
         $data = $request->validate([
-            'name' => 'required|string|max:255',
+            'title' => 'required|string|max:255',
             'category' => 'nullable|string|max:100',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
@@ -145,14 +148,17 @@ class TicketTypeController extends Controller
             'end_sale_date' => 'nullable|date|after_or_equal:start_sale_date',
             'stock_adjustment' => 'nullable|integer|not_in:0',
             'is_hidden' => 'nullable|boolean',
-            'inventory_status' => 'nullable|integer|in:0,1,2',
+            'gimmick_status' => 'nullable|integer|in:0,1,2',
             'sort_order' => 'nullable|integer|min:0',
+            'is_invitation' => 'nullable|boolean',
+            'is_form_field' => 'nullable|boolean',
+            'item_type' => 'nullable|string|in:TICKET,PACKAGE,ADDON,MERCHANDISE',
         ]);
 
-        if (! empty($data['start_sale_date'])) {
+        if (!empty($data['start_sale_date'])) {
             $data['start_sale_date'] = Carbon::parse($data['start_sale_date'])->format('Y-m-d H:i:s');
         }
-        if (! empty($data['end_sale_date'])) {
+        if (!empty($data['end_sale_date'])) {
             $data['end_sale_date'] = Carbon::parse($data['end_sale_date'])->format('Y-m-d H:i:s');
         }
 
@@ -160,13 +166,13 @@ class TicketTypeController extends Controller
 
         unset($data['stock_adjustment']);
 
-        $this->ticket_type_repo->update($id, $data);
+        $this->item_repo->update($id, $data);
 
         if ($adjustment != 0) {
-            $this->ticket_type_repo->adjustStock($id, $adjustment);
+            $this->item_repo->adjustStock($id, $adjustment);
         }
 
-        return redirect()->back()->with('success', 'Ticket Type updated successfully.');
+        return redirect()->back()->with('success', 'Item updated successfully.');
     }
 
     /**
@@ -174,8 +180,8 @@ class TicketTypeController extends Controller
      */
     public function destroy(string $id)
     {
-        $this->ticket_type_repo->delete($id);
+        $this->item_repo->delete($id);
 
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Item deleted successfully.');
     }
 }

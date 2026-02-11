@@ -3,74 +3,74 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-	Field,
-	FieldContent,
-	FieldError,
-	FieldLabel,
+  Field,
+  FieldContent,
+  FieldError,
+  FieldLabel,
 } from '@/components/ui/field';
 import { useForm } from '@inertiajs/vue3';
-import { store, update } from "@/actions/App/Http/Controllers/TicketTypeController";
+import { store, update } from "@/actions/App/Http/Controllers/ItemController";
 import { defineAsyncComponent } from 'vue';
 import { Spinner } from '@/components/ui/spinner';
 
 const DateTimeRangePicker = defineAsyncComponent({
-	loader: () => import('@/components/common/DateTimeRangePicker.vue'),
-	loadingComponent: Spinner,
+  loader: () => import('@/components/common/DateTimeRangePicker.vue'),
+  loadingComponent: Spinner,
 });
 const QuillEditor = defineAsyncComponent({
-	loader: () => import('@/components/common/QuillEditor.vue'),
-	loadingComponent: Spinner,
+  loader: () => import('@/components/common/QuillEditor.vue'),
+  loadingComponent: Spinner,
 });
 const CurrencyInput = defineAsyncComponent({
-	loader: () => import('@/components/common/CurrencyInput.vue'),
-	loadingComponent: Spinner,
+  loader: () => import('@/components/common/CurrencyInput.vue'),
+  loadingComponent: Spinner,
 });
 const NumberInput = defineAsyncComponent({
-	loader: () => import('@/components/common/NumberInput.vue'),
-	loadingComponent: Spinner,
+  loader: () => import('@/components/common/NumberInput.vue'),
+  loadingComponent: Spinner,
 });
-import type { TicketType } from '@/types/dashboard';
+import type { Item } from '@/types/dashboard';
 import { toast } from 'vue-sonner';
 
 const props = defineProps<{
-	initialData?: TicketType | null;
-	eventId: string | undefined;
+  initialData?: Item | null;
+  eventId: string | undefined;
 }>();
 
 const emit = defineEmits(['success']);
 
 const form = useForm({
-	event_id: props.eventId,
-	name: props.initialData?.name || '',
-	category: props.initialData?.category || '',
-	type: props.initialData?.type || 'PAID',
-	description: props.initialData?.description || '',
-	price: props.initialData?.price || 0,
-	quantity: props.initialData?.quantity || 0,
-	stock_adjustment: '',
-	start_sale_date: props.initialData?.start_sale_date || '',
-	end_sale_date: props.initialData?.end_sale_date || '',
-	is_hidden: props.initialData?.is_hidden || false,
-	inventory_status: props.initialData?.inventory_status ?? 0,
-	sort_order: props.initialData?.sort_order || 0,
+  event_id: props.eventId,
+  title: props.initialData?.title || '',
+  category: props.initialData?.category || '',
+  type: props.initialData?.type || 'PAID',
+  description: props.initialData?.description || '',
+  price: props.initialData?.price || 0,
+  quantity: props.initialData?.quantity || 0,
+  stock_adjustment: '',
+  start_sale_date: props.initialData?.start_sale_date || '',
+  end_sale_date: props.initialData?.end_sale_date || '',
+  is_hidden: props.initialData?.is_hidden || false,
+  gimmick_status: props.initialData?.gimmick_status ?? 0,
+  sort_order: props.initialData?.sort_order || 0,
 });
 
 const submit = () => {
-	if (props.initialData) {
-		form.submit(update(props.initialData.id), {
-			onSuccess: () => {
-				emit('success');
-				toast.success('Ticket type updated successfully');
-			},
-		})
-	} else {
-		form.submit(store(), {
-			onSuccess: () => {
-				emit('success');
-				toast.success('Ticket type created successfully');
-			},
-		})
-	}
+  if (props.initialData) {
+    form.submit(update(props.initialData.id), {
+      onSuccess: () => {
+        emit('success');
+        toast.success('Ticket type updated successfully');
+      },
+    })
+  } else {
+    form.submit(store(), {
+      onSuccess: () => {
+        emit('success');
+        toast.success('Ticket type created successfully');
+      },
+    })
+  }
 };
 </script>
 
@@ -78,12 +78,12 @@ const submit = () => {
   <form @submit.prevent="submit" class="space-y-4">
     <div class="space-y-4">
       <div class="space-y-2">
-        <Field name="name" :invalid="!!form.errors.name">
-          <FieldLabel>Name <span class="text-red-500">*</span></FieldLabel>
+        <Field name="title" :invalid="!!form.errors.title">
+          <FieldLabel>Title <span class="text-red-500">*</span></FieldLabel>
           <FieldContent>
-              <Input v-model="form.name" />
+              <Input v-model="form.title" />
           </FieldContent>
-          <FieldError>{{ form.errors.name }}</FieldError>
+          <FieldError>{{ form.errors.title }}</FieldError>
         </Field>
       </div>
 
@@ -228,15 +228,15 @@ const submit = () => {
       </div>
 
       <div class="space-y-2">
-        <Field name="inventory_status" :invalid="!!form.errors.inventory_status">
+        <Field name="gimmick_status" :invalid="!!form.errors.gimmick_status">
           <FieldLabel>Status Ketersediaan (Gimmick)</FieldLabel>
           <FieldContent>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <label
                 class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all hover:bg-neutral-50"
-                :class="{ 'border-primary-500 bg-primary-50 ring-1 ring-primary-500': form.inventory_status === 0 }"
+                :class="{ 'border-primary-500 bg-primary-50 ring-1 ring-primary-500': form.gimmick_status === 0 }"
               >
-                <input type="radio" v-model="form.inventory_status" :value="0" class="w-4 h-4 accent-primary-600">
+                <input type="radio" v-model="form.gimmick_status" :value="0" class="w-4 h-4 accent-primary-600">
                 <div>
                   <div class="font-medium text-sm">Default</div>
                   <div class="text-xs text-neutral-500">Sesuai stok asli</div>
@@ -245,9 +245,9 @@ const submit = () => {
 
               <label
                 class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all hover:bg-neutral-50"
-                :class="{ 'border-warning-500 bg-warning-50 ring-1 ring-warning-500': form.inventory_status === 1 }"
+                :class="{ 'border-warning-500 bg-warning-50 ring-1 ring-warning-500': form.gimmick_status === 1 }"
               >
-                <input type="radio" v-model="form.inventory_status" :value="1" class="w-4 h-4 accent-warning-600">
+                <input type="radio" v-model="form.gimmick_status" :value="1" class="w-4 h-4 accent-warning-600">
                 <div>
                   <div class="font-medium text-sm">Hampir Habis</div>
                   <div class="text-xs text-neutral-500">Tampilkan badge "Hampir Habis"</div>
@@ -256,9 +256,9 @@ const submit = () => {
 
               <label
                 class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all hover:bg-neutral-50"
-                :class="{ 'border-red-500 bg-red-50 ring-1 ring-red-500': form.inventory_status === 2 }"
+                :class="{ 'border-red-500 bg-red-50 ring-1 ring-red-500': form.gimmick_status === 2 }"
               >
-                <input type="radio" v-model="form.inventory_status" :value="2" class="w-4 h-4 accent-red-600">
+                <input type="radio" v-model="form.gimmick_status" :value="2" class="w-4 h-4 accent-red-600">
                 <div>
                   <div class="font-medium text-sm">Sold Out</div>
                   <div class="text-xs text-neutral-500">Paksa tampil sebagai habis</div>
@@ -266,7 +266,7 @@ const submit = () => {
               </label>
             </div>
           </FieldContent>
-          <FieldError>{{ form.errors.inventory_status }}</FieldError>
+          <FieldError>{{ form.errors.gimmick_status }}</FieldError>
         </Field>
       </div>
     </div>

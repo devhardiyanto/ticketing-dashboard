@@ -24,7 +24,7 @@ class AnalyticsService
 	{
 		$query = Event::query()
 			->select('id', 'name')
-			->has('ticketTypes') // Only events with ticket types
+			->has('items') // Only events with items
 			->orderBy('created_at', 'desc');
 
 

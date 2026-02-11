@@ -6,6 +6,7 @@ export interface Event {
 	image_url?: string | null;
 	image_signed_url?: string | null; // Signed URL for display
 	venue_map_url?: string | null;
+	terms?: string;
 	name: string;
 	slug: string;
 	description?: string;

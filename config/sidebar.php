@@ -46,7 +46,7 @@ return [
 					'permission' => 'organizations.view_any',
 				],
 				[
-					'title' => 'User Assignment', // Assign users to specific orgs
+					'title' => 'Ultra User', // Assign users to specific orgs
 					'url' => 'organization.user.index',
 					'icon' => 'UserPlus',
 					'permission' => 'organizations.users.manage',
@@ -63,8 +63,9 @@ return [
 					'permission' => 'events.read',
 				],
 				[
-					'title' => 'Ticket Types',
-					'url' => 'ticket_type.index',
+					'title' => 'Items',
+					'url' => 'items.index',
+
 					'icon' => 'Ticket',
 					'permission' => 'tickets.read',
 				],

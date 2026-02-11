@@ -23,9 +23,9 @@ class AttendeeController extends Controller
         $status = $validated['status'] ?? null;
 
         $query = \App\Models\Core\OrderItem::query()
-            ->with(['order', 'ticketType.event'])
+            ->with(['order', 'item.event'])
             ->when($eventId, function ($q, $id) {
-                $q->whereHas('ticketType', function ($q) use ($id) {
+                $q->whereHas('item', function ($q) use ($id) {
                     $q->where('event_id', $id);
                 });
             })
@@ -61,12 +61,12 @@ class AttendeeController extends Controller
 
     public function checkIn(Request $request, string $id)
     {
-        $item = \App\Models\Core\OrderItem::with('ticketType')->findOrFail($id);
+        $item = \App\Models\Core\OrderItem::with('item')->findOrFail($id);
 
         $item->update(['status' => 'checkedin']);
 
         // Broadcast event
-        $eventId = $item->ticketType->event_id ?? null;
+        $eventId = $item->item->event_id ?? null;
 
         if ($eventId) {
             event(new \App\Events\TicketScanned(
@@ -74,7 +74,7 @@ class AttendeeController extends Controller
                 ticketCode: $item->ticket_code,
                 status: 'success',
                 attendeeName: $item->attendee_name,
-                ticketType: $item->ticketType->name ?? 'Unknown',
+                item: $item->item->title ?? 'Unknown',
                 scannedAt: now()->toIso8601String(),
                 reason: 'Manual Check-in'
             ));

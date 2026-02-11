@@ -31,9 +31,9 @@ class OngroundSaleController extends Controller
         $status = $validated['status'] ?? null;
 
         $query = \App\Models\Core\Order::query()
-            ->with(['items.ticketType.event', 'user']) // user for 'Created By'
+            ->with(['items.item.event', 'user']) // user for 'Created By'
             ->when($eventId, function ($q, $id) {
-                $q->whereHas('items.ticketType', function ($q) use ($id) {
+                $q->whereHas('items.item', function ($q) use ($id) {
                     $q->where('event_id', $id);
                 });
             })
@@ -82,12 +82,12 @@ class OngroundSaleController extends Controller
     }
 
     /**
-     * Fetch ticket types for an event.
+     * Fetch items for an event.
      */
-    public function ticketTypes($eventId)
+    public function items($eventId)
     {
         try {
-            $response = Http::get("{$this->coreApiUrl}/api/v1/events/{$eventId}/ots/ticket-types");
+            $response = Http::get("{$this->coreApiUrl}/api/v1/events/{$eventId}/ots/items");
             return response()->json($response->json(), $response->status());
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
@@ -102,7 +102,7 @@ class OngroundSaleController extends Controller
         $validated = $request->validate([
             'eventId' => 'required|string',
             'items' => 'required|array|min:1',
-            'items.*.ticketTypeId' => 'required|string',
+            'items.*.itemId' => 'required|string',
             'items.*.quantity' => 'required|integer|min:1',
             'guestName' => 'required|string',
             'guestEmail' => 'required|email',

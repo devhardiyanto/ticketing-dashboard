@@ -66,8 +66,8 @@ class Event extends Model
         return $this->belongsTo(Organization::class, 'organization_id')->select('id', 'name');
     }
 
-    public function ticketTypes(): HasMany
+    public function items(): HasMany
     {
-        return $this->hasMany(TicketType::class, 'event_id');
+        return $this->hasMany(Item::class, 'event_id');
     }
 }

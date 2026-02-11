@@ -1,7 +1,7 @@
-export interface TicketType {
+export interface Item {
 	id: string,
 	event_id: string,
-	name: string,
+	title: string,
 	description: string,
 	price: number,
 	quantity: number,
@@ -15,5 +15,5 @@ export interface TicketType {
 	type?: "PAID" | "FREE" | "DONATION" | "INVITE",
 	is_hidden?: boolean,
 	sort_order?: number,
-	inventory_status?: number,
+	gimmick_status?: number,
 }

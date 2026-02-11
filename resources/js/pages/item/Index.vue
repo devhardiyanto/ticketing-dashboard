@@ -6,19 +6,19 @@ import { useColumns } from './columns';
 import { Spinner } from '@/components/ui/spinner';
 import { defineAsyncComponent } from 'vue';
 
-const TicketTypeForm = defineAsyncComponent({
-	loader: () => import('./TicketTypeForm.vue'),
+const ItemForm = defineAsyncComponent({
+	loader: () => import('./Form.vue'),
 	loadingComponent: Spinner,
 });
 
 import Combobox from '@/components/common/Combobox.vue';
 import { computed, ref } from 'vue';
 
-import type { TicketType, Event } from '@/types/dashboard';
+import type { Item, Event } from '@/types/dashboard';
 import { BreadcrumbItem } from '@/types';
 
 import event from '@/routes/event';
-import ticket_type from '@/routes/ticket_type';
+import item from '@/routes/items';
 import { useQueryClient } from '@tanstack/vue-query';
 import axios from 'axios';
 import { toast } from 'vue-sonner';
@@ -38,17 +38,17 @@ const breadcrumbs: BreadcrumbItem[] = [
 	},
 	{
 		title: 'Ticket Types',
-		href: ticket_type.index().url,
+		href: item.index().url,
 	}
 ];
 
 const eventItems = computed(() => props.events.map(evt => ({
 	...evt,
-	url: `/ticket_type?event_id=${evt.id}`
+	url: `/items?event_id=${evt.id}`
 })));
 
 const isDialogOpen = ref(false);
-const selectedItem = ref<TicketType | null>(null);
+const selectedItem = ref<Item | null>(null);
 const isLoadingEdit = ref(false);
 
 const openCreate = () => {
@@ -56,22 +56,22 @@ const openCreate = () => {
 	isDialogOpen.value = true;
 };
 
-const openEdit = async (item: TicketType) => {
+const openEdit = async (selected: Item) => {
 	try {
-        isLoadingEdit.value = true;
-        const response = await axios.get(ticket_type.show(item.id).url);
-        selectedItem.value = response.data;
-        isDialogOpen.value = true;
-    } catch (error) {
-        toast.error('Failed to load ticket type data');
-        console.error(error);
-    } finally {
-        isLoadingEdit.value = false;
-    }
+		isLoadingEdit.value = true;
+		const response = await axios.get(item.show(selected.id).url);
+		selectedItem.value = response.data;
+		isDialogOpen.value = true;
+	} catch (error) {
+		toast.error('Failed to load item data');
+		console.error(error);
+	} finally {
+		isLoadingEdit.value = false;
+	}
 };
 
 const onActionSuccess = () => {
-	queryClient.invalidateQueries({ queryKey: ['ticket_types', event_id.value] });
+	queryClient.invalidateQueries({ queryKey: ['items', event_id.value] });
 	isDialogOpen.value = false;
 };
 
@@ -86,7 +86,7 @@ const columns = useColumns(openEdit, onActionSuccess, {
 // Compute API URL with event_id filter
 const apiUrl = computed(() => {
 	if (!event_id.value) return '';
-	return ticket_type.data({ query: { event_id: event_id.value } }).url;
+	return item.data({ query: { event_id: event_id.value } }).url;
 });
 </script>
 
@@ -110,16 +110,16 @@ const apiUrl = computed(() => {
 			v-if="event_model && apiUrl"
       :columns="columns"
       :on-create="can('tickets.create') ? openCreate : undefined"
-	    create-label="Add Ticket Type"
+	    create-label="Add Item"
       :api-url="apiUrl"
-      :query-key="['ticket_types', event_id]"
+      :query-key="['items', event_id]"
     />
 
     <BaseDialog
       v-model:open="isDialogOpen"
-      :title="selectedItem ? 'Edit TicketType' : 'Create TicketType'"
+      :title="selectedItem ? 'Edit Item' : 'Create Item'"
     >
-      <TicketTypeForm
+      <ItemForm
         :initial-data="selectedItem"
         :event-id="props.event_model?.id"
         @success="onActionSuccess"
