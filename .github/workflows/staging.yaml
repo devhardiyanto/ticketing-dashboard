@@ -27,8 +27,6 @@ jobs:
       - name: Download file
         run: |
           mc cp pentastix/environment/dashboard/staging/.env .
-          pwd
-
       - name: npm install and build
         run: |
           composer update
