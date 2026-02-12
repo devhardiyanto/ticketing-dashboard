@@ -13,31 +13,31 @@ import { toast } from 'vue-sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 interface Event {
-    id: string;
-    name: string;
+	id: string;
+	name: string;
 }
 
 interface Item {
-    id: string;
-    title: string;
-    price: number;
-    description?: string;
-    quantity?: number;
+	id: string;
+	title: string;
+	price: number;
+	description?: string;
+	quantity?: number;
 }
 
 interface CartItem {
-    item: Item;
-    quantity: number;
+	item: Item;
+	quantity: number;
 }
 
 defineProps<{
-    events: Event[];
+	events: Event[];
 }>();
 
 const breadcrumbs = [
-    { title: 'Onground', href: '#' },
-    { title: 'Sales', href: '/onground/sales' },
-    { title: 'POS', href: '/onground/sales/pos' },
+	{ title: 'Onground', href: '#' },
+	{ title: 'Sales', href: '/onground/sales' },
+	{ title: 'POS', href: '/onground/sales/pos' },
 ];
 
 const selectedEventId = ref<string>('');
@@ -47,9 +47,9 @@ const isLoadingItems = ref(false);
 const isProcessing = ref(false);
 
 const guest = ref({
-    name: '',
-    email: '',
-    phone: '',
+	name: '',
+	email: '',
+	phone: '',
 });
 
 const paymentMethod = ref('cash');
@@ -58,124 +58,123 @@ const lastOrder = ref<any>(null);
 
 // Fetch ticket types when event changes
 watch(selectedEventId, async (newId) => {
-    if (!newId) {
-        items.value = [];
-        return;
-    }
+	if (!newId) {
+		items.value = [];
+		return;
+	}
 
-    isLoadingItems.value = true;
-    try {
-        const response = await fetch(`/onground/events/${newId}/items`);
-        const data = await response.json();
-        if (data.success) {
-            items.value = data.data;
-        } else {
-            toast.error('Failed to load items');
-        }
-    } catch (error) {
-        console.error(error);
-        toast.error('Network error loading items');
-    } finally {
-        isLoadingItems.value = false;
-    }
+	isLoadingItems.value = true;
+	try {
+		const response = await fetch(`/onground/events/${newId}/items`);
+		const data = await response.json();
+		if (data.success) {
+			items.value = data.data;
+		} else {
+			toast.error('Failed to load items');
+		}
+	} catch (error) {
+		console.error(error);
+		toast.error('Network error loading items');
+	} finally {
+		isLoadingItems.value = false;
+	}
 
-    // Clear cart when event changes
-    cart.value = [];
+	// Clear cart when event changes
+	cart.value = [];
 });
 
 const addToCart = (product: Item) => {
-    const existing = cart.value.find(cartItem => cartItem.item.id === product.id);
-    if (existing) {
-        existing.quantity++;
-    } else {
-        cart.value.push({ item: product, quantity: 1 });
-    }
+	const existing = cart.value.find(cartItem => cartItem.item.id === product.id);
+	if (existing) {
+		existing.quantity++;
+	} else {
+		cart.value.push({ item: product, quantity: 1 });
+	}
 };
 
 const updateQuantity = (index: number, delta: number) => {
-    const item = cart.value[index];
-    const newQty = item.quantity + delta;
-    if (newQty <= 0) {
-        cart.value.splice(index, 1);
-    } else {
-        item.quantity = newQty;
-    }
+	const item = cart.value[index];
+	const newQty = item.quantity + delta;
+	if (newQty <= 0) {
+		cart.value.splice(index, 1);
+	} else {
+		item.quantity = newQty;
+	}
 };
 
 
-
 const subtotal = computed(() => {
-    return cart.value.reduce((sum, cartItem) => sum + (cartItem.item.price * cartItem.quantity), 0);
+	return cart.value.reduce((sum, cartItem) => sum + (cartItem.item.price * cartItem.quantity), 0);
 });
 
 const total = computed(() => subtotal.value); // Add tax/fees if needed
 
 const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-    }).format(amount);
+	return new Intl.NumberFormat('id-ID', {
+		style: 'currency',
+		currency: 'IDR',
+		minimumFractionDigits: 0,
+	}).format(amount);
 };
 
 const canCheckout = computed(() => {
-    return cart.value.length > 0 &&
-        guest.value.name.trim().length > 0 &&
-        guest.value.email.trim().length > 0 &&
-        selectedEventId.value;
+	return cart.value.length > 0 &&
+		guest.value.name.trim().length > 0 &&
+		guest.value.email.trim().length > 0 &&
+		selectedEventId.value;
 });
 
 const processCheckout = async () => {
-    if (!canCheckout.value) return;
+	if (!canCheckout.value) return;
 
-    isProcessing.value = true;
-    try {
-        const response = await fetch('/onground/sales', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-            },
-            body: JSON.stringify({
-                eventId: selectedEventId.value,
-                items: cart.value.map(cartItem => ({
-                    itemId: cartItem.item.id,
-                    quantity: cartItem.quantity
-                })),
-                guestName: guest.value.name,
-                guestEmail: guest.value.email,
-                guestPhoneNumber: guest.value.phone,
-                paymentMethod: paymentMethod.value
-            })
-        });
+	isProcessing.value = true;
+	try {
+		const response = await fetch('/onground/sales', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+			},
+			body: JSON.stringify({
+				eventId: selectedEventId.value,
+				items: cart.value.map(cartItem => ({
+					itemId: cartItem.item.id,
+					quantity: cartItem.quantity
+				})),
+				guestName: guest.value.name,
+				guestEmail: guest.value.email,
+				guestPhoneNumber: guest.value.phone,
+				paymentMethod: paymentMethod.value
+			})
+		});
 
-        const data = await response.json();
+		const data = await response.json();
 
-        if (data.success) {
-            lastOrder.value = data.order;
-            showSuccessDialog.value = true;
-            // Reset form
-            cart.value = [];
-            guest.value = { name: '', email: '', phone: '' };
-        } else {
-            toast.error(data.message || 'Checkout failed');
-        }
-    } catch (error) {
-        console.error(error);
-        toast.error('An error occurred during checkout');
-    } finally {
-        isProcessing.value = false;
-    }
+		if (data.success) {
+			lastOrder.value = data.order;
+			showSuccessDialog.value = true;
+			// Reset form
+			cart.value = [];
+			guest.value = { name: '', email: '', phone: '' };
+		} else {
+			toast.error(data.message || 'Checkout failed');
+		}
+	} catch (error) {
+		console.error(error);
+		toast.error('An error occurred during checkout');
+	} finally {
+		isProcessing.value = false;
+	}
 };
 
 const printTicket = () => {
-    // Placeholder for printing logic
-    window.print();
+	// Placeholder for printing logic
+	window.print();
 };
 
 const startNewSale = () => {
-    showSuccessDialog.value = false;
-    lastOrder.value = null;
+	showSuccessDialog.value = false;
+	lastOrder.value = null;
 };
 </script>
 
@@ -248,7 +247,6 @@ const startNewSale = () => {
                         Current Order
                     </CardTitle>
                 </CardHeader>
-
                 <CardContent class="flex-1 overflow-y-auto">
                     <div v-if="cart.length === 0" class="text-center py-8 text-muted-foreground">
                         Cart is empty
@@ -346,14 +344,12 @@ const startNewSale = () => {
                         Order #{{ lastOrder?.orderCode }} has been successfully created and paid.
                     </DialogDescription>
                 </DialogHeader>
-
                 <div class="space-y-4 py-4">
                     <div class="rounded-lg border p-4 bg-muted/50 text-center">
                         <div class="text-sm text-muted-foreground">Guest</div>
                         <div class="font-medium">{{ lastOrder?.guestName }}</div>
                         <div class="text-xs text-muted-foreground">{{ lastOrder?.guestEmail }}</div>
                     </div>
-
                     <div class="flex justify-center">
                         <!-- In real app, render QR codes here or provide link -->
                         <div class="text-center">

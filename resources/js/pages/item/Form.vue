@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Field,
-  FieldContent,
-  FieldError,
-  FieldLabel,
+	Field,
+	FieldContent,
+	FieldError,
+	FieldLabel,
 } from '@/components/ui/field';
 import { useForm } from '@inertiajs/vue3';
 import { store, update } from "@/actions/App/Http/Controllers/ItemController";
@@ -14,63 +14,63 @@ import { defineAsyncComponent } from 'vue';
 import { Spinner } from '@/components/ui/spinner';
 
 const DateTimeRangePicker = defineAsyncComponent({
-  loader: () => import('@/components/common/DateTimeRangePicker.vue'),
-  loadingComponent: Spinner,
+	loader: () => import('@/components/common/DateTimeRangePicker.vue'),
+	loadingComponent: Spinner,
 });
 const QuillEditor = defineAsyncComponent({
-  loader: () => import('@/components/common/QuillEditor.vue'),
-  loadingComponent: Spinner,
+	loader: () => import('@/components/common/QuillEditor.vue'),
+	loadingComponent: Spinner,
 });
 const CurrencyInput = defineAsyncComponent({
-  loader: () => import('@/components/common/CurrencyInput.vue'),
-  loadingComponent: Spinner,
+	loader: () => import('@/components/common/CurrencyInput.vue'),
+	loadingComponent: Spinner,
 });
 const NumberInput = defineAsyncComponent({
-  loader: () => import('@/components/common/NumberInput.vue'),
-  loadingComponent: Spinner,
+	loader: () => import('@/components/common/NumberInput.vue'),
+	loadingComponent: Spinner,
 });
 import type { Item } from '@/types/dashboard';
 import { toast } from 'vue-sonner';
 
 const props = defineProps<{
-  initialData?: Item | null;
-  eventId: string | undefined;
+	initialData?: Item | null;
+	eventId: string | undefined;
 }>();
 
 const emit = defineEmits(['success']);
 
 const form = useForm({
-  event_id: props.eventId,
-  title: props.initialData?.title || '',
-  category: props.initialData?.category || '',
-  type: props.initialData?.type || 'PAID',
-  description: props.initialData?.description || '',
-  price: props.initialData?.price || 0,
-  quantity: props.initialData?.quantity || 0,
-  stock_adjustment: '',
-  start_sale_date: props.initialData?.start_sale_date || '',
-  end_sale_date: props.initialData?.end_sale_date || '',
-  is_hidden: props.initialData?.is_hidden || false,
-  gimmick_status: props.initialData?.gimmick_status ?? 0,
-  sort_order: props.initialData?.sort_order || 0,
+	event_id: props.eventId,
+	title: props.initialData?.title || '',
+	category: props.initialData?.category || '',
+	type: props.initialData?.type || 'PAID',
+	description: props.initialData?.description || '',
+	price: props.initialData?.price || 0,
+	quantity: props.initialData?.quantity || 0,
+	stock_adjustment: '',
+	start_sale_date: props.initialData?.start_sale_date || '',
+	end_sale_date: props.initialData?.end_sale_date || '',
+	is_hidden: props.initialData?.is_hidden || false,
+	gimmick_status: props.initialData?.gimmick_status ?? 0,
+	sort_order: props.initialData?.sort_order || 0,
 });
 
 const submit = () => {
-  if (props.initialData) {
-    form.submit(update(props.initialData.id), {
-      onSuccess: () => {
-        emit('success');
-        toast.success('Ticket type updated successfully');
-      },
-    })
-  } else {
-    form.submit(store(), {
-      onSuccess: () => {
-        emit('success');
-        toast.success('Ticket type created successfully');
-      },
-    })
-  }
+	if (props.initialData) {
+		form.submit(update(props.initialData.id), {
+			onSuccess: () => {
+				emit('success');
+				toast.success('Ticket type updated successfully');
+			},
+		})
+	} else {
+		form.submit(store(), {
+			onSuccess: () => {
+				emit('success');
+				toast.success('Ticket type created successfully');
+			},
+		})
+	}
 };
 </script>
 
