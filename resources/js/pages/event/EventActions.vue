@@ -36,10 +36,10 @@ const isViewOpen = ref(false);
 const isDeleteOpen = ref(false);
 const isTicketTypeOpen = ref(false);
 
-import ticket_type from '@/routes/ticket_type';
+import items from '@/routes/items';
 
 const handleChildSelect = (childId: string) => {
-	router.visit(ticket_type.index({ query: { event_id: childId } }).url);
+	router.visit(items.index({ query: { event_id: childId } }).url);
 };
 
 const form = useForm({
@@ -83,7 +83,7 @@ const handleDelete = () => {
 					</Link>
         </DropdownMenuItem>
         <DropdownMenuItem as-child class="hover:cursor-pointer" v-if="!event.is_parent && canEdit">
-					<Link :href="`/ticket_type?event_id=${event.id}`">
+					<Link :href="`/items?event_id=${event.id}`">
 						<Ticket class="mr-2 h-4 w-4" />
 						Ticket Settings
 					</Link>
