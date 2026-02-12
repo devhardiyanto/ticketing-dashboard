@@ -32,15 +32,14 @@ RUN composer install --no-interaction --no-scripts --prefer-dist
 # Copy package files for frontend build
 COPY package.json package-lock.json* ./
 
+# Setup Laravel environment for build (required for wayfinder plugin)
+RUN cp .env .env && php artisan key:generate
 
 # Install node dependencies
 RUN npm install
 
 # Copy the rest of the application
 COPY . .
-
-# Setup Laravel environment for build (required for wayfinder plugin)
-RUN cp .env .env && php artisan key:generate
 
 # Build frontend assets
 RUN npm run build
