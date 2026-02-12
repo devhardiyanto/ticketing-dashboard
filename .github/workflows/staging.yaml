@@ -7,11 +7,26 @@ on:
 jobs:
   Build_and_Push:
     runs-on: ubuntu-latest
-    environment: DOCKERHUB
+    environment: SUPPORT
 
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install MinIO Client
+        run: |
+          curl -O https://dl.min.io/client/mc/release/linux-amd64/mc
+          chmod +x mc
+          sudo mv mc /usr/local/bin/
+
+      - name: Configure MinIO
+        run: |
+          mc alias set pentastix ${{ secrets.MINIO_ENDPOINT }} \
+          ${{ secrets.MINIO_ACCESS_KEY }} \
+          ${{ secrets.MINIO_SECRET_KEY }}
+
+      - name: Download file
+        run: |
+          mc cp pentastix/environment/dashboard/staging/.env .
       - name: npm install and build
         run: |
           composer update
