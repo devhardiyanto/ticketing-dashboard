@@ -32,7 +32,6 @@ RUN composer install --no-interaction --no-scripts --prefer-dist
 # Copy package files for frontend build
 COPY package.json package-lock.json* ./
 
-
 # Install node dependencies
 RUN npm install
 
