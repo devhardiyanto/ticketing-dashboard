@@ -52,3 +52,5 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
             /home/ubuntu/event-dashboard/deploy.sh
+
+##test
