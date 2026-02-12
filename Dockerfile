@@ -39,7 +39,7 @@ RUN npm install
 COPY . .
 
 # Setup Laravel environment for build (required for wayfinder plugin)
-RUN cp .env .env && php artisan key:generate
+RUN php artisan key:generate
 
 # Build frontend assets
 RUN npm run build
