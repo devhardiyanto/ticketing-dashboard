@@ -12,6 +12,7 @@ export interface Item {
 	created_at: string,
 	updated_at: string,
 	category?: string,
+	color?: string,
 	type?: "PAID" | "FREE" | "DONATION" | "INVITE",
 	is_hidden?: boolean,
 	sort_order?: number,

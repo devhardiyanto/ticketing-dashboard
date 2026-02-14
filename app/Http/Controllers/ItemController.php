@@ -101,6 +101,7 @@ class ItemController extends Controller
             'event_id' => 'required|string|exists:core_pgsql.events,id',
             'title' => 'required|string|max:255',
             'category' => 'nullable|string|max:100',
+            'color' => ['nullable', 'string', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'quantity' => 'required|integer|min:0',
@@ -142,6 +143,7 @@ class ItemController extends Controller
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'category' => 'nullable|string|max:100',
+            'color' => ['nullable', 'string', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'start_sale_date' => 'nullable|date',
