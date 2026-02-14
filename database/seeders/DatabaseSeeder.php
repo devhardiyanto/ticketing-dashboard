@@ -119,15 +119,59 @@ class DatabaseSeeder extends Seeder
     }
 
     /**
+     * Seed Internal Users module only.
+     */
+    public static function seedInternalUsersModule(): void
+    {
+        echo "Seeding Internal Users...\n";
+        (new self())->seedInternalUsers();
+    }
+
+    /**
+     * Seed Tenant Users module only.
+     */
+    public static function seedTenantUsersModule(): void
+    {
+        echo "Seeding Tenant Users...\n";
+        (new self())->seedTenantUsers();
+    }
+
+    /**
+     * Clear Users module only.
+     */
+    public static function clearUsersModule(): void
+    {
+        echo "Clearing users...\n";
+        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
+        \App\Models\Dashboard\User::truncate();
+        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
+        echo "Users cleared successfully!\n";
+    }
+
+    /**
      * Seed dashboard users with 4 types.
      */
-    private function seedUsers(): void
+    /**
+     * Seed dashboard users with 4 types.
+     */
+    public function seedUsers(): void
     {
-        // Get organizations from core schema
-        $konserOrg = Organization::where('email', 'contact@konserorganizer.com')->first();
-        $sportOrg = Organization::where('email', 'info@sportevents.com')->first();
-        $festivalOrg = Organization::where('email', 'hello@festivalnusantara.id')->first();
+        $this->seedInternalUsers();
+        $this->seedTenantUsers();
 
+        if ($this->command) {
+            $this->command->info('All Dashboard users seeded successfully.');
+        } else {
+            echo "All Dashboard users seeded.\n";
+        }
+    }
+
+    /**
+     * Seed Internal Users (Super Admin, Platform Staff).
+     * No dependencies on Core Organizations.
+     */
+    public function seedInternalUsers(): void
+    {
         // 1. Super Admin (organization_id = NULL)
         User::factory()->superAdmin()->create([
             'name' => 'Super Admin',
@@ -144,6 +188,24 @@ class DatabaseSeeder extends Seeder
             'name' => 'Customer Service',
             'email' => 'cs@example.com',
         ]);
+
+        if ($this->command) {
+            $this->command->info('✅ Internal Users seeded (Super Admin, Staff)');
+        } else {
+            echo "Internal Users seeded.\n";
+        }
+    }
+
+    /**
+     * Seed Tenant Users (Org Admin, Org Staff).
+     * Requires Core Organizations to be seeded first.
+     */
+    public function seedTenantUsers(): void
+    {
+        // Get organizations from core schema
+        $konserOrg = Organization::where('email', 'contact@konserorganizer.com')->first();
+        $sportOrg = Organization::where('email', 'info@sportevents.com')->first();
+        $festivalOrg = Organization::where('email', 'hello@festivalnusantara.id')->first();
 
         // 3. Organization Admin - Konser Organizer (organization_id = UUID)
         if ($konserOrg) {
@@ -193,9 +255,9 @@ class DatabaseSeeder extends Seeder
         }
 
         if ($this->command) {
-            $this->command->info('Dashboard users seeded: 1 Super Admin, 2 Platform Staff, 3 Org Admins, 5 Org Staff');
+            $this->command->info('✅ Tenant Users seeded (Org Admins, Org Staff)');
         } else {
-            echo "Dashboard users seeded: 1 Super Admin, 2 Platform Staff, 3 Org Admins, 5 Org Staff\n";
+            echo "Tenant Users seeded.\n";
         }
     }
 }
